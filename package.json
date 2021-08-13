@@ -18,6 +18,9 @@
 	"files": [
 		"dist/**/*"
 	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"keywords": [
 		"oclif-plugin"
 	],
@@ -78,6 +81,10 @@
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"readme": "oclif-dev readme",
-		"build": "npm run clean && npm run compile && npm run readme"
+		"build": "npm run clean && npm run compile && npm run readme",
+		"prepare": "npm run build",
+		"prepublishOnly": "npm test && npm run lint",
+		"preversion": "npm run lint",
+		"postversion": "git push && git push --tags"
 	}
 }
