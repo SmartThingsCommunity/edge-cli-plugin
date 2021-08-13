@@ -260,7 +260,7 @@ USAGE
   $ smartthings edge:channels:invites:accept ID
 
 ARGUMENTS
-  ID  channel UUID
+  ID  invite UUID
 
 OPTIONS
   -h, --help             show CLI help

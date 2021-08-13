@@ -61,6 +61,6 @@ export class InvitesEndpoint extends Endpoint {
 	}
 
 	public async accept(id: string): Promise<void> {
-		await this.client.put('accept', { invitationId: id })
+		await this.client.put(`${id}/accept`)
 	}
 }

@@ -8,7 +8,7 @@ export default class ChannelsInvitesAcceptCommand extends EdgeCommand {
 
 	static args = [{
 		name: 'id',
-		description: 'channel UUID',
+		description: 'invite UUID',
 		required: true,
 	}]
 
