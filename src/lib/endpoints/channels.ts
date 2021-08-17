@@ -32,6 +32,12 @@ export interface DriverChannelDetails {
 	lastModifiedDate: string
 }
 
+export interface DriverChannelMetaInfo {
+	driverId: string
+	name: string
+	version: string
+}
+
 export class ChannelsEndpoint extends Endpoint {
 	constructor(config: EndpointClientConfig) {
 		super(new EndpointClient('distchannels', {
@@ -54,6 +60,10 @@ export class ChannelsEndpoint extends Endpoint {
 
 	public async get(id: string): Promise<Channel> {
 		return this.client.get(id, undefined)
+	}
+
+	public async getDriverChannelMetaInfo(channelId: string, driverId: string): Promise<DriverChannelMetaInfo> {
+		return this.client.get(`${channelId}/drivers/${driverId}/meta`)
 	}
 
 	public async list(options: ListOptions = {}): Promise<Channel[]> {
