@@ -74,7 +74,7 @@ export class DriversInstallCommand extends EdgeCommand {
 			return (await Promise.all(
 				drivers.map(async driver => {
 					try {
-						const driverInfo = await this.edgeClient.drivers.getRevision(driver.driverId, driver.version)
+						const driverInfo = await this.edgeClient.channels.getDriverChannelMetaInfo(channelId, driver.driverId)
 						return {
 							driverId: driver.driverId,
 							name: driverInfo.name,
@@ -84,7 +84,7 @@ export class DriversInstallCommand extends EdgeCommand {
 						// to return drivers that were deleted but not removed from the channel.
 						// We can tell they have been deleted because we get a 404 on the call
 						// to `getRevision`, so we'll just skip them until the API is fixed.
-						if (error.message.includes('status code 404')) {
+						if (error.response?.status === 404) {
 							return undefined
 						}
 						throw error
