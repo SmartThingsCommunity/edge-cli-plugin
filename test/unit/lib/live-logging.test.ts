@@ -112,6 +112,10 @@ describe('live-logging', () => {
 			testClient = new LiveLogClient(authority, authenticator)
 		})
 
+		afterEach(() => {
+			jest.clearAllMocks()
+		})
+
 		it('returns log source for all drivers', async () => {
 			const sourceURL = await testClient.getLogSource()
 			expect(sourceURL).not.toContain('?')
@@ -150,12 +154,11 @@ describe('live-logging', () => {
 				],
 			}
 
-			const axiosSpy = jest.spyOn(axios, 'get').mockResolvedValueOnce(axiosResponse)
+			const axiosSpy = jest.spyOn(axios, 'request').mockResolvedValueOnce(axiosResponse)
 
 			await testClient.getDrivers()
 
 			expect(axiosSpy).toBeCalledWith(
-				expect.any(String),
 				expect.objectContaining({
 					headers: expect.objectContaining({ Authorization: `Bearer ${token}` }),
 					timeout: expect.any(Number),
@@ -186,14 +189,14 @@ describe('live-logging', () => {
 				isAxiosError: true,
 			}
 
-			jest.spyOn(axios, 'get').mockRejectedValueOnce(axiosError)
+			jest.spyOn(axios, 'request').mockRejectedValueOnce(axiosError)
 
 			await expect(testClient.getDrivers()).rejects.toThrow('Ensure hub address is correct and try again')
 		})
 
-		it('returns server certificate', async () => {
+		it('verifies host with provided verifier on first request only', async () => {
 			const cert = { fingerprint: 'fingerprint' } as PeerCertificate
-			const tlsSocketSpy = jest.spyOn(TLSSocket.prototype, 'getPeerCertificate').mockReturnValueOnce(cert)
+			jest.spyOn(TLSSocket.prototype, 'getPeerCertificate').mockReturnValue(cert)
 			const certResponse: AxiosResponse = {
 				data: '',
 				status: 200,
@@ -205,17 +208,20 @@ describe('live-logging', () => {
 				} as unknown as ClientRequest,
 			}
 
-			jest.spyOn(axios, 'get').mockResolvedValueOnce(certResponse)
+			const mockHostVerifier = jest.fn()
+			testClient = new LiveLogClient(authority, authenticator, mockHostVerifier)
+			jest.spyOn(axios, 'request').mockResolvedValue(certResponse)
 
-			await expect(testClient.getCertificate()).resolves.toBe(cert)
+			await testClient.getDrivers()
 
-			expect(tlsSocketSpy).toBeCalled()
-		})
+			expect(mockHostVerifier).toBeCalledTimes(1)
+			expect(mockHostVerifier).toBeCalledWith(cert)
 
-		it('throws when retrieving certificate fails', async () => {
-			jest.spyOn(axios, 'get').mockRejectedValueOnce(new Error('failed'))
+			mockHostVerifier.mockClear()
 
-			await expect(testClient.getCertificate()).rejects.toThrow('failed')
+			await testClient.getDrivers()
+
+			expect(mockHostVerifier).not.toBeCalled()
 		})
 	})
 })
