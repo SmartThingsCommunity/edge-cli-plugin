@@ -3,6 +3,7 @@ import { handle } from '@oclif/errors'
 import cli from 'cli-ux'
 import inquirer from 'inquirer'
 import { promises as fs } from 'fs'
+import { PeerCertificate } from 'tls'
 import {
 	DriverInfo,
 	handleConnectionErrors,
@@ -70,6 +71,9 @@ interface KnownHub {
 }
 
 export default class LogCatCommand extends SseCommand {
+	private authority!: string
+	private logClient!: LiveLogClient
+
 	static description = 'stream logs from installed drivers'
 
 	static flags = {
@@ -90,9 +94,7 @@ export default class LogCatCommand extends SseCommand {
 		},
 	]
 
-	private async checkServerIdentity(authority: string, client: LiveLogClient): Promise<void> {
-		const cert = await client.getCertificate()
-
+	private async checkServerIdentity(cert: PeerCertificate): Promise<void | never> {
 		const knownHubsPath = `${this.config.cacheDir}/known_hubs.json`
 		let knownHubs: Partial<Record<string, KnownHub>> = {}
 		try {
@@ -101,9 +103,9 @@ export default class LogCatCommand extends SseCommand {
 			if (error.code !== 'ENOENT') { throw error }
 		}
 
-		const known = knownHubs[authority]
+		const known = knownHubs[this.authority]
 		if (!known || known.fingerprint !== cert.fingerprint) {
-			cli.warn(`The authenticity of ${authority} can't be established. Certificate fingerprint is ${cert.fingerprint}`)
+			this.warn(`The authenticity of ${this.authority} can't be established. Certificate fingerprint is ${cert.fingerprint}`)
 			const verified = (await inquirer.prompt({
 				type: 'confirm',
 				name: 'connect',
@@ -115,14 +117,14 @@ export default class LogCatCommand extends SseCommand {
 				this.error('Hub verification failed.')
 			}
 
-			knownHubs[authority] = { hostname: authority, fingerprint: cert.fingerprint }
+			knownHubs[this.authority] = { hostname: this.authority, fingerprint: cert.fingerprint }
 			await fs.writeFile(knownHubsPath, JSON.stringify(knownHubs))
 
-			cli.warn(`Permanently added ${authority} to the list of known hubs.`)
+			this.warn(`Permanently added ${this.authority} to the list of known hubs.`)
 		}
 	}
 
-	private async chooseHubDrivers(client: LiveLogClient, commandLineDriverId?: string): Promise<string> {
+	private async chooseHubDrivers(commandLineDriverId?: string, driversList?: Promise<DriverInfo[]>): Promise<string> {
 		const config = {
 			itemName: 'driver',
 			primaryKeyName: 'driver_id',
@@ -130,34 +132,49 @@ export default class LogCatCommand extends SseCommand {
 			listTableFieldDefinitions: driverFieldDefinitions,
 		}
 
-		const driversList = client.getDrivers()
-		const preselectedId = await stringTranslateToId(config, commandLineDriverId, () => driversList)
-		return selectGeneric(this, config, preselectedId, () => driversList, promptForDrivers)
+		const list = driversList ?? this.logClient.getDrivers()
+		const preselectedId = await stringTranslateToId(config, commandLineDriverId, () => list)
+		return selectGeneric(this, config, preselectedId, () => list, promptForDrivers)
 	}
 
-	async run(): Promise<void> {
+	async init(): Promise<void> {
+		await super.init()
+
 		const { args, argv, flags } = this.parse(LogCatCommand)
 		await super.setup(args, argv, flags)
 
 		const hubIpAddress = flags['hub-address'] ?? await askForRequiredString('Enter hub IP address with optionally appended port number:')
 		const [ipv4, port] = parseIpAndPort(hubIpAddress)
-
 		const liveLogPort = port ?? DEFAULT_LIVE_LOG_PORT
-		const authority = `${ipv4}:${liveLogPort}`
+		this.authority = `${ipv4}:${liveLogPort}`
 
-		const logClient = new LiveLogClient(authority, this.authenticator)
-		await this.checkServerIdentity(authority, logClient)
+		this.logClient = new LiveLogClient(this.authority, this.authenticator, this.checkServerIdentity.bind(this))
+	}
+
+	async run(): Promise<void> {
+		const installedDriversPromise = this.logClient.getDrivers()
 
 		let sourceURL
-		if (flags.all) {
-			sourceURL = await logClient.getLogSource()
+		if (this.flags.all) {
+			sourceURL = await this.logClient.getLogSource()
 		} else {
-			const driverId = await this.chooseHubDrivers(logClient, args.driverId)
-			sourceURL = driverId == DEFAULT_ALL_TEXT ? await logClient.getLogSource() : await logClient.getLogSource(driverId)
+			const driverId = await this.chooseHubDrivers(this.args.driverId, installedDriversPromise)
+			sourceURL = driverId == DEFAULT_ALL_TEXT ? await this.logClient.getLogSource() : await this.logClient.getLogSource(driverId)
 		}
+
+		// ensure this resolves before connecting to the event source
+		const installedDrivers = await installedDriversPromise
 
 		cli.action.start('connecting')
 		await this.initSource(sourceURL)
+
+		this.source.onopen = () => {
+			if (installedDrivers.length === 0) {
+				this.warn('No drivers currently installed.')
+			}
+
+			cli.action.start('listening for logs')
+		}
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		this.source.onerror = (error: any) => {
@@ -165,18 +182,14 @@ export default class LogCatCommand extends SseCommand {
 			this.teardown()
 			try {
 				if (error?.status === 401 || error?.status === 403) {
-					this.error(`Unauthorized at ${authority}`)
+					this.error(`Unauthorized at ${this.authority}`)
 				}
 
-				handleConnectionErrors(authority, error?.message)
+				handleConnectionErrors(this.authority, error?.message)
 				this.error(error?.message ?? error)
 			} catch (error) {
 				handle(error)
 			}
-		}
-
-		this.source.onopen = () => {
-			cli.action.start('listening for logs')
 		}
 
 		this.source.onmessage = (event: MessageEvent<LiveLogMessage>) => {
