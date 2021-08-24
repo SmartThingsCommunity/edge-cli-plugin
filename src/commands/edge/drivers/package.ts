@@ -7,7 +7,6 @@ import picomatch from 'picomatch'
 
 import { outputItem } from '@smartthings/cli-lib'
 
-import { EdgeDriver } from '../../../lib/endpoints/drivers'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
@@ -56,11 +55,24 @@ export default class PackageCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputItem.flags,
-		'dry-run': flags.boolean({
-			char: 'd',
-			description: 'save package to edge.zip file instead of uploading it',
+		'build-only': flags.string({
+			char: 'b',
+			description: 'save package to specified zip file but skip upload',
+			exclusive: ['upload'],
+		}),
+		upload: flags.string({
+			char: 'u',
+			description: 'upload zip file previously built with --build flag',
+			exclusive: ['build'],
 		}),
 	}
+
+	static examples = [
+		'smartthings edge:drivers:package                           # build and upload driver found in current directory',
+		'smartthings edge:drivers:package my-driver                 # build and upload driver found in the my-driver directory',
+		'smartthings edge:drivers:package -b driver.zip my-package  # build the driver in the my-package directory and save it as driver.zip',
+		'smartthings edge:drivers:package -u driver.zip             # upload the previously built driver found in driver.zip',
+	]
 
 	getProjectDirectory(): string {
 		let projectDirectory = this.args.projectDirectory
@@ -185,7 +197,16 @@ export default class PackageCommand extends EdgeCommand {
 			tableFieldDefinitions: ['driverId', 'name', 'packageKey', 'version'],
 		}
 
-		outputItem(this, config, async () => {
+		if (flags.upload) {
+			try {
+				const data = fs.readFileSync(flags.upload)
+				outputItem(this, config, () => this.edgeClient.drivers.upload(data))
+			} catch (error) {
+				if (error.code === 'ENOENT') {
+					this.log(`No file named "${flags.upload}" found.`)
+				}
+			}
+		} else {
 			const projectDirectory = this.getProjectDirectory()
 
 			const zip = new JSZip()
@@ -196,21 +217,16 @@ export default class PackageCommand extends EdgeCommand {
 
 			this.processProfiles(projectDirectory, parsedConfig, zip)
 
-			if (flags['dry-run']) {
+			if (flags['build-only']) {
 				zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true, compression: 'DEFLATE' })
-					.pipe(fs.createWriteStream('edge.zip'))
+					.pipe(fs.createWriteStream(flags['build-only']))
 					.on('finish', () => {
-						this.log('wrote edge.zip')
+						this.log(`wrote ${flags['build-only']}`)
 					})
-				// This is a little hacky for now...we're making a fake driver
-				// to return for dry run mode. We should probably support for
-				// an alternate return type to be used in dry-run mode.
-				return { driverId: 'dry-run-mode', name: 'n/a', packageKey: 'n/a', version: 'n/a' } as EdgeDriver
 			} else {
 				const zipContents = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' })
-				const buffer = Buffer.from(zipContents)
-				return await this.edgeClient.drivers.upload(buffer)
+				outputItem(this, config, () => this.edgeClient.drivers.upload(zipContents))
 			}
-		})
+		}
 	}
 }
