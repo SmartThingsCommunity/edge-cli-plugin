@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 import { flags } from '@oclif/command'
+import { CLIError } from '@oclif/errors'
 import JSZip from 'jszip'
 import yaml from 'js-yaml'
 import picomatch from 'picomatch'
@@ -8,21 +9,23 @@ import picomatch from 'picomatch'
 import { outputItem } from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../../lib/edge-command'
+import { chooseChannel } from '../channels'
+import { chooseHub } from './install'
 
 
 interface YAMLFileData {
 	[key: string]: string
 }
 
-function isFile(filename: string): boolean {
+export function isFile(filename: string): boolean {
 	return fs.existsSync(filename) && fs.lstatSync(filename).isFile()
 }
 
-function isDir(filename: string): boolean {
+export function isDir(filename: string): boolean {
 	return fs.existsSync(filename) && fs.lstatSync(filename).isDirectory()
 }
 
-function findYAMLFilename(baseName: string): string | false {
+export function findYAMLFilename(baseName: string): string | false {
 	let retVal = `${baseName}.yaml`
 	if (isFile(retVal)) {
 		return retVal
@@ -36,11 +39,11 @@ function findYAMLFilename(baseName: string): string | false {
 	return false
 }
 
-function requireDir(dirName: string): string {
+export function requireDir(dirName: string): string {
 	if (isDir(dirName)) {
 		return dirName
 	}
-	throw new Error(`missing required directory ${dirName}`)
+	throw new CLIError(`missing required directory ${dirName}`)
 }
 
 export default class PackageCommand extends EdgeCommand {
@@ -63,16 +66,50 @@ export default class PackageCommand extends EdgeCommand {
 		upload: flags.string({
 			char: 'u',
 			description: 'upload zip file previously built with --build flag',
-			exclusive: ['build'],
+			exclusive: ['build-only'],
+		}),
+		assign: flags.boolean({
+			char: 'a',
+			description: 'prompt for a channel to assign the driver to after upload',
+			exclusive: ['channel', 'build-only'],
+		}),
+		channel: flags.string({
+			description: 'automatically assign driver to specified channel after upload',
+			exclusive: ['assign', 'build-only'],
+		}),
+		install: flags.boolean({
+			char: 'I',
+			description: 'prompt for hub to install to after assigning it to the channel, implies --assign if --assign or --channel not included',
+			exclusive: ['hub', 'build-only'],
+		}),
+		hub: flags.string({
+			description: 'automatically install driver to specified hub, implies --assign if --assign or --channel not included',
+			exclusive: ['install', 'build-only'],
 		}),
 	}
 
-	static examples = [
-		'smartthings edge:drivers:package                           # build and upload driver found in current directory',
-		'smartthings edge:drivers:package my-driver                 # build and upload driver found in the my-driver directory',
-		'smartthings edge:drivers:package -b driver.zip my-package  # build the driver in the my-package directory and save it as driver.zip',
-		'smartthings edge:drivers:package -u driver.zip             # upload the previously built driver found in driver.zip',
-	]
+	static examples = [`# build and upload driver found in current directory:
+$ smartthings edge:drivers:package
+
+# build and upload driver found in current directory:
+$ smartthings edge:drivers:package
+
+# build and upload driver found in current directory, assign it to a channel, and install it;
+# user will be prompted for channel and hub
+$ smartthings edge:drivers:package -I
+
+# build and upload driver found in current directory then assign it to the specified channel
+# and install it to the specified hub
+$ smartthings edge:drivers:package --channel <channel-id> --hub <hubId>
+
+# build and upload driver found in the my-driver directory
+$ smartthings edge:drivers:package my-driver
+
+# build the driver in the my-package directory and save it as driver.zip
+$ smartthings edge:drivers:package -b driver.zip my-package
+
+# upload the previously built driver found in driver.zip
+$ smartthings edge:drivers:package -u driver.zip`]
 
 	getProjectDirectory(): string {
 		let projectDirectory = this.args.projectDirectory
@@ -80,7 +117,7 @@ export default class PackageCommand extends EdgeCommand {
 			projectDirectory = projectDirectory.slice(0, -1)
 		}
 		if (!isDir(projectDirectory)) {
-			throw new Error(`${projectDirectory} must exist and be a directory`)
+			throw new CLIError(`${projectDirectory} must exist and be a directory`)
 		}
 		return projectDirectory
 	}
@@ -88,24 +125,25 @@ export default class PackageCommand extends EdgeCommand {
 	processConfigFile(projectDirectory: string, zip: JSZip): YAMLFileData {
 		const configFile = findYAMLFilename(`${projectDirectory}/config`)
 		if (configFile === false) {
-			throw Error('missing main config.yaml (or config.yml) file')
+			throw new CLIError('missing main config.yaml (or config.yml) file')
 		}
 
 		try {
-			const parsedConfig = yaml.safeLoad(fs.readFileSync(configFile, 'utf-8'))
+			const fileContents = fs.readFileSync(configFile, 'utf-8')
+			const parsedConfig = yaml.safeLoad(fileContents)
 
 			if (parsedConfig == null) {
-				throw new Error('empty config file')
+				throw new CLIError('empty config file')
 			}
 			if (typeof parsedConfig === 'string') {
-				throw new Error('invalid config file')
+				throw new CLIError('invalid config file')
 			}
 
 			zip.file('config.yml', fs.createReadStream(configFile))
 
 			return parsedConfig as YAMLFileData
 		} catch (error) {
-			throw new Error(`unable to parse ${configFile}: ${error}`)
+			throw new CLIError(`unable to parse ${configFile}: ${error}`)
 		}
 	}
 
@@ -116,7 +154,7 @@ export default class PackageCommand extends EdgeCommand {
 			try {
 				yaml.safeLoad(fs.readFileSync(fingerprintsFile, 'utf-8'))
 			} catch (error) {
-				throw new Error(`unable to parse ${fingerprintsFile}: ${error}`)
+				throw new CLIError(`unable to parse ${fingerprintsFile}: ${error}`)
 			}
 			zip.file('fingerprints.yml', fs.createReadStream(fingerprintsFile))
 		}
@@ -144,7 +182,7 @@ export default class PackageCommand extends EdgeCommand {
 		const testFileMatchers = this.testFileMatchers()
 		const srcDir = requireDir(`${projectDirectory}/src`)
 		if (!isFile(`${srcDir}/init.lua`)) {
-			throw new Error(`missing required ${srcDir}/init.lua file}`)
+			throw new CLIError(`missing required ${srcDir}/init.lua file}`)
 		}
 
 		const walkDir = (fromDir: string, nested = 0): void => {
@@ -155,7 +193,7 @@ export default class PackageCommand extends EdgeCommand {
 					if (nested < 8) {
 						walkDir(fullFilename, nested + 1)
 					} else {
-						throw new Error(`drivers directory nested too deeply (at ${fullFilename}); max depth is 10`)
+						throw new CLIError(`drivers directory nested too deeply (at ${fullFilename}); max depth is 10`)
 					}
 				} else {
 					const filenameForTestMatch = fullFilename.substr(srcDir.length + 1)
@@ -184,7 +222,7 @@ export default class PackageCommand extends EdgeCommand {
 				}
 				zip.file(archiveName, fs.createReadStream(fullFilename))
 			} else {
-				throw new Error(`invalid profile file ${fullFilename} (must have .yaml or .yml extension)`)
+				throw new CLIError(`invalid profile file ${fullFilename} (must have .yaml or .yml extension)`)
 			}
 		}
 	}
@@ -193,16 +231,32 @@ export default class PackageCommand extends EdgeCommand {
 		const { args, argv, flags } = this.parse(PackageCommand)
 		await super.setup(args, argv, flags)
 
-		const config = {
-			tableFieldDefinitions: ['driverId', 'name', 'packageKey', 'version'],
+		const uploadAndPostProcess = async (archiveData: Uint8Array): Promise<void> => {
+			const config = {
+				tableFieldDefinitions: ['driverId', 'name', 'packageKey', 'version'],
+			}
+			const driver = await outputItem(this, config, () => this.edgeClient.drivers.upload(archiveData))
+			const doAssign = flags.assign || flags.channel || flags.install || flags.hub
+			const doInstall = flags.install || flags.hub
+			if (doAssign) {
+				const driverId = driver.driverId
+				const version = driver.version
+				const channelId = await chooseChannel(this, 'Select a channel for the driver.', flags.channel)
+				await this.edgeClient.channels.assignDriver(channelId, driverId, version)
+
+				if (doInstall) {
+					const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub)
+					await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
+				}
+			}
 		}
 
 		if (flags.upload) {
 			try {
 				const data = fs.readFileSync(flags.upload)
-				outputItem(this, config, () => this.edgeClient.drivers.upload(data))
+				await uploadAndPostProcess(data)
 			} catch (error) {
-				if (error.code === 'ENOENT') {
+				if ((error as { code?: string }).code === 'ENOENT') {
 					this.log(`No file named "${flags.upload}" found.`)
 				}
 			}
@@ -225,7 +279,7 @@ export default class PackageCommand extends EdgeCommand {
 					})
 			} else {
 				const zipContents = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' })
-				outputItem(this, config, () => this.edgeClient.drivers.upload(zipContents))
+				await uploadAndPostProcess(zipContents)
 			}
 		}
 	}
