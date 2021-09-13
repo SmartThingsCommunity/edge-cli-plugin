@@ -29,7 +29,8 @@ export default class ChannelsDriversCommand extends EdgeCommand {
 			listTableFieldDefinitions: ['channelId', 'driverId', 'version', 'createdDate', 'lastModifiedDate'],
 		}
 
-		const channelId = await chooseChannel(this, 'Select a channel.', args.idOrIndex, { allowIndex: true })
+		const channelId = await chooseChannel(this, 'Select a channel.', args.idOrIndex,
+			{ allowIndex: true, includeReadOnly: true })
 
 		await outputList(this, config, () => this.edgeClient.channels.listAssignedDrivers(channelId))
 	}

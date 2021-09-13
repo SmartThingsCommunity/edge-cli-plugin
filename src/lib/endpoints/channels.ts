@@ -20,8 +20,10 @@ export interface Channel extends ChannelCreate {
 export type ChannelUpdate = ChannelCreate
 
 export interface ListOptions {
-	type?: 'HUB'
-	subscriberId?: string
+	/**
+	 * Include channels that have been subscribed to as well as user-owned channels.
+	 */
+	includeReadOnly?: boolean
 }
 
 export interface DriverChannelDetails {
@@ -68,11 +70,8 @@ export class ChannelsEndpoint extends Endpoint {
 
 	public async list(options: ListOptions = {}): Promise<Channel[]> {
 		const params: HttpClientParams = {}
-		if (options.type) {
-			params.type = options.type
-		}
-		if (options.subscriberId) {
-			params.subscriberId = options.subscriberId
+		if (typeof(options.includeReadOnly) === 'boolean') {
+			params.includeReadOnly = options.includeReadOnly.toString()
 		}
 		return this.client.getPagedItems('', params)
 	}
