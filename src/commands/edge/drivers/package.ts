@@ -91,9 +91,6 @@ export default class PackageCommand extends EdgeCommand {
 	static examples = [`# build and upload driver found in current directory:
 $ smartthings edge:drivers:package
 
-# build and upload driver found in current directory:
-$ smartthings edge:drivers:package
-
 # build and upload driver found in current directory, assign it to a channel, and install it;
 # user will be prompted for channel and hub
 $ smartthings edge:drivers:package -I

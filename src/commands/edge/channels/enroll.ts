@@ -27,7 +27,8 @@ export class ChannelsEnrollCommand extends EdgeCommand {
 		const { args, argv, flags } = this.parse(ChannelsEnrollCommand)
 		await super.setup(args, argv, flags)
 
-		const channelId = await chooseChannel(this, 'Select a channel.', flags.channel)
+		const channelId = await chooseChannel(this, 'Select a channel.', flags.channel,
+			{ includeReadOnly: true })
 		const hubId = await chooseHub(this, 'Select a hub.', args.hubId)
 
 		await this.edgeClient.channels.enrollHub(channelId, hubId)
