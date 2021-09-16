@@ -1,179 +1,285 @@
 import fs from 'fs'
 
-import PackageCommand, { findYAMLFilename, isDir, isFile, requireDir } from '../../../../../src/commands/edge/drivers/package'
+import JSZip from 'jszip'
+
+import { CommonOutputProducer, GetDataFunction, outputItem, SmartThingsCommandInterface } from '@smartthings/cli-lib'
+
+import PackageCommand from '../../../../../src/commands/edge/drivers/package'
+import * as channels from '../../../../../src/commands/edge/channels'
+import * as hubs from '../../../../../src/commands/edge/drivers/install'
+import * as packageUtil from '../../../../../src/lib/commands/drivers/package-util'
+import { ChannelsEndpoint, DriverChannelDetails } from '../../../../../src/lib/endpoints/channels'
+import { DriversEndpoint, EdgeDriver } from '../../../../../src/lib/endpoints/drivers'
+import { HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
 
 
-jest.mock('fs', () => {
+jest.mock('fs')
+jest.mock('jszip')
+
+jest.mock('@smartthings/cli-lib', () => {
+	const originalLib = jest.requireActual('@smartthings/cli-lib')
+
 	return {
-		existsSync: jest.fn(),
-		lstatSync: jest.fn(),
-		readFileSync: jest.fn(),
-		readdirSync: jest.fn(),
-		createReadStream: jest.fn(),
-		createWriteStream: jest.fn(),
-	}
-})
-jest.mock('yaml', () => {
-	return {
-		safeLoad: jest.fn(),
+		...originalLib,
+		outputItem: jest.fn(),
 	}
 })
 
 describe('package', () => {
-	const existsSyncMock = fs.existsSync as unknown as jest.Mock<boolean, [fs.PathLike]>
-	const lstatSyncMock = fs.lstatSync as unknown as jest.Mock<fs.Stats, [fs.PathLike]>
-	const readFileSyncMock = fs.readFileSync as unknown as jest.Mock<string, [fs.PathLike]>
-	const readdirSyncMock = fs.readdirSync as unknown as jest.Mock<string[], [fs.PathLike]>
-	const createReadStreamMock = fs.createReadStream as unknown as jest.Mock<fs.ReadStream, [fs.PathLike]>
+	const zipContents = {} as Uint8Array
+	const jsZipMock = JSZip as unknown as jest.Mock<JSZip, []>
+	const pipeMock = jest.fn()
+	const readableStream = {
+		pipe: pipeMock,
+	} as unknown as NodeJS.ReadableStream
+	const generateNodeStreamMock = jest.fn().mockReturnValue(readableStream)
+	const generateAsyncMock = jest.fn().mockReturnValue(zipContents)
+	const mockJSZip = {
+		generateNodeStream: generateNodeStreamMock,
+		generateAsync: generateAsyncMock,
+	} as unknown as JSZip
+
+	const resolveProjectDirNameSpy = jest.spyOn(packageUtil, 'resolveProjectDirName')
+	const processConfigFileSpy = jest.spyOn(packageUtil, 'processConfigFile')
+	const processFingerprintsFileSpy = jest.spyOn(packageUtil, 'processFingerprintsFile')
+	const buildTestFileMatchersSpy = jest.spyOn(packageUtil, 'buildTestFileMatchers')
+	const processSrcDirSpy = jest.spyOn(packageUtil, 'processSrcDir')
+	const processProfilesSpy = jest.spyOn(packageUtil, 'processProfiles')
+
+	const driver = { driverId: 'driver id', version: 'driver version' } as unknown as EdgeDriver
+	const outputItemMock = outputItem as unknown as
+		jest.Mock<Promise<EdgeDriver>, [SmartThingsCommandInterface, CommonOutputProducer<EdgeDriver>, GetDataFunction<EdgeDriver>]>
+	outputItemMock.mockImplementation((_command, _config, actionFunction): Promise<EdgeDriver> => {
+		actionFunction()
+		return Promise.resolve(driver)
+	})
+	const uploadSpy = jest.spyOn(DriversEndpoint.prototype, 'upload').mockResolvedValue(driver)
+
+	const chooseChannelSpy = jest.spyOn(channels, 'chooseChannel').mockResolvedValue('channel id')
+	const assignDriverSpy = jest.spyOn(ChannelsEndpoint.prototype, 'assignDriver')
+		.mockResolvedValue({} as DriverChannelDetails)
+
+	const chooseHubSpy = jest.spyOn(hubs, 'chooseHub').mockResolvedValue('hub id')
+	const installDriverSpy = jest.spyOn(HubsEndpoint.prototype, 'installDriver').mockResolvedValue()
+
+	const logSpy = jest.spyOn(PackageCommand.prototype, 'log').mockImplementation()
 
 	afterEach(() => {
 		jest.clearAllMocks()
 	})
 
-	const mockExistsAndIsFile = (): void => {
-		existsSyncMock.mockReturnValueOnce(true)
-		const statsIsFileMock = jest.fn().mockReturnValueOnce(true)
-		lstatSyncMock.mockReturnValueOnce({ isFile: statsIsFileMock } as unknown as fs.Stats)
+	const mockProjectDirectoryProcessing = (): void => {
+		resolveProjectDirNameSpy.mockReturnValueOnce('project dir')
+		jsZipMock.mockReturnValueOnce(mockJSZip)
+		processConfigFileSpy.mockImplementationOnce(() => ({}))
+		processFingerprintsFileSpy.mockImplementation()
+		buildTestFileMatchersSpy.mockReturnValueOnce([])
+		processSrcDirSpy.mockImplementation()
+		processProfilesSpy.mockImplementation()
+	}
+	const expectProjectDirectoryProcessing = (): void => {
+		expect(resolveProjectDirNameSpy).toHaveBeenCalledTimes(1)
+		expect(resolveProjectDirNameSpy).toHaveBeenCalledWith('.')
+		expect(processConfigFileSpy).toHaveBeenCalledTimes(1)
+		expect(processConfigFileSpy).toHaveBeenCalledWith('project dir', mockJSZip)
+		expect(processFingerprintsFileSpy).toHaveBeenCalledTimes(1)
+		expect(processFingerprintsFileSpy).toHaveBeenCalledWith('project dir', mockJSZip)
+		expect(buildTestFileMatchersSpy).toHaveBeenCalledTimes(1)
+		expect(buildTestFileMatchersSpy).toHaveBeenCalledWith(undefined)
+		expect(processSrcDirSpy).toHaveBeenCalledTimes(1)
+		expect(processSrcDirSpy).toHaveBeenCalledWith('project dir', mockJSZip, [])
+		expect(processProfilesSpy).toHaveBeenCalledTimes(1)
+		expect(processProfilesSpy).toHaveBeenCalledWith('project dir', mockJSZip)
 	}
 
-	const mockExistsAndIsDirectory = (): void => {
-		existsSyncMock.mockReturnValueOnce(true)
-		const statsIsDirectoryMock = jest.fn().mockReturnValueOnce(true)
-		lstatSyncMock.mockReturnValueOnce({ isDirectory: statsIsDirectoryMock } as unknown as fs.Stats)
-	}
+	it('generates zip file with --build-only', async () => {
+		const writeStreamOnMock = jest.fn()
+		const writeStreamMock: fs.WriteStream = {
+			on: writeStreamOnMock,
+		} as unknown as fs.WriteStream
+		const createWriteStreamMock = fs.createWriteStream as unknown as jest.Mock<fs.WriteStream, [fs.PathLike]>
 
-	describe('isFile', () => {
-		it('returns false if does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
-
-			expect(isFile('non-existent.stl')).toBe(false)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('non-existent.stl')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(0)
+		mockProjectDirectoryProcessing()
+		createWriteStreamMock.mockReturnValueOnce(writeStreamMock)
+		pipeMock.mockReturnValueOnce(writeStreamMock)
+		writeStreamOnMock.mockImplementationOnce((_event, action): void => {
+			action()
 		})
 
-		it('returns false if exists but is not a file', () => {
-			existsSyncMock.mockReturnValue(true)
-			const statsIsFileMock = jest.fn().mockReturnValue(false)
-			lstatSyncMock.mockReturnValue({ isFile: statsIsFileMock } as unknown as fs.Stats)
+		await expect(PackageCommand.run(['--build-only', 'driver.zip'])).resolves.not.toThrow()
 
-			expect(isFile('directory')).toBe(false)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('directory')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('directory')
-		})
-
-		it('returns true if exists and is a file', () => {
-			mockExistsAndIsFile()
-
-			expect(isFile('file')).toBe(true)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('file')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('file')
-		})
+		expectProjectDirectoryProcessing()
+		expect(generateNodeStreamMock).toHaveBeenCalledTimes(1)
+		expect(generateNodeStreamMock)
+			.toHaveBeenCalledWith({ type: 'nodebuffer', streamFiles: true, compression: 'DEFLATE' })
+		expect(createWriteStreamMock).toHaveBeenCalledTimes(1)
+		expect(createWriteStreamMock).toHaveBeenCalledWith('driver.zip')
+		expect(pipeMock).toHaveBeenCalledTimes(1)
+		expect(pipeMock).toHaveBeenCalledWith(writeStreamMock)
+		expect(writeStreamOnMock).toHaveBeenCalledTimes(1)
+		expect(writeStreamOnMock).toHaveBeenCalledWith('finish', expect.any(Function))
+		expect(outputItemMock).toHaveBeenCalledTimes(0)
+		expect(logSpy).toHaveBeenCalledWith('wrote driver.zip')
+		expect(uploadSpy).toHaveBeenCalledTimes(0)
 	})
 
-	describe('isDir', () => {
-		const existsSyncMock = fs.existsSync as unknown as jest.Mock<boolean, [fs.PathLike]>
-		const lstatSyncMock = fs.lstatSync as unknown as jest.Mock<fs.Stats, [fs.PathLike]>
+	it('uploads pre-built zip file', async () => {
+		const archiveData = {} as unknown as Buffer
+		const readFileSyncMock = (fs.readFileSync as unknown as jest.Mock<Buffer, [fs.PathLike]>)
+			.mockReturnValueOnce(archiveData)
 
-		it('returns false if does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
+		await expect(PackageCommand.run(['--upload', 'driver.zip'])).resolves.not.toThrow()
 
-			expect(isDir('non-existent')).toBe(false)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('non-existent')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(0)
-		})
-
-		it('returns false if exists but is not a directory', () => {
-			existsSyncMock.mockReturnValue(true)
-			const statsIsDirectoryMock = jest.fn().mockReturnValue(false)
-			lstatSyncMock.mockReturnValue({ isDirectory: statsIsDirectoryMock } as unknown as fs.Stats)
-
-			expect(isDir('file')).toBe(false)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('file')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('file')
-		})
-
-		it('returns true if exists and is a directory', () => {
-			mockExistsAndIsDirectory()
-
-			expect(isDir('directory')).toBe(true)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('directory')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('directory')
-		})
+		expect(readFileSyncMock).toHaveBeenCalledTimes(1)
+		expect(readFileSyncMock).toHaveBeenCalledWith('driver.zip')
+		expect(outputItemMock).toHaveBeenCalledTimes(1)
+		expect(outputItemMock)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
+		expect(uploadSpy).toHaveBeenCalledTimes(1)
+		expect(uploadSpy).toHaveBeenCalledWith(archiveData)
+		expect(chooseChannelSpy).toHaveBeenCalledTimes(0)
+		expect(assignDriverSpy).toHaveBeenCalledTimes(0)
+		expect(chooseHubSpy).toHaveBeenCalledTimes(0)
+		expect(installDriverSpy).toHaveBeenCalledTimes(0)
 	})
 
-	describe('findYAMLFilename', () => {
-		it('returns filename with yaml extension if that is found', () => {
-			mockExistsAndIsFile()
+	it('displays error message when zip file missing', async () => {
+		const readFileSyncMock = (fs.readFileSync as unknown as jest.Mock<Buffer, [fs.PathLike]>)
+			.mockImplementationOnce(() => { throw { code: 'ENOENT' } })
 
-			expect(findYAMLFilename('filename')).toBe('filename.yaml')
-		})
+		await expect(PackageCommand.run(['--upload', 'driver.zip'])).resolves.not.toThrow()
 
-		it('returns filename with yml extension if that is found', () => {
-			existsSyncMock.mockReturnValueOnce(false)
-			mockExistsAndIsFile()
-
-			expect(findYAMLFilename('filename')).toBe('filename.yml')
-		})
-
-		it('returns false when no matching file found', () => {
-			existsSyncMock.mockReturnValue(false)
-
-			expect(findYAMLFilename('filename')).toBe(false)
-		})
+		expect(readFileSyncMock).toHaveBeenCalledTimes(1)
+		expect(readFileSyncMock).toHaveBeenCalledWith('driver.zip')
+		expect(outputItemMock).toHaveBeenCalledTimes(0)
+		expect(logSpy).toHaveBeenCalledWith('No file named "driver.zip" found.')
 	})
 
-	describe('requireDir', () => {
-		it('returns directory when it exists and is a directory', () => {
-			mockExistsAndIsDirectory()
+	it('throws unexpected error when zipping file', async () => {
+		const readFileSyncMock = (fs.readFileSync as unknown as jest.Mock<Buffer, [fs.PathLike]>)
+			.mockImplementationOnce(() => { throw Error('failure') })
 
-			expect(requireDir('my-dir')).toBe('my-dir')
-		})
+		await expect(PackageCommand.run(['--upload', 'driver.zip'])).rejects.toThrow(Error('failure'))
 
-		it('throws exception when directory does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
-			expect(() => requireDir('not-a-dir')).toThrow()
-		})
+		expect(readFileSyncMock).toHaveBeenCalledTimes(1)
+		expect(readFileSyncMock).toHaveBeenCalledWith('driver.zip')
+		expect(outputItemMock).toHaveBeenCalledTimes(0)
 	})
 
-	// project directory with and without slash
-	// project directory default
-	describe.skip('PackageCommand', () => {
-		const readStreamMock: fs.ReadStream = {} as fs.ReadStream
-		it('generates zip file with --build-only', async () => {
-			// getProjectDirectory
-			mockExistsAndIsDirectory()
+	it('generates and uploads', async () => {
+		mockProjectDirectoryProcessing()
 
-			// processConfigFile
-			mockExistsAndIsFile()
-			readFileSyncMock.mockReturnValue('key:\n  value')
-			createReadStreamMock.mockReturnValue(readStreamMock)
-			// zipFileMock.mockReturnValue()
+		await expect(PackageCommand.run([])).resolves.not.toThrow()
 
-			// processSrcDir
-			mockExistsAndIsDirectory() // src
-			mockExistsAndIsFile() // init.lua
-			readdirSyncMock.mockReturnValueOnce([])
+		expectProjectDirectoryProcessing()
+		expect(generateAsyncMock).toHaveBeenCalledTimes(1)
+		expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array', compression: 'DEFLATE' })
+		expect(outputItemMock).toHaveBeenCalledTimes(1)
+		expect(outputItemMock)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
+		expect(uploadSpy).toHaveBeenCalledTimes(1)
+		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
+		expect(chooseChannelSpy).toHaveBeenCalledTimes(0)
+		expect(assignDriverSpy).toHaveBeenCalledTimes(0)
+		expect(chooseHubSpy).toHaveBeenCalledTimes(0)
+		expect(installDriverSpy).toHaveBeenCalledTimes(0)
+	})
 
-			await expect(PackageCommand.run(['--build-only', 'driver.zip'])).resolves.not.toThrow()
+	it('assigns when --assign specified', async () => {
+		mockProjectDirectoryProcessing()
 
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('.')
-		})
+		await expect(PackageCommand.run(['--assign'])).resolves.not.toThrow()
+
+		expectProjectDirectoryProcessing()
+		expect(generateAsyncMock).toHaveBeenCalledTimes(1)
+		expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array', compression: 'DEFLATE' })
+		expect(outputItemMock).toHaveBeenCalledTimes(1)
+		expect(outputItemMock)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
+		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
+		expect(chooseChannelSpy)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
+		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
+		expect(assignDriverSpy)
+			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
+		expect(uploadSpy).toHaveBeenCalledTimes(1)
+		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
+		expect(chooseHubSpy).toHaveBeenCalledTimes(0)
+		expect(installDriverSpy).toHaveBeenCalledTimes(0)
+	})
+
+	it('assigns when channel specified', async () => {
+		mockProjectDirectoryProcessing()
+
+		await expect(PackageCommand.run(['--channel', 'channel id arg'])).resolves.not.toThrow()
+
+		expectProjectDirectoryProcessing()
+		expect(generateAsyncMock).toHaveBeenCalledTimes(1)
+		expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array', compression: 'DEFLATE' })
+		expect(outputItemMock).toHaveBeenCalledTimes(1)
+		expect(outputItemMock)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
+		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
+		expect(chooseChannelSpy)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', 'channel id arg')
+		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
+		expect(assignDriverSpy)
+			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
+		expect(uploadSpy).toHaveBeenCalledTimes(1)
+		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
+		expect(chooseHubSpy).toHaveBeenCalledTimes(0)
+		expect(installDriverSpy).toHaveBeenCalledTimes(0)
+	})
+
+	it('installs when --install specified', async () => {
+		mockProjectDirectoryProcessing()
+
+		await expect(PackageCommand.run(['--install'])).resolves.not.toThrow()
+
+		expectProjectDirectoryProcessing()
+		expect(generateAsyncMock).toHaveBeenCalledTimes(1)
+		expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array', compression: 'DEFLATE' })
+		expect(outputItemMock).toHaveBeenCalledTimes(1)
+		expect(outputItemMock)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
+		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
+		expect(chooseChannelSpy)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
+		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
+		expect(assignDriverSpy)
+			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
+		expect(uploadSpy).toHaveBeenCalledTimes(1)
+		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
+		expect(chooseHubSpy).toHaveBeenCalledTimes(1)
+		expect(chooseHubSpy)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a hub to install to.', undefined)
+		expect(installDriverSpy).toHaveBeenCalledTimes(1)
+		expect(installDriverSpy).toHaveBeenCalledWith('driver id', 'hub id', 'channel id')
+	})
+
+	it('installs when hub specified', async () => {
+		mockProjectDirectoryProcessing()
+
+		await expect(PackageCommand.run(['--hub', 'hub id arg'])).resolves.not.toThrow()
+
+		expectProjectDirectoryProcessing()
+		expect(generateAsyncMock).toHaveBeenCalledTimes(1)
+		expect(generateAsyncMock).toHaveBeenCalledWith({ type: 'uint8array', compression: 'DEFLATE' })
+		expect(outputItemMock).toHaveBeenCalledTimes(1)
+		expect(outputItemMock)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
+		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
+		expect(chooseChannelSpy)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
+		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
+		expect(assignDriverSpy)
+			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
+		expect(uploadSpy).toHaveBeenCalledTimes(1)
+		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
+		expect(chooseHubSpy).toHaveBeenCalledTimes(1)
+		expect(chooseHubSpy)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a hub to install to.', 'hub id arg')
+		expect(installDriverSpy).toHaveBeenCalledTimes(1)
+		expect(installDriverSpy).toHaveBeenCalledWith('driver id', 'hub id', 'channel id')
 	})
 })
