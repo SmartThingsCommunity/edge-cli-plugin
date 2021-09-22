@@ -44,8 +44,7 @@ export class HubsEndpoint extends Endpoint {
 	}
 
 	public async getInstalled(hubId: string, driverId: string): Promise<InstalledDriver> {
-		const opts = { headerOverrides: { Accept: 'application/vnd.smartthings;v=20190819' } }
-		return this.client.get(`${hubId}}/drivers/${driverId}`, undefined, opts)
+		return this.client.get(`${hubId}/drivers/${driverId}`)
 	}
 
 	public async enrolledChannels(hubId: string): Promise<EnrolledChannel[]> {
