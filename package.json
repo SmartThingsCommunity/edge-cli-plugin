@@ -9,14 +9,14 @@
 		"type": "git",
 		"url": "https://github.com/SmartThingsCommunity/edge-cli-plugin"
 	},
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
 	"license": "Apache-2.0",
 	"engines": {
 		"node": ">=12.0.0"
 	},
 	"files": [
-		"dist/**/*",
+		"lib/**/*",
 		"/oclif.manifest.json"
 	],
 	"publishConfig": {
@@ -26,7 +26,7 @@
 		"oclif-plugin"
 	],
 	"oclif": {
-		"commands": "./dist/commands",
+		"commands": "./lib/commands",
 		"bin": "smartthings",
 		"devPlugins": [
 			"@oclif/plugin-help"
@@ -79,13 +79,13 @@
 		"test": "jest",
 		"test-coverage": "jest --coverage",
 		"test-watch": "jest --watch",
-		"clean": "rm -rf dist && rm -f tsconfig.tsbuildinfo",
+		"clean": "rm -rf lib && rm -f tsconfig.tsbuildinfo",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"readme": "oclif-dev readme",
 		"build": "npm run clean && npm run compile && npm run readme",
 		"postpack": "rm -f oclif.manifest.json",
-		"prepack": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme",
+		"prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
 		"prepare": "npm run build",
 		"prepublishOnly": "npm test && npm run lint",
 		"preversion": "npm run lint",

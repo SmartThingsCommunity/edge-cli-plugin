@@ -52,7 +52,7 @@ typings/
 .node_repl_history
 
 # compile dir
-dist
+lib
 
 # Output of 'npm pack'
 *.tgz
