@@ -9,7 +9,7 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"declarationMap": true,
-		"outDir": "./dist",
+		"outDir": "lib",
 	},
 	"include": [
 		"src/**/**.ts",
