@@ -1,5 +1,5 @@
 import { EdgeCommand } from '../../../lib/edge-command'
-import { chooseDriver } from '../drivers'
+import { chooseDriver } from '../../../lib/commands/drivers-util'
 
 
 export default class DriversDeleteCommand extends EdgeCommand {

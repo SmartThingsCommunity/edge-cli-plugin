@@ -6,7 +6,7 @@ import { CommonOutputProducer, GetDataFunction, outputItem, SmartThingsCommandIn
 
 import PackageCommand from '../../../../../src/commands/edge/drivers/package'
 import * as channels from '../../../../../src/commands/edge/channels'
-import * as hubs from '../../../../../src/commands/edge/drivers/install'
+import * as driversUtil from '../../../../../src/lib/commands/drivers-util'
 import * as packageUtil from '../../../../../src/lib/commands/drivers/package-util'
 import { ChannelsEndpoint, DriverChannelDetails } from '../../../../../src/lib/endpoints/channels'
 import { DriversEndpoint, EdgeDriver } from '../../../../../src/lib/endpoints/drivers'
@@ -25,7 +25,7 @@ jest.mock('@smartthings/cli-lib', () => {
 	}
 })
 
-describe('package', () => {
+describe('PackageCommand', () => {
 	const zipContents = {} as Uint8Array
 	const jsZipMock = JSZip as unknown as jest.Mock<JSZip, []>
 	const pipeMock = jest.fn()
@@ -59,7 +59,7 @@ describe('package', () => {
 	const assignDriverSpy = jest.spyOn(ChannelsEndpoint.prototype, 'assignDriver')
 		.mockResolvedValue({} as DriverChannelDetails)
 
-	const chooseHubSpy = jest.spyOn(hubs, 'chooseHub').mockResolvedValue('hub id')
+	const chooseHubSpy = jest.spyOn(driversUtil, 'chooseHub').mockResolvedValue('hub id')
 	const installDriverSpy = jest.spyOn(HubsEndpoint.prototype, 'installDriver').mockResolvedValue()
 
 	const logSpy = jest.spyOn(PackageCommand.prototype, 'log').mockImplementation()

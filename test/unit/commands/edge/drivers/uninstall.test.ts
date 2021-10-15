@@ -24,7 +24,7 @@ jest.mock('@smartthings/cli-lib', () => {
 	}
 })
 
-jest.mock('../../../../../src/commands/edge/drivers/install', () => ({
+jest.mock('../../../../../src/lib/commands/drivers-util', () => ({
 	chooseHub: jest.fn().mockResolvedValue(uuid()),
 }))
 

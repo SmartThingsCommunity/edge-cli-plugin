@@ -1,7 +1,7 @@
 import { outputList } from '@smartthings/cli-lib'
 
+import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
-import { chooseHub } from '../drivers/install'
 
 
 export default class ChannelsEnrollmentsCommand extends EdgeCommand {

@@ -1,8 +1,8 @@
 import { flags } from '@oclif/command'
 
-import { chooseHub } from './install'
 import { EdgeCommand } from '../../../lib/edge-command'
 import { selectFromList, stringTranslateToId } from '@smartthings/cli-lib'
+import { chooseHub } from '../../../lib/commands/drivers-util'
 import { InstalledDriver } from '../../../lib/endpoints/hubs'
 
 
