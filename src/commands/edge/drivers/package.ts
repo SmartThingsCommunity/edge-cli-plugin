@@ -7,9 +7,9 @@ import { outputItem } from '@smartthings/cli-lib'
 
 import { buildTestFileMatchers, processConfigFile, processFingerprintsFile, processProfiles,
 	processSrcDir, resolveProjectDirName } from '../../../lib/commands/drivers/package-util'
+import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 import { chooseChannel } from '../channels'
-import { chooseHub } from './install'
 
 
 export default class PackageCommand extends EdgeCommand {

@@ -1,4 +1,5 @@
 import { outputList } from '@smartthings/cli-lib'
+import { listAssignedDriversWithNames } from '../../../lib/commands/drivers-util'
 
 import { EdgeCommand } from '../../../lib/edge-command'
 import { chooseChannel } from '../channels'
@@ -26,12 +27,12 @@ export default class ChannelsDriversCommand extends EdgeCommand {
 		const config = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'version',
-			listTableFieldDefinitions: ['channelId', 'driverId', 'version', 'createdDate', 'lastModifiedDate'],
+			listTableFieldDefinitions: ['name', 'driverId', 'version', 'createdDate', 'lastModifiedDate'],
 		}
 
 		const channelId = await chooseChannel(this, 'Select a channel.', args.idOrIndex,
 			{ allowIndex: true, includeReadOnly: true })
 
-		await outputList(this, config, () => this.edgeClient.channels.listAssignedDrivers(channelId))
+		await outputList(this, config, () => listAssignedDriversWithNames(this.edgeClient, channelId))
 	}
 }
