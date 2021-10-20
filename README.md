@@ -54,17 +54,19 @@ ARGUMENTS
   IDORINDEX  the channel id or number in list
 
 OPTIONS
-  -I, --include-read-only  include subscribed-to channels as well as owned channels
-  -h, --help               show CLI help
-  -j, --json               use JSON format of input and/or output
-  -o, --output=output      specify output file
-  -p, --profile=profile    [default: default] configuration profile
-  -t, --token=token        the auth token to use
-  -y, --yaml               use YAML format of input and/or output
-  --compact                use compact table format with no lines between body rows
-  --expanded               use expanded table format with a line between each body row
-  --indent=indent          specify indentation for formatting JSON or YAML output
-  --language=language      ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -A, --all-organizations          include entities from all organizations the user belongs to
+  -I, --include-read-only          include subscribed-to channels as well as owned channels
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 EXAMPLE
   # list all user-owned channels
@@ -77,7 +79,7 @@ EXAMPLE
   $ smartthings edge:channels 2
 ```
 
-_See code: [src/commands/edge/channels.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels.ts)_
+_See code: [src/commands/edge/channels.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels.ts)_
 
 ## `smartthings edge:channels:assign [DRIVERID] [VERSION]`
 
@@ -92,17 +94,18 @@ ARGUMENTS
   VERSION   driver version
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:drivers:publish
 ```
 
-_See code: [src/commands/edge/channels/assign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/assign.ts)_
+_See code: [src/commands/edge/channels/assign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/assign.ts)_
 
 ## `smartthings edge:channels:create`
 
@@ -113,21 +116,22 @@ USAGE
   $ smartthings edge:channels:create
 
 OPTIONS
-  -d, --dry-run          produce JSON but don't actually submit
-  -h, --help             show CLI help
-  -i, --input=input      specify input file
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -d, --dry-run                    produce JSON but don't actually submit
+  -h, --help                       show CLI help
+  -i, --input=input                specify input file
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/channels/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/create.ts)_
+_See code: [src/commands/edge/channels/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/create.ts)_
 
 ## `smartthings edge:channels:delete [ID]`
 
@@ -141,13 +145,14 @@ ARGUMENTS
   ID  channel id
 
 OPTIONS
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/channels/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/delete.ts)_
+_See code: [src/commands/edge/channels/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/delete.ts)_
 
 ## `smartthings edge:channels:drivers [IDORINDEX]`
 
@@ -161,22 +166,23 @@ ARGUMENTS
   IDORINDEX  the channel id or number in list
 
 OPTIONS
-  -h, --help             show CLI help
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:channels:assignments
 ```
 
-_See code: [src/commands/edge/channels/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/drivers.ts)_
+_See code: [src/commands/edge/channels/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/drivers.ts)_
 
 ## `smartthings edge:channels:enroll [HUBID]`
 
@@ -190,14 +196,15 @@ ARGUMENTS
   HUBID  hub id
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/channels/enroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/enroll.ts)_
+_See code: [src/commands/edge/channels/enroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/enroll.ts)_
 
 ## `smartthings edge:channels:enrollments [IDORINDEX]`
 
@@ -211,19 +218,20 @@ ARGUMENTS
   IDORINDEX  the hub id or number in list
 
 OPTIONS
-  -h, --help             show CLI help
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/channels/enrollments.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/enrollments.ts)_
+_See code: [src/commands/edge/channels/enrollments.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/enrollments.ts)_
 
 ## `smartthings edge:channels:invites [IDORINDEX]`
 
@@ -237,17 +245,18 @@ ARGUMENTS
   IDORINDEX  the invitation id or number in list
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -h, --help             show CLI help
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:channels:invitations
@@ -260,7 +269,7 @@ EXAMPLES
   smartthings edge:channels:invites <invite id>      # list details about the invite with id <invite id>
 ```
 
-_See code: [src/commands/edge/channels/invites.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/invites.ts)_
+_See code: [src/commands/edge/channels/invites.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/invites.ts)_
 
 ## `smartthings edge:channels:invites:accept ID`
 
@@ -274,16 +283,17 @@ ARGUMENTS
   ID  invite UUID
 
 OPTIONS
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:channels:invitations:accept
 ```
 
-_See code: [src/commands/edge/channels/invites/accept.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/invites/accept.ts)_
+_See code: [src/commands/edge/channels/invites/accept.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/invites/accept.ts)_
 
 ## `smartthings edge:channels:invites:create`
 
@@ -294,25 +304,26 @@ USAGE
   $ smartthings edge:channels:invites:create
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -d, --dry-run          produce JSON but don't actually submit
-  -h, --help             show CLI help
-  -i, --input=input      specify input file
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -d, --dry-run                    produce JSON but don't actually submit
+  -h, --help                       show CLI help
+  -i, --input=input                specify input file
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:channels:invitations:create
 ```
 
-_See code: [src/commands/edge/channels/invites/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/invites/create.ts)_
+_See code: [src/commands/edge/channels/invites/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/invites/create.ts)_
 
 ## `smartthings edge:channels:invites:delete [ID]`
 
@@ -326,11 +337,12 @@ ARGUMENTS
   ID  invitation UUID
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:channels:invitations:revoke
@@ -338,7 +350,7 @@ ALIASES
   $ smartthings edge:channels:invites:revoke
 ```
 
-_See code: [src/commands/edge/channels/invites/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/invites/delete.ts)_
+_See code: [src/commands/edge/channels/invites/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/invites/delete.ts)_
 
 ## `smartthings edge:channels:unassign [DRIVERID]`
 
@@ -352,17 +364,18 @@ ARGUMENTS
   DRIVERID  driver id
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
   $ smartthings edge:drivers:unpublish
 ```
 
-_See code: [src/commands/edge/channels/unassign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/unassign.ts)_
+_See code: [src/commands/edge/channels/unassign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/unassign.ts)_
 
 ## `smartthings edge:channels:unenroll [HUBID]`
 
@@ -376,14 +389,15 @@ ARGUMENTS
   HUBID  hub id
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/channels/unenroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/unenroll.ts)_
+_See code: [src/commands/edge/channels/unenroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/unenroll.ts)_
 
 ## `smartthings edge:channels:update [ID]`
 
@@ -397,21 +411,22 @@ ARGUMENTS
   ID  the channel id
 
 OPTIONS
-  -d, --dry-run          produce JSON but don't actually submit
-  -h, --help             show CLI help
-  -i, --input=input      specify input file
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -d, --dry-run                    produce JSON but don't actually submit
+  -h, --help                       show CLI help
+  -i, --input=input                specify input file
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/channels/update.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/channels/update.ts)_
+_See code: [src/commands/edge/channels/update.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/channels/update.ts)_
 
 ## `smartthings edge:drivers [IDORINDEX]`
 
@@ -425,19 +440,21 @@ ARGUMENTS
   IDORINDEX  the driver id or number in list
 
 OPTIONS
-  -h, --help             show CLI help
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -A, --all-organizations          include entities from all organizations the user belongs to
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers.ts)_
+_See code: [src/commands/edge/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers.ts)_
 
 ## `smartthings edge:drivers:delete [ID]`
 
@@ -451,13 +468,14 @@ ARGUMENTS
   ID  driver UUID
 
 OPTIONS
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/drivers/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers/delete.ts)_
+_See code: [src/commands/edge/drivers/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers/delete.ts)_
 
 ## `smartthings edge:drivers:install [DRIVERID]`
 
@@ -471,12 +489,13 @@ ARGUMENTS
   DRIVERID  id of driver to install
 
 OPTIONS
-  -C, --channel=channel  channel id
-  -H, --hub=hub          hub id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -C, --channel=channel            channel id
+  -H, --hub=hub                    hub id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 EXAMPLES
   smartthings edge:drivers:install                                         # use Q&A format to enter required values
@@ -486,7 +505,7 @@ EXAMPLES
   enrolled hub
 ```
 
-_See code: [src/commands/edge/drivers/install.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers/install.ts)_
+_See code: [src/commands/edge/drivers/install.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers/install.ts)_
 
 ## `smartthings edge:drivers:installed [IDORINDEX]`
 
@@ -500,20 +519,21 @@ ARGUMENTS
   IDORINDEX  the driver id or number in list
 
 OPTIONS
-  -H, --hub=hub          hub id
-  -h, --help             show CLI help
-  -j, --json             use JSON format of input and/or output
-  -o, --output=output    specify output file
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  -y, --yaml             use YAML format of input and/or output
-  --compact              use compact table format with no lines between body rows
-  --expanded             use expanded table format with a line between each body row
-  --indent=indent        specify indentation for formatting JSON or YAML output
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -H, --hub=hub                    hub id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --compact                        use compact table format with no lines between body rows
+  --expanded                       use expanded table format with a line between each body row
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/drivers/installed.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers/installed.ts)_
+_See code: [src/commands/edge/drivers/installed.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers/installed.ts)_
 
 ## `smartthings edge:drivers:logcat [DRIVERID]`
 
@@ -535,7 +555,7 @@ OPTIONS
   --language=language        ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/drivers/logcat.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers/logcat.ts)_
+_See code: [src/commands/edge/drivers/logcat.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers/logcat.ts)_
 
 ## `smartthings edge:drivers:package [PROJECTDIRECTORY]`
 
@@ -549,39 +569,41 @@ ARGUMENTS
   PROJECTDIRECTORY  [default: .] directory containing project to upload
 
 OPTIONS
-  -I, --install                prompt for hub to install to after assigning it to the channel, implies --assign if
-                               --assign or --channel not included
+  -I, --install                    prompt for hub to install to after assigning it to the channel, implies --assign if
+                                   --assign or --channel not included
 
-  -a, --assign                 prompt for a channel to assign the driver to after upload
+  -O, --organization=organization  The organization ID to use for this command
 
-  -b, --build-only=build-only  save package to specified zip file but skip upload
+  -a, --assign                     prompt for a channel to assign the driver to after upload
 
-  -h, --help                   show CLI help
+  -b, --build-only=build-only      save package to specified zip file but skip upload
 
-  -j, --json                   use JSON format of input and/or output
+  -h, --help                       show CLI help
 
-  -o, --output=output          specify output file
+  -j, --json                       use JSON format of input and/or output
 
-  -p, --profile=profile        [default: default] configuration profile
+  -o, --output=output              specify output file
 
-  -t, --token=token            the auth token to use
+  -p, --profile=profile            [default: default] configuration profile
 
-  -u, --upload=upload          upload zip file previously built with --build flag
+  -t, --token=token                the auth token to use
 
-  -y, --yaml                   use YAML format of input and/or output
+  -u, --upload=upload              upload zip file previously built with --build flag
 
-  --channel=channel            automatically assign driver to specified channel after upload
+  -y, --yaml                       use YAML format of input and/or output
 
-  --compact                    use compact table format with no lines between body rows
+  --channel=channel                automatically assign driver to specified channel after upload
 
-  --expanded                   use expanded table format with a line between each body row
+  --compact                        use compact table format with no lines between body rows
 
-  --hub=hub                    automatically install driver to specified hub, implies --assign if --assign or --channel
-                               not included
+  --expanded                       use expanded table format with a line between each body row
 
-  --indent=indent              specify indentation for formatting JSON or YAML output
+  --hub=hub                        automatically install driver to specified hub, implies --assign if --assign or
+                                   --channel not included
 
-  --language=language          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  --indent=indent                  specify indentation for formatting JSON or YAML output
+
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 EXAMPLE
   # build and upload driver found in current directory:
@@ -605,7 +627,7 @@ EXAMPLE
   $ smartthings edge:drivers:package -u driver.zip
 ```
 
-_See code: [src/commands/edge/drivers/package.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers/package.ts)_
+_See code: [src/commands/edge/drivers/package.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers/package.ts)_
 
 ## `smartthings edge:drivers:uninstall [DRIVERID]`
 
@@ -619,14 +641,15 @@ ARGUMENTS
   DRIVERID  id of driver to uninstall
 
 OPTIONS
-  -H, --hub=hub          hub id
-  -h, --help             show CLI help
-  -p, --profile=profile  [default: default] configuration profile
-  -t, --token=token      the auth token to use
-  --language=language    ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -H, --hub=hub                    hub id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       show CLI help
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
-_See code: [src/commands/edge/drivers/uninstall.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.5.0/src/commands/edge/drivers/uninstall.ts)_
+_See code: [src/commands/edge/drivers/uninstall.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.6.0/src/commands/edge/drivers/uninstall.ts)_
 <!-- commandsstop -->
 
 # Building

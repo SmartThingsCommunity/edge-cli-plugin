@@ -1,12 +1,15 @@
 import { BearerTokenAuthenticator } from '@smartthings/core-sdk'
 
-import { APICommand, LoginAuthenticator, logManager } from '@smartthings/cli-lib'
+import { APIOrganizationCommand, LoginAuthenticator, logManager } from '@smartthings/cli-lib'
 
 import { EdgeClient } from './edge-client'
 
 
-export abstract class EdgeCommand extends APICommand {
-	static flags = APICommand.flags
+const ORGANIZATION_HEADER = 'X-ST-Organization'
+
+export abstract class EdgeCommand extends APIOrganizationCommand {
+
+	static flags = APIOrganizationCommand.flags
 
 	private _edgeClient?: EdgeClient
 
@@ -28,9 +31,18 @@ export abstract class EdgeCommand extends APICommand {
 			? new BearerTokenAuthenticator(this.token)
 			: new LoginAuthenticator(this.profileName, this.clientIdProvider)
 
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const headers: { [name: string]: any } = {}
+
+		if (flags.organization) {
+			headers[ORGANIZATION_HEADER] = flags.organization
+		} else if ('organization' in this.profileConfig) {
+			headers[ORGANIZATION_HEADER] = this.profileConfig.organization
+		}
+
 		const logger = logManager.getLogger('rest-client')
 		this._edgeClient = new EdgeClient(authenticator,
-			{ urlProvider: this.clientIdProvider, logger })
+			{ urlProvider: this.clientIdProvider, logger, headers })
 
 		this.defaultChannelId = this.stringConfigValue('defaultChannel')
 		this.defaultHubId = this.stringConfigValue('defaultHub')

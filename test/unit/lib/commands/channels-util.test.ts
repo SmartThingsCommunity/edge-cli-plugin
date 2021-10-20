@@ -1,9 +1,18 @@
 import { Device } from '@smartthings/core-sdk'
 
-import { ChooseOptions, chooseOptionsWithDefaults, ListDataFunction, Naming, selectFromList, SelectingConfig, SmartThingsCommandInterface,
-	Sorting, stringTranslateToId } from '@smartthings/cli-lib'
+import {
+	ChooseOptions,
+	chooseOptionsWithDefaults,
+	ListDataFunction,
+	Naming,
+	selectFromList,
+	SelectingConfig,
+	SmartThingsCommandInterface,
+	Sorting,
+	stringTranslateToId,
+} from '@smartthings/cli-lib'
 
-import { chooseChannel, ChooseChannelOptions, chooseChannelOptionsWithDefaults }
+import { chooseChannel, listChannels, ChooseChannelOptions, chooseChannelOptionsWithDefaults }
 	from '../../../../src/lib/commands/channels-util'
 import * as channelsUtil from '../../../../src/lib/commands/channels-util'
 import { EdgeCommand } from '../../../../src/lib/edge-command'
@@ -11,6 +20,7 @@ import { Channel } from '../../../../src/lib/endpoints/channels'
 
 
 jest.mock('@smartthings/cli-lib', () => ({
+	...jest.requireActual('@smartthings/cli-lib'),
 	chooseOptionsWithDefaults: jest.fn(),
 	stringTranslateToId: jest.fn(),
 	selectFromList: jest.fn(),
@@ -18,10 +28,6 @@ jest.mock('@smartthings/cli-lib', () => ({
 
 
 describe('channels-util', () => {
-	const selectFromListMock = selectFromList as unknown as
-		jest.Mock<Promise<string>, [SmartThingsCommandInterface, SelectingConfig<Device>, string,
-			ListDataFunction<Device>, string, boolean]>
-
 	afterEach(() => {
 		jest.clearAllMocks()
 	})
@@ -52,9 +58,14 @@ describe('channels-util', () => {
 	})
 
 	describe('chooseChannel', () => {
+		const selectFromListMock = selectFromList as unknown as
+			jest.Mock<Promise<string>, [SmartThingsCommandInterface, SelectingConfig<Device>, string,
+				ListDataFunction<Device>, string, boolean]>
+
 		const listChannelsMock = jest.fn()
 		const edgeClient = { channels: { list: listChannelsMock } }
-		const command = { edgeClient } as unknown as EdgeCommand
+		const flags = {'all-organizations': false, 'include-read-only': false}
+		const command = { edgeClient, flags } as unknown as EdgeCommand
 
 		const chooseChannelOptionsWithDefaultsSpy = jest.spyOn(channelsUtil, 'chooseChannelOptionsWithDefaults')
 		const stringTranslateToIdMock = stringTranslateToId as unknown as
@@ -167,6 +178,75 @@ describe('channels-util', () => {
 
 			expect(listChannelsMock).toHaveBeenCalledTimes(1)
 			expect(listChannelsMock).toHaveBeenCalledWith({ includeReadOnly: true })
+		})
+	})
+
+	describe('listChannels', () => {
+		const apiListChannelsMock = jest.fn()
+		const apiListOrganizationsMock = jest.fn()
+		const client = {
+			organizations: {
+				list: apiListOrganizationsMock,
+			},
+		}
+
+		const edgeClient = {
+			channels: {
+				list: apiListChannelsMock,
+			},
+			cloneEdge: () => ({
+				channels: {
+					list: apiListChannelsMock,
+				},
+			}),
+		}
+
+		const result = [
+			{
+				'channelId': 'channel-id',
+				'name': 'Channel Name',
+			},
+		]
+		apiListChannelsMock.mockResolvedValue(result)
+		apiListOrganizationsMock.mockResolvedValue([
+			{organizationId: 'org1', name: 'Organization One'},
+			{organizationId: 'org2', name: 'Organization Two'},
+		])
+
+		it('lists channels', async () => {
+			const flags = {'all-organizations': false, 'include-read-only': false}
+			const command = { edgeClient, flags } as unknown as EdgeCommand
+
+			expect(await listChannels(command)).toBe(result)
+
+			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(0)
+			expect(apiListChannelsMock).toHaveBeenCalledTimes(1)
+			expect(apiListChannelsMock).toHaveBeenCalledWith({includeReadOnly: false})
+		})
+
+		it('lists channels including read-only', async () => {
+			const flags = {'all-organizations': false, 'include-read-only': true}
+			const command = { edgeClient, flags } as unknown as EdgeCommand
+
+			expect(await listChannels(command)).toBe(result)
+
+			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(0)
+			expect(apiListChannelsMock).toHaveBeenCalledTimes(1)
+			expect(apiListChannelsMock).toHaveBeenCalledWith({includeReadOnly: true})
+		})
+
+		it('lists channels in all organizations', async () => {
+			const flags = {'all-organizations': true, 'include-read-only': false}
+			const command = { client, edgeClient, flags } as unknown as EdgeCommand
+			const thisResult = [
+				{...result[0], organization: 'Organization One'},
+				{...result[0], organization: 'Organization Two'},
+			]
+
+			expect(await listChannels(command)).toStrictEqual(thisResult)
+
+			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(1)
+			expect(apiListChannelsMock).toHaveBeenCalledTimes(2)
 		})
 	})
 })
