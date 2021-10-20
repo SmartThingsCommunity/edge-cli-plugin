@@ -1,4 +1,4 @@
-import { outputListing } from '@smartthings/cli-lib'
+import {outputListing, forAllOrganizations, allOrganizationsFlags} from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../lib/edge-command'
 
@@ -9,6 +9,7 @@ export default class DriversCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputListing.flags,
+		...allOrganizationsFlags,
 	}
 
 	static args = [{
@@ -28,7 +29,16 @@ export default class DriversCommand extends EdgeCommand {
 		}
 
 		await outputListing(this, config, args.idOrIndex,
-			() => this.edgeClient.drivers.list(),
+			() => {
+				if (flags['all-organizations']) {
+					config.listTableFieldDefinitions.push('organization')
+					return forAllOrganizations(this.client, (org) => {
+						const orgClient = this.edgeClient.cloneEdge({'X-ST-Organization': org.organizationId})
+						return orgClient.drivers.list()
+					})
+				}
+				return this.edgeClient.drivers.list()
+			},
 			id => this.edgeClient.drivers.get(id))
 	}
 }
