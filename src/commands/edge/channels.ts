@@ -1,14 +1,13 @@
 import { flags } from '@oclif/command'
-
-import { outputListing } from '@smartthings/cli-lib'
-
+import { outputListing, allOrganizationsFlags } from '@smartthings/cli-lib'
 import { EdgeCommand } from '../../lib/edge-command'
+import { listChannels} from '../../lib/commands/channels-util'
 
 
 export const listTableFieldDefinitions = ['channelId', 'name', 'description', 'termsOfServiceUrl',
 	'createdDate', 'lastModifiedDate']
-export const tableFieldDefinitions = listTableFieldDefinitions
 
+export const tableFieldDefinitions = listTableFieldDefinitions
 
 export default class ChannelsCommand extends EdgeCommand {
 	static description = 'list all channels owned by you or retrieve a single channel'
@@ -16,6 +15,7 @@ export default class ChannelsCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputListing.flags,
+		...allOrganizationsFlags,
 		'include-read-only': flags.boolean({
 			char: 'I',
 			description: 'include subscribed-to channels as well as owned channels',
@@ -48,7 +48,12 @@ $ smartthings edge:channels 2`]
 		}
 
 		await outputListing(this, config, args.idOrIndex,
-			() => this.edgeClient.channels.list({ includeReadOnly: flags['include-read-only'] }),
+			async () => {
+				if (flags['all-organizations']) {
+					config.listTableFieldDefinitions.push('organization')
+				}
+				return listChannels(this)
+			},
 			id => this.edgeClient.channels.get(id))
 	}
 }
