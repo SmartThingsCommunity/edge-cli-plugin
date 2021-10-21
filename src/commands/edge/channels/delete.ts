@@ -1,5 +1,5 @@
+import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
-import { chooseChannel } from '../channels'
 
 
 export default class ChannelsDeleteCommand extends EdgeCommand {

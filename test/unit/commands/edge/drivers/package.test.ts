@@ -5,11 +5,12 @@ import JSZip from 'jszip'
 import { CommonOutputProducer, GetDataFunction, outputItem, SmartThingsCommandInterface } from '@smartthings/cli-lib'
 
 import PackageCommand from '../../../../../src/commands/edge/drivers/package'
-import * as channels from '../../../../../src/commands/edge/channels'
+import { chooseChannel, ChooseChannelOptions } from '../../../../../src/lib/commands/channels-util'
 import * as driversUtil from '../../../../../src/lib/commands/drivers-util'
 import * as packageUtil from '../../../../../src/lib/commands/drivers/package-util'
 import { ChannelsEndpoint, DriverChannelDetails } from '../../../../../src/lib/endpoints/channels'
 import { DriversEndpoint, EdgeDriver } from '../../../../../src/lib/endpoints/drivers'
+import { EdgeCommand } from '../../../../../src/lib/edge-command'
 import { HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
 
 
@@ -24,6 +25,7 @@ jest.mock('@smartthings/cli-lib', () => {
 		outputItem: jest.fn(),
 	}
 })
+jest.mock('../../../../../src/lib/commands/channels-util')
 
 describe('PackageCommand', () => {
 	const zipContents = {} as Uint8Array
@@ -55,7 +57,10 @@ describe('PackageCommand', () => {
 	})
 	const uploadSpy = jest.spyOn(DriversEndpoint.prototype, 'upload').mockResolvedValue(driver)
 
-	const chooseChannelSpy = jest.spyOn(channels, 'chooseChannel').mockResolvedValue('channel id')
+	const chooseChannelMock = (chooseChannel as
+		jest.Mock<Promise<string>, [EdgeCommand,
+			string, string | undefined, Partial<ChooseChannelOptions> | undefined]>)
+		.mockResolvedValue('channel id')
 	const assignDriverSpy = jest.spyOn(ChannelsEndpoint.prototype, 'assignDriver')
 		.mockResolvedValue({} as DriverChannelDetails)
 
@@ -137,7 +142,7 @@ describe('PackageCommand', () => {
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
 		expect(uploadSpy).toHaveBeenCalledTimes(1)
 		expect(uploadSpy).toHaveBeenCalledWith(archiveData)
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(0)
+		expect(chooseChannelMock).toHaveBeenCalledTimes(0)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(0)
 		expect(chooseHubSpy).toHaveBeenCalledTimes(0)
 		expect(installDriverSpy).toHaveBeenCalledTimes(0)
@@ -179,7 +184,7 @@ describe('PackageCommand', () => {
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
 		expect(uploadSpy).toHaveBeenCalledTimes(1)
 		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(0)
+		expect(chooseChannelMock).toHaveBeenCalledTimes(0)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(0)
 		expect(chooseHubSpy).toHaveBeenCalledTimes(0)
 		expect(installDriverSpy).toHaveBeenCalledTimes(0)
@@ -196,8 +201,8 @@ describe('PackageCommand', () => {
 		expect(outputItemMock).toHaveBeenCalledTimes(1)
 		expect(outputItemMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy)
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
@@ -219,8 +224,8 @@ describe('PackageCommand', () => {
 		expect(outputItemMock).toHaveBeenCalledTimes(1)
 		expect(outputItemMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy)
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', 'channel id arg')
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
@@ -242,8 +247,8 @@ describe('PackageCommand', () => {
 		expect(outputItemMock).toHaveBeenCalledTimes(1)
 		expect(outputItemMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy)
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
@@ -268,8 +273,8 @@ describe('PackageCommand', () => {
 		expect(outputItemMock).toHaveBeenCalledTimes(1)
 		expect(outputItemMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy)
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock)
 			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)

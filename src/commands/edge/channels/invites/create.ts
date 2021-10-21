@@ -2,9 +2,9 @@ import inquirer from 'inquirer'
 
 import { inputAndOutputItem, userInputProcessor } from '@smartthings/cli-lib'
 
+import { chooseChannel } from '../../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../../lib/edge-command'
 import { CreateInvitation, Invitation } from '../../../../lib/endpoints/invites'
-import { chooseChannel } from '../../channels'
 
 
 const tableFieldDefinitions = ['id', 'metadata.name', 'profileId', 'expiration', 'acceptUrl']

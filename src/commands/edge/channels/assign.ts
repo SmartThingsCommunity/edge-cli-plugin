@@ -1,8 +1,8 @@
 import { flags } from '@oclif/command'
 
+import { chooseChannel } from '../../../lib/commands/channels-util'
 import { chooseDriver } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
-import { chooseChannel } from '../channels'
 
 
 export class ChannelsAssignCommand extends EdgeCommand {
