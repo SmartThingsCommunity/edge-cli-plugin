@@ -1,8 +1,9 @@
 import { inputAndOutputItem } from '@smartthings/cli-lib'
 
-import { chooseChannel, tableFieldDefinitions } from '../channels'
+import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 import { Channel, ChannelUpdate } from '../../../lib/endpoints/channels'
+import { tableFieldDefinitions } from '../channels'
 
 
 export default class ChannelsUpdateCommand extends EdgeCommand {

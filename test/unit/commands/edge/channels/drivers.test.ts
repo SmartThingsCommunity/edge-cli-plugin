@@ -1,10 +1,11 @@
 import { CommonListOutputProducer, GetDataFunction, outputList, SmartThingsCommandInterface } from '@smartthings/cli-lib'
 
+import { chooseChannel, ChooseChannelOptions } from '../../../../../src/lib/commands/channels-util'
 import { DriverChannelDetailsWithName } from '../../../../../src/lib/commands/drivers-util'
 import * as driversUtil from '../../../../../src/lib/commands/drivers-util'
 import ChannelsDriversCommand from '../../../../../src/commands/edge/channels/drivers'
-import * as channels from '../../../../../src/commands/edge/channels'
 import { EdgeClient } from '../../../../../src/lib/edge-client'
+import { EdgeCommand } from '../../../../../src/lib/edge-command'
 
 
 jest.mock('@smartthings/cli-lib', () => {
@@ -15,15 +16,18 @@ jest.mock('@smartthings/cli-lib', () => {
 		outputList: jest.fn(),
 	}
 })
+jest.mock('../../../../../src/lib/commands/channels-util')
 
 describe('ChannelsDriversCommand', () => {
 	const outputListMock = outputList as unknown as
 		jest.Mock<Promise<DriverChannelDetailsWithName[]>, [SmartThingsCommandInterface,
 			CommonListOutputProducer<DriverChannelDetailsWithName>,
 			GetDataFunction<DriverChannelDetailsWithName>]>
-
-	const chooseChannelSpy = jest.spyOn(channels, 'chooseChannel')
+	const chooseChannelMock = (chooseChannel as
+			jest.Mock<Promise<string>, [EdgeCommand,
+				string, string | undefined, Partial<ChooseChannelOptions> | undefined]>)
 		.mockResolvedValue('chosen-channel-id')
+
 	const driverChannelDetailsList = [] as DriverChannelDetailsWithName[]
 	outputListMock.mockResolvedValue(driverChannelDetailsList)
 
@@ -34,8 +38,8 @@ describe('ChannelsDriversCommand', () => {
 	it('calls outputList to do the work', async () => {
 		await expect(ChannelsDriversCommand.run([])).resolves.not.toThrow()
 
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
 			'Select a channel.', undefined,
 			expect.objectContaining({ allowIndex: true, includeReadOnly: true }))
 		expect(outputListMock).toHaveBeenCalledTimes(1)
@@ -50,8 +54,8 @@ describe('ChannelsDriversCommand', () => {
 	it('passes predefined id or index to chooseChannel', async () => {
 		await expect(ChannelsDriversCommand.run(['id-or-index'])).resolves.not.toThrow()
 
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
 			'Select a channel.', 'id-or-index',
 			expect.objectContaining({ allowIndex: true, includeReadOnly: true }))
 		expect(outputListMock).toHaveBeenCalledTimes(1)
@@ -66,8 +70,8 @@ describe('ChannelsDriversCommand', () => {
 	it('passes predefined id or index to chooseChannel', async () => {
 		await expect(ChannelsDriversCommand.run([])).resolves.not.toThrow()
 
-		expect(chooseChannelSpy).toHaveBeenCalledTimes(1)
-		expect(chooseChannelSpy).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
+		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
+		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
 			'Select a channel.', undefined,
 			expect.objectContaining({ allowIndex: true, includeReadOnly: true }))
 		expect(outputListMock).toHaveBeenCalledTimes(1)

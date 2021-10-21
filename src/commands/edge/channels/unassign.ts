@@ -2,9 +2,9 @@ import { flags } from '@oclif/command'
 
 import { ChooseOptions, chooseOptionsWithDefaults, selectFromList, stringTranslateToId } from '@smartthings/cli-lib'
 
+import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 import { DriverChannelDetails } from '../../../lib/endpoints/channels'
-import { chooseChannel } from '../channels'
 
 
 export interface NamedDriverChannelDetails extends DriverChannelDetails {

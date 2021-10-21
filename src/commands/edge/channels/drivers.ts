@@ -1,8 +1,8 @@
 import { outputList } from '@smartthings/cli-lib'
 import { listAssignedDriversWithNames } from '../../../lib/commands/drivers-util'
 
+import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
-import { chooseChannel } from '../channels'
 
 
 export default class ChannelsDriversCommand extends EdgeCommand {

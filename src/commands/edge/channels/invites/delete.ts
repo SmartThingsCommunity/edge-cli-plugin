@@ -1,5 +1,6 @@
 import { flags } from '@oclif/command'
 
+import { chooseChannel } from '../../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../../lib/edge-command'
 import { chooseInvite } from '../invites'
 
@@ -30,7 +31,10 @@ export default class ChannelsInvitesDeleteCommand extends EdgeCommand {
 		const { args, argv, flags } = this.parse(ChannelsInvitesDeleteCommand)
 		await super.setup(args, argv, flags)
 
-		const id = await chooseInvite(this, 'Choose an invitation to delete.', flags.channel, args.id)
+		const channelId = await chooseChannel(this,
+			'Which channel is the invite you want to delete for?', flags.channel)
+
+		const id = await chooseInvite(this, 'Choose an invitation to delete.', channelId, args.id)
 		await this.edgeClient.invites.delete(id)
 		this.log(`Invitation ${id} deleted.`)
 	}
