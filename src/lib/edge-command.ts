@@ -17,6 +17,9 @@ export abstract class EdgeCommand extends APICommand {
 		throw new Error('EdgeCommand not initialized properly')
 	}
 
+	defaultChannelId?: string
+	defaultHubId?: string
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async setup(args: { [name: string]: any }, argv: string[], flags: { [name: string]: any }): Promise<void> {
 		await super.setup(args, argv, flags)
@@ -28,5 +31,8 @@ export abstract class EdgeCommand extends APICommand {
 		const logger = logManager.getLogger('rest-client')
 		this._edgeClient = new EdgeClient(authenticator,
 			{ urlProvider: this.clientIdProvider, logger })
+
+		this.defaultChannelId = this.stringConfigValue('defaultChannel')
+		this.defaultHubId = this.stringConfigValue('defaultHub')
 	}
 }

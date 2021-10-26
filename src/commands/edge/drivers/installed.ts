@@ -30,11 +30,14 @@ export default class DriversInstalledCommand extends EdgeCommand {
 		const config = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
-			tableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId', 'developer', 'vendorSummaryInformation'],
-			listTableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId', 'developer', 'vendorSummaryInformation'],
+			tableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId',
+				'developer', 'vendorSummaryInformation'],
+			listTableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId',
+				'developer', 'vendorSummaryInformation'],
 		}
 
-		const hubId = await chooseHub(this, 'Select a hub.', flags.hub, { allowIndex: true })
+		const hubId = await chooseHub(this, 'Select a hub.', flags.hub, this.defaultHubId,
+			{ allowIndex: true })
 
 		await outputListing(this, config, args.idOrIndex,
 			() => this.edgeClient.hubs.listInstalled(hubId),

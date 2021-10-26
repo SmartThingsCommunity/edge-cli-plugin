@@ -88,11 +88,13 @@ $ smartthings edge:drivers:package -u driver.zip`]
 			if (doAssign) {
 				const driverId = driver.driverId
 				const version = driver.version
-				const channelId = await chooseChannel(this, 'Select a channel for the driver.', flags.channel)
+				const channelId = await chooseChannel(this, 'Select a channel for the driver.',
+					flags.channel, this.defaultChannelId)
 				await this.edgeClient.channels.assignDriver(channelId, driverId, version)
 
 				if (doInstall) {
-					const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub)
+					const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,
+						this.defaultChannelId)
 					await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
 				}
 			}

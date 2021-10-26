@@ -1,3 +1,4 @@
+import { flags } from '@oclif/command'
 import inquirer from 'inquirer'
 
 import { inputAndOutputItem, userInputProcessor } from '@smartthings/cli-lib'
@@ -15,6 +16,11 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 	static description = 'create an invitation'
 
 	static flags = {
+		channel: flags.string({
+			char: 'C',
+			description: 'channel id',
+			exclusive: ['input'],
+		}),
 		...EdgeCommand.flags,
 		...inputAndOutputItem.flags,
 	}
@@ -35,7 +41,8 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 	}
 
 	async getInputFromUser(): Promise<CreateInvitation> {
-		const channelId = await chooseChannel(this, 'Choose a channel:', undefined, {})
+		const channelId = await chooseChannel(this, 'Choose a channel:', this.flags.channel,
+			this.defaultChannelId)
 
 		const name = (await inquirer.prompt({
 			type: 'input',
