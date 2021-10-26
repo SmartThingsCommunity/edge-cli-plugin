@@ -24,7 +24,8 @@ export async function chooseDriver(command: EdgeCommand, promptMessage: string, 
 	return selectFromList(command, config, preselectedId, listDrivers, promptMessage)
 }
 
-export const chooseHub = async (command: APICommand, promptMessage: string, commandLineHubId?: string,
+export const chooseHub = async (command: APICommand, promptMessage: string,
+		commandLineHubId: string | undefined, defaultHubId: string | undefined,
 		options?: Partial<ChooseOptions>): Promise<string> => {
 	const opts = chooseOptionsWithDefaults(options)
 	const config = {
@@ -35,9 +36,13 @@ export const chooseHub = async (command: APICommand, promptMessage: string, comm
 	}
 	const listDrivers = (): Promise<Device[]> => command.client.devices.list(
 		{ capability: 'bridge', type: DeviceIntegrationType.HUB })
-	const preselectedId = opts.allowIndex
-		? await stringTranslateToId(config, commandLineHubId, listDrivers)
-		: commandLineHubId
+
+	const preselectedId = commandLineHubId
+		? (opts.allowIndex
+			? await stringTranslateToId(config, commandLineHubId, listDrivers)
+			: commandLineHubId)
+		: defaultHubId
+
 	return selectFromList(command, config, preselectedId, listDrivers, promptMessage)
 }
 

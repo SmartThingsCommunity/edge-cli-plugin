@@ -60,11 +60,30 @@ describe('channels-util', () => {
 		const stringTranslateToIdMock = stringTranslateToId as unknown as
 			jest.Mock<Promise<string | undefined>, [Sorting & Naming, string | undefined, ListDataFunction<Channel>]>
 
-		it('presents user with list of channels', async () => {
-			chooseChannelOptionsWithDefaultsSpy.mockReturnValueOnce({ allowIndex: false } as ChooseChannelOptions)
+		it('uses default channel if specified', async () => {
+			chooseChannelOptionsWithDefaultsSpy.mockReturnValueOnce(
+				{ allowIndex: false } as ChooseChannelOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
-			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id')).toBe('chosen-channel-id')
+			expect(await chooseChannel(command, 'prompt message', undefined, 'default-channel-id'))
+				.toBe('chosen-channel-id')
+
+			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
+			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
+			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(0)
+			expect(selectFromListMock).toHaveBeenCalledTimes(1)
+			expect(selectFromListMock).toHaveBeenCalledWith(command,
+				expect.objectContaining({ primaryKeyName: 'channelId', sortKeyName: 'name' }),
+				'default-channel-id', expect.any(Function), 'prompt message')
+		})
+
+		it('prefers command line over default', async () => {
+			chooseChannelOptionsWithDefaultsSpy.mockReturnValueOnce(
+				{ allowIndex: false } as ChooseChannelOptions)
+			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
+
+			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
+				'default-channel-id')).toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
@@ -82,7 +101,7 @@ describe('channels-util', () => {
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
 			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
-				{ allowIndex: true })).toBe('chosen-channel-id')
+				'default-channel-id', { allowIndex: true })).toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith({ allowIndex: true })
@@ -101,8 +120,8 @@ describe('channels-util', () => {
 				{ allowIndex: false, includeReadOnly: false } as ChooseChannelOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
-			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id'))
-				.toBe('chosen-channel-id')
+			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
+				'default-channel-id')).toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
@@ -128,8 +147,8 @@ describe('channels-util', () => {
 				{ allowIndex: false, includeReadOnly: true } as ChooseChannelOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
-			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id'))
-				.toBe('chosen-channel-id')
+			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
+				'default-channel-id')) .toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)

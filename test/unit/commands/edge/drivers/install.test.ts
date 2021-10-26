@@ -47,7 +47,7 @@ describe('DriversInstallCommand', () => {
 
 		expect(chooseHubMock).toHaveBeenCalledTimes(1)
 		expect(chooseHubMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
-			'Select a hub to install to.', undefined)
+			'Select a hub to install to.', undefined, undefined)
 		expect(selectFromListMock).toHaveBeenCalledTimes(1)
 		expect(selectFromListMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
 			expect.objectContaining({ primaryKeyName: 'channelId' }), undefined,
@@ -76,7 +76,7 @@ describe('DriversInstallCommand', () => {
 
 		expect(chooseHubMock).toHaveBeenCalledTimes(1)
 		expect(chooseHubMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
-			'Select a hub to install to.', 'command-line-hub-id')
+			'Select a hub to install to.', 'command-line-hub-id', undefined)
 	})
 
 	it('uses channel from command line if specified', async () => {

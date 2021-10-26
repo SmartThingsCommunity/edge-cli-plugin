@@ -109,11 +109,28 @@ describe('drivers-util', () => {
 		const stringTranslateToIdMock = stringTranslateToId as unknown as
 			jest.Mock<Promise<string | undefined>, [Sorting & Naming, string | undefined, ListDataFunction<Device>]>
 
-		it('presents user with list of hubs', async () => {
+		it('uses default hub if specified', async () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
-			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id')).toBe('chosen-hub-id')
+			expect(await chooseHub(command, 'prompt message', undefined,
+				'default-hub-id')).toBe('chosen-hub-id')
+
+			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
+			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith(undefined)
+			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(0)
+			expect(selectFromListMock).toHaveBeenCalledTimes(1)
+			expect(selectFromListMock).toHaveBeenCalledWith(command,
+				expect.objectContaining({ primaryKeyName: 'deviceId', sortKeyName: 'name' }),
+				'default-hub-id', expect.any(Function), 'prompt message')
+		})
+
+		it('prefers command line over default', async () => {
+			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
+			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
+
+			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
+				'default-hub-id')).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith(undefined)
@@ -130,7 +147,7 @@ describe('drivers-util', () => {
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
 			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				{ allowIndex: true })).toBe('chosen-hub-id')
+				'default-hub-id', { allowIndex: true })).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith({ allowIndex: true })
@@ -148,8 +165,8 @@ describe('drivers-util', () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
-			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id'))
-				.toBe('chosen-hub-id')
+			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
+				'default-hub-id')).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith(undefined)

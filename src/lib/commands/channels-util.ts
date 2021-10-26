@@ -14,7 +14,8 @@ export const chooseChannelOptionsWithDefaults = (options?: Partial<ChooseChannel
 })
 
 export async function chooseChannel(command: EdgeCommand, promptMessage: string,
-		channelFromArg?: string, options?: Partial<ChooseChannelOptions>): Promise<string> {
+		channelFromArg?: string, defaultChannelId?: string,
+		options?: Partial<ChooseChannelOptions>): Promise<string> {
 	const opts = chooseChannelOptionsWithDefaults(options)
 	const config = {
 		itemName: 'channel',
@@ -24,8 +25,12 @@ export async function chooseChannel(command: EdgeCommand, promptMessage: string,
 	const listChannels = (): Promise<Channel[]> => command.edgeClient.channels.list({
 		includeReadOnly: opts.includeReadOnly,
 	})
-	const preselectedId = opts.allowIndex
-		? await stringTranslateToId(config, channelFromArg, listChannels)
-		: channelFromArg
+
+	const preselectedId = channelFromArg
+		? (opts.allowIndex
+			? await stringTranslateToId(config, channelFromArg, listChannels)
+			: channelFromArg)
+		: defaultChannelId
+
 	return selectFromList(command, config, preselectedId, listChannels, promptMessage)
 }

@@ -63,7 +63,8 @@ export class ChannelsUnassignCommand extends EdgeCommand {
 		const { args, argv, flags } = this.parse(ChannelsUnassignCommand)
 		await super.setup(args, argv, flags)
 
-		const channelId = await chooseChannel(this, 'Select a channel for the driver.', flags.channel)
+		const channelId = await chooseChannel(this, 'Select a channel for the driver.',
+			flags.channel, this.defaultChannelId)
 		const driverId = await chooseAssignedDriver(this, 'Select a driver to remove from channel.',
 			channelId, args.driverId)
 

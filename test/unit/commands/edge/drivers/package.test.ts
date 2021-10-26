@@ -203,7 +203,8 @@ describe('PackageCommand', () => {
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock)
-			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.',
+				undefined, undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
 			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
@@ -226,7 +227,8 @@ describe('PackageCommand', () => {
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock)
-			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', 'channel id arg')
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.',
+				'channel id arg', undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
 			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
@@ -249,7 +251,8 @@ describe('PackageCommand', () => {
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock)
-			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.',
+				undefined, undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
 			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
@@ -257,7 +260,8 @@ describe('PackageCommand', () => {
 		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
 		expect(chooseHubSpy).toHaveBeenCalledTimes(1)
 		expect(chooseHubSpy)
-			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a hub to install to.', undefined)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a hub to install to.',
+				undefined, undefined)
 		expect(installDriverSpy).toHaveBeenCalledTimes(1)
 		expect(installDriverSpy).toHaveBeenCalledWith('driver id', 'hub id', 'channel id')
 	})
@@ -275,7 +279,8 @@ describe('PackageCommand', () => {
 			.toHaveBeenCalledWith(expect.any(PackageCommand), expect.anything(), expect.any(Function))
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock)
-			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.', undefined)
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a channel for the driver.',
+				undefined, undefined)
 		expect(assignDriverSpy).toHaveBeenCalledTimes(1)
 		expect(assignDriverSpy)
 			.toHaveBeenCalledWith('channel id', 'driver id', 'driver version')
@@ -283,7 +288,8 @@ describe('PackageCommand', () => {
 		expect(uploadSpy).toHaveBeenCalledWith(zipContents)
 		expect(chooseHubSpy).toHaveBeenCalledTimes(1)
 		expect(chooseHubSpy)
-			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a hub to install to.', 'hub id arg')
+			.toHaveBeenCalledWith(expect.any(PackageCommand), 'Select a hub to install to.',
+				'hub id arg', undefined)
 		expect(installDriverSpy).toHaveBeenCalledTimes(1)
 		expect(installDriverSpy).toHaveBeenCalledWith('driver id', 'hub id', 'channel id')
 	})

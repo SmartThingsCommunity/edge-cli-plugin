@@ -27,7 +27,8 @@ export default class ChannelsEnrollmentsCommand extends EdgeCommand {
 			listTableFieldDefinitions: ['channelId', 'name', 'description', 'createdDate', 'lastModifiedDate', 'subscriptionUrl'],
 		}
 
-		const hubId = await chooseHub(this, 'Select a hub.', args.idOrIndex, { allowIndex: true })
+		const hubId = await chooseHub(this, 'Select a hub.', args.idOrIndex, this.defaultHubId,
+			{ allowIndex: true })
 
 		await outputList(this, config, () => this.edgeClient.hubs.enrolledChannels(hubId))
 	}
