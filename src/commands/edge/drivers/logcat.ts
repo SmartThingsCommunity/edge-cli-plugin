@@ -22,6 +22,7 @@ import {
 	stringTranslateToId,
 	TableFieldDefinition,
 } from '@smartthings/cli-lib'
+import { inspect } from 'util'
 
 
 const DEFAULT_ALL_TEXT = 'all'
@@ -154,12 +155,12 @@ export default class LogCatCommand extends SseCommand {
 	async run(): Promise<void> {
 		const installedDriversPromise = this.logClient.getDrivers()
 
-		let sourceURL
+		let sourceURL: string
 		if (this.flags.all) {
-			sourceURL = await this.logClient.getLogSource()
+			sourceURL = this.logClient.getLogSource()
 		} else {
 			const driverId = await this.chooseHubDrivers(this.args.driverId, installedDriversPromise)
-			sourceURL = driverId == DEFAULT_ALL_TEXT ? await this.logClient.getLogSource() : await this.logClient.getLogSource(driverId)
+			sourceURL = driverId == DEFAULT_ALL_TEXT ? this.logClient.getLogSource() : this.logClient.getLogSource(driverId)
 		}
 
 		// ensure this resolves before connecting to the event source
@@ -176,19 +177,26 @@ export default class LogCatCommand extends SseCommand {
 			cli.action.start('listening for logs')
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		this.source.onerror = (error: any) => {
+		// error Event from eventsource doesn't always overlap with MessageEvent
+		this.source.onerror = (error: MessageEvent & Partial<{ status: number; message: string | undefined }>) => {
 			cli.action.stop('failed')
 			this.teardown()
+			this.logger.debug(`Error from eventsource. URL: ${sourceURL} Error: ${inspect(error)}`)
+
 			try {
-				if (error?.status === 401 || error?.status === 403) {
+				if (error.status === 401 || error.status === 403) {
 					this.error(`Unauthorized at ${this.authority}`)
 				}
 
-				handleConnectionErrors(this.authority, error?.message)
-				this.error(error?.message ?? error)
+				if (error.message !== undefined) {
+					handleConnectionErrors(this.authority, error.message)
+				}
+
+				this.error(`Unexpected error from event source ${inspect(error)}`)
 			} catch (error) {
-				handle(error)
+				if (error instanceof Error) {
+					handle(error)
+				}
 			}
 		}
 

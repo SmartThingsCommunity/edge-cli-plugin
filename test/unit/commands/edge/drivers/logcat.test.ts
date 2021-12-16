@@ -60,6 +60,7 @@ jest.mock('fs', () => ({
 
 const mockLiveLogClient = {
 	getDrivers: jest.fn().mockResolvedValue([]),
+	getLogSource: jest.fn().mockReturnValue(`https://${MOCK_HOSTNAME}/drivers/logs`),
 }
 
 jest.mock('../../../../../src/lib/live-logging', () => ({

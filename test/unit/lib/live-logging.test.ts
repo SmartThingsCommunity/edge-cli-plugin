@@ -8,7 +8,10 @@ import { Socket } from 'net'
 import { ClientRequest } from 'http'
 
 
-jest.mock('axios')
+jest.mock('axios', () => ({
+	toJSON: jest.fn(),
+	request: jest.fn(),
+}))
 
 describe('live-logging', () => {
 	describe('liveLogMessageFormatter', () => {
@@ -187,6 +190,7 @@ describe('live-logging', () => {
 				},
 				response: undefined,
 				isAxiosError: true,
+				toJSON: () => ({}),
 			}
 
 			jest.spyOn(axios, 'request').mockRejectedValueOnce(axiosError)
@@ -197,15 +201,17 @@ describe('live-logging', () => {
 		it('verifies host with provided verifier on first request only', async () => {
 			const cert = { fingerprint: 'fingerprint' } as PeerCertificate
 			jest.spyOn(TLSSocket.prototype, 'getPeerCertificate').mockReturnValue(cert)
+			const request: Partial<ClientRequest> = {
+				socket: new TLSSocket(new Socket()),
+			}
+
 			const certResponse: AxiosResponse = {
 				data: '',
 				status: 200,
 				statusText: 'OK',
 				headers: {},
 				config: {},
-				request: {
-					connection: new TLSSocket(new Socket()),
-				} as unknown as ClientRequest,
+				request: request,
 			}
 
 			const mockHostVerifier = jest.fn()

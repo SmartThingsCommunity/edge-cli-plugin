@@ -1,11 +1,13 @@
 import axios, { AxiosError, AxiosResponse, Method } from 'axios'
 import https from 'https'
 import net from 'net'
-import { bgBlue, bgCyan, bgGray, bgGreen, bgRed, bgYellow, black, EventFormat } from '@smartthings/cli-lib'
+import { bgBlue, bgCyan, bgGray, bgGreen, bgRed, bgYellow, black, EventFormat, logManager } from '@smartthings/cli-lib'
 import { Authenticator } from '@smartthings/core-sdk'
 import { CLIError } from '@oclif/errors'
 import { PeerCertificate, TLSSocket } from 'tls'
 import { ClientRequest } from 'http'
+import { inspect } from 'util'
+import os from 'os'
 
 
 export enum LogLevel {
@@ -166,6 +168,22 @@ export function handleConnectionErrors(authority: string, error: string): never 
 	}
 }
 
+export function networkEnvironmentInfo(): string {
+	return inspect(os.networkInterfaces())
+}
+
+function scrubAuthInfo(obj: unknown): string {
+	const message = inspect(obj)
+	const bearerRegex = /(Bearer [0-9a-f]{8})[0-9a-f-]{28}/i
+
+	if (bearerRegex.test(message)) {
+		return message.replace(bearerRegex, '$1-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+	} else { // assume there is some other auth format and redact the entire header value
+		const authHeaderRegex = /'(Authorization: )([\s\S]*)'/i
+		return message.replace(authHeaderRegex, '$1(redacted)')
+	}
+}
+
 /**
  * Expected to manually verify the connected host (similar to overriding tls.checkServerIdentity)
  * by means that LiveLogClient isn't aware of ahead of time.
@@ -204,7 +222,14 @@ export class LiveLogClient {
 			response = await axios.request(config)
 		} catch (error) {
 			if (error.isAxiosError) {
-				this.handleAxiosConnectionErrors(error)
+				const axiosError = error as AxiosError
+				const cliLogger = logManager.getLogger('cli')
+				if (cliLogger.isDebugEnabled()) {
+					const errorString = scrubAuthInfo(axiosError.toJSON())
+					logManager.getLogger('cli').debug(`Error connecting to live-logging: ${errorString}\n\nLocal network interfaces: ${networkEnvironmentInfo()}`)
+				}
+
+				this.handleAxiosConnectionErrors(axiosError)
 			}
 
 			throw error
@@ -231,14 +256,14 @@ export class LiveLogClient {
 	}
 
 	private getCertificate(response: AxiosResponse): PeerCertificate {
-		return ((response.request as ClientRequest).connection as TLSSocket).getPeerCertificate()
+		return ((response.request as ClientRequest).socket as TLSSocket).getPeerCertificate()
 	}
 
 	public async getDrivers(): Promise<DriverInfo[]> {
 		return (await this.request(this.driversURL.toString())).data
 	}
 
-	public async getLogSource(driverId?: string): Promise<string> {
+	public getLogSource(driverId?: string): string {
 		const sourceURL = this.logsURL
 
 		if (driverId) {
