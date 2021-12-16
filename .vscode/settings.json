@@ -1,8 +1,11 @@
 {
 	"cSpell.words": [
 		"distchannels",
+		"eventsource",
 		"jszip",
+		"logcat",
 		"nodebuffer",
+		"oclif",
 		"picomatch",
 		"unpublish"
 	],
