@@ -31,8 +31,8 @@ export default class ChannelsCommand extends EdgeCommand {
 $ smartthings edge:channels
 
 # list user-owned and subscribed channels
-$ smartthings edge:channels --include-read-only
-
+$ smartthings edge:channels --include-read-only`,
+	`
 # display details about the second channel listed when running "smartthings edge:channels"
 $ smartthings edge:channels 2`]
 
