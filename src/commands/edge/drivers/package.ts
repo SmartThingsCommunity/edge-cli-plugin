@@ -69,8 +69,8 @@ $ smartthings edge:drivers:package --channel <channel-id> --hub <hubId>
 $ smartthings edge:drivers:package my-driver
 
 # build the driver in the my-package directory and save it as driver.zip
-$ smartthings edge:drivers:package -b driver.zip my-package
-
+$ smartthings edge:drivers:package -b driver.zip my-package`,
+	`
 # upload the previously built driver found in driver.zip
 $ smartthings edge:drivers:package -u driver.zip`]
 

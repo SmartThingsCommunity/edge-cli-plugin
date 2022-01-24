@@ -68,7 +68,7 @@ OPTIONS
   --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
-EXAMPLE
+EXAMPLES
   # list all user-owned channels
   $ smartthings edge:channels
 
@@ -455,6 +455,7 @@ OPTIONS
 
 DESCRIPTION
   Use this command to list all drivers you own, even if they are not yet assigned to a channel.
+
   See also:
     edge:drivers:installed to list installed drivers
     edge:channels:drivers to list drivers that are part of a channel you own or have subscribed to
@@ -621,7 +622,7 @@ OPTIONS
 
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
-EXAMPLE
+EXAMPLES
   # build and upload driver found in current directory:
   $ smartthings edge:drivers:package
 

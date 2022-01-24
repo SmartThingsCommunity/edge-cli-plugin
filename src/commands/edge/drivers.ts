@@ -6,6 +6,7 @@ import { EdgeCommand } from '../../lib/edge-command'
 export default class DriversCommand extends EdgeCommand {
 	static description = `list all drivers owned by you or retrieve a single driver
 Use this command to list all drivers you own, even if they are not yet assigned to a channel.
+
 See also:
   edge:drivers:installed to list installed drivers
   edge:channels:drivers to list drivers that are part of a channel you own or have subscribed to

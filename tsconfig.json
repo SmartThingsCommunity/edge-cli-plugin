@@ -10,6 +10,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"declarationMap": true,
 		"outDir": "lib",
+		"useUnknownInCatchVariables": false,
 	},
 	"include": [
 		"src/**/**.ts",
