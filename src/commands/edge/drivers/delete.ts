@@ -13,11 +13,11 @@ export default class DriversDeleteCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(DriversDeleteCommand)
+		const { args, argv, flags } = await this.parse(DriversDeleteCommand)
 		await super.setup(args, argv, flags)
 
 		const id = await chooseDriver(this, 'Select a driver to delete.', args.id)
-		await this.edgeClient.drivers.delete(id)
+		await this.client.drivers.delete(id)
 		this.log(`Driver ${id} deleted.`)
 	}
 }

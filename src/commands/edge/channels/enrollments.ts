@@ -18,7 +18,7 @@ export default class ChannelsEnrollmentsCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsEnrollmentsCommand)
+		const { args, argv, flags } = await this.parse(ChannelsEnrollmentsCommand)
 		await super.setup(args, argv, flags)
 
 		const config = {

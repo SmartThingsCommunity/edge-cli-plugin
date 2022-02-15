@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { selectFromList } from '@smartthings/cli-lib'
 import { chooseDriverFromChannel, chooseHub } from '../../../lib/commands/drivers-util'
@@ -18,11 +18,11 @@ export default class DriversInstallCommand extends EdgeCommand {
 
 	static flags = {
 		...EdgeCommand.flags,
-		hub: flags.string({
+		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
 		}),
-		channel: flags.string({
+		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
 		}),
@@ -46,7 +46,7 @@ export default class DriversInstallCommand extends EdgeCommand {
 	}
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(DriversInstallCommand)
+		const { args, argv, flags } = await this.parse(DriversInstallCommand)
 		await super.setup(args, argv, flags)
 
 		const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,

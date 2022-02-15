@@ -61,7 +61,7 @@ jest.mock('fs', () => ({
 const mockLiveLogClient = {
 	getDrivers: jest.fn().mockResolvedValue([]),
 	getLogSource: jest.fn().mockReturnValue(`https://${MOCK_HOSTNAME}/drivers/logs`),
-}
+} as unknown as LiveLogClient
 
 jest.mock('../../../../../src/lib/live-logging', () => ({
 	LiveLogClient: jest.fn(() => (mockLiveLogClient)),
@@ -69,26 +69,26 @@ jest.mock('../../../../../src/lib/live-logging', () => ({
 }))
 
 describe('LogCatCommand', () => {
-	const promptMock = inquirer.prompt as unknown as jest.Mock
-	const readFileMock = fs.readFile as jest.Mock
+	const promptMock = jest.mocked(inquirer.prompt)
+	const readFileMock = jest.mocked(fs.readFile)
 	jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
 	describe('host verification', () => {
-		const logClientMock = LiveLogClient as jest.Mock
+		const logClientMock = jest.mocked(LiveLogClient)
 		const warnSpy = jest.spyOn(LogCatCommand.prototype, 'warn').mockImplementation()
 
 		beforeAll(() => {
-			logClientMock.mockImplementation((_authority, _authenticator, verifier: HostVerifier) => ({
+			logClientMock.mockImplementation((_authority, _authenticator, verifier?: HostVerifier) => ({
 				getDrivers: jest.fn(async () => {
-					await verifier(MOCK_PEER_CERT)
+					await verifier?.(MOCK_PEER_CERT)
 					return Promise.resolve([])
 				}),
-			}))
+			} as unknown as LiveLogClient))
 		})
 
 		afterAll(() => {
 			// reset to default mock
-			logClientMock.mockImplementation(jest.fn(() => (mockLiveLogClient)))
+			logClientMock.mockImplementation(jest.fn(() => mockLiveLogClient))
 		})
 
 		afterEach(() => {

@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { ChooseOptions, chooseOptionsWithDefaults, outputListing, selectFromList, stringTranslateToId, TableFieldDefinition } from '@smartthings/cli-lib'
 
@@ -24,7 +24,7 @@ export const tableFieldDefinitions = [
 const buildListFunction = (command: EdgeCommand, channelId?: string) => async (): Promise<Invitation[]> => {
 	const channelIds = channelId
 		? [channelId]
-		: (await command.edgeClient.channels.list()).map(channel => channel.channelId)
+		: (await command.client.channels.list()).map(channel => channel.channelId)
 	return (await Promise.all(channelIds.map(async channelId => await command.edgeClient.invites.list(channelId)))).flat()
 }
 
@@ -50,7 +50,7 @@ export default class ChannelsInvitesCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputListing.flags,
-		'channel': flags.string({
+		'channel': Flags.string({
 			char: 'C',
 			description: 'channel id',
 		}),
@@ -71,7 +71,7 @@ export default class ChannelsInvitesCommand extends EdgeCommand {
 	]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsInvitesCommand)
+		const { args, argv, flags } = await this.parse(ChannelsInvitesCommand)
 		await super.setup(args, argv, flags)
 
 		const config = {

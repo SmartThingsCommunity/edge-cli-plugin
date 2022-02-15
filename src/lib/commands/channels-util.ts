@@ -1,8 +1,7 @@
-import {ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList, stringTranslateToId}
-	from '@smartthings/cli-lib'
+import { Channel, SubscriberType } from '@smartthings/core-sdk'
 
-import { EdgeCommand } from '../edge-command'
-import { Channel } from '../endpoints/channels'
+import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
+	stringTranslateToId } from '@smartthings/cli-lib'
 
 
 export interface ChooseChannelOptions extends ChooseOptions {
@@ -14,7 +13,7 @@ export const chooseChannelOptionsWithDefaults = (options?: Partial<ChooseChannel
 	...chooseOptionsWithDefaults(options),
 })
 
-export async function chooseChannel(command: EdgeCommand, promptMessage: string,
+export async function chooseChannel(command: APICommand, promptMessage: string,
 		channelFromArg?: string,
 		defaultChannelId?: string,
 		options?: Partial<ChooseChannelOptions>): Promise<string> {
@@ -25,7 +24,7 @@ export async function chooseChannel(command: EdgeCommand, promptMessage: string,
 		sortKeyName: 'name',
 	}
 
-	const channels = (): Promise<Channel[]> => listChannels(command, opts)
+	const channels = (): Promise<Channel[]> => listChannels(command, undefined, undefined, opts)
 
 	const preselectedId = channelFromArg
 		? (opts.allowIndex
@@ -36,16 +35,17 @@ export async function chooseChannel(command: EdgeCommand, promptMessage: string,
 	return selectFromList(command, config, preselectedId, channels, promptMessage)
 }
 
-export async function listChannels(command: EdgeCommand, options?: Partial<ChooseChannelOptions>): Promise<Channel[]> {
+export async function listChannels(command: APICommand, subscriberType?: SubscriberType, subscriberId?: string,
+		options?: Partial<ChooseChannelOptions>): Promise<Channel[]> {
 	const allOrganizations = command.flags['all-organizations']
 	const includeReadOnly = (options && options.includeReadOnly) || command.flags['include-read-only']
 	if (allOrganizations) {
 		const result = await forAllOrganizations(command.client, (org) => {
-			const orgClient = command.edgeClient.cloneEdge({'X-ST-Organization': org.organizationId})
+			const orgClient = command.client.clone({ 'X-ST-Organization': org.organizationId })
 			return orgClient.channels.list()
 		})
 		if (includeReadOnly) {
-			const possibleShared = await command.edgeClient.channels.list({ includeReadOnly })
+			const possibleShared = await command.client.channels.list({ includeReadOnly, subscriberType, subscriberId })
 			for (const channel of possibleShared) {
 				if (!result.find(it => it.channelId === channel.channelId)) {
 					result.push(channel)
@@ -54,5 +54,5 @@ export async function listChannels(command: EdgeCommand, options?: Partial<Choos
 		}
 		return result
 	}
-	return command.edgeClient.channels.list({ includeReadOnly })
+	return command.client.channels.list({ includeReadOnly, subscriberType, subscriberId })
 }

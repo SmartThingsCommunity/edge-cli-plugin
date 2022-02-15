@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { outputListing } from '@smartthings/cli-lib'
 
@@ -12,7 +12,7 @@ export default class DriversInstalledCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputListing.flags,
-		hub: flags.string({
+		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
 		}),
@@ -24,7 +24,7 @@ export default class DriversInstalledCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(DriversInstalledCommand)
+		const { args, argv, flags } = await this.parse(DriversInstalledCommand)
 		await super.setup(args, argv, flags)
 
 		const config = {

@@ -31,6 +31,7 @@ for information on running the CLI.
 * [`smartthings edge:channels:invites:accept ID`](#smartthings-edgechannelsinvitesaccept-id)
 * [`smartthings edge:channels:invites:create`](#smartthings-edgechannelsinvitescreate)
 * [`smartthings edge:channels:invites:delete [ID]`](#smartthings-edgechannelsinvitesdelete-id)
+* [`smartthings edge:channels:metainfo [IDORINDEX]`](#smartthings-edgechannelsmetainfo-idorindex)
 * [`smartthings edge:channels:unassign [DRIVERID]`](#smartthings-edgechannelsunassign-driverid)
 * [`smartthings edge:channels:unenroll [HUBID]`](#smartthings-edgechannelsunenroll-hubid)
 * [`smartthings edge:channels:update [ID]`](#smartthings-edgechannelsupdate-id)
@@ -57,16 +58,15 @@ OPTIONS
   -A, --all-organizations          include entities from all organizations the user belongs to
   -I, --include-read-only          include subscribed-to channels as well as owned channels
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  --subscriber-id=subscriber-id    filter results based on subscriber id (e.g. hub id)
+  --subscriber-type=HUB            filter results based on subscriber type
 
 EXAMPLES
   # list all user-owned channels
@@ -77,6 +77,9 @@ EXAMPLES
 
   # display details about the second channel listed when running "smartthings edge:channels"
   $ smartthings edge:channels 2
+
+  # display channels subscribed to by the specified hub
+  $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>
 ```
 
 _See code: [src/commands/edge/channels.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.7.0/src/commands/edge/channels.ts)_
@@ -96,7 +99,7 @@ ARGUMENTS
 OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -118,16 +121,13 @@ USAGE
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
   -d, --dry-run                    produce JSON but don't actually submit
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -i, --input=input                specify input file
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
@@ -146,7 +146,7 @@ ARGUMENTS
 
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -167,15 +167,12 @@ ARGUMENTS
 
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
@@ -198,7 +195,7 @@ ARGUMENTS
 OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -219,15 +216,12 @@ ARGUMENTS
 
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
@@ -247,15 +241,12 @@ ARGUMENTS
 OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
@@ -284,7 +275,7 @@ ARGUMENTS
 
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -307,16 +298,13 @@ OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
   -d, --dry-run                    produce JSON but don't actually submit
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -i, --input=input                specify input file
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 ALIASES
@@ -339,7 +327,7 @@ ARGUMENTS
 OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -351,6 +339,44 @@ ALIASES
 ```
 
 _See code: [src/commands/edge/channels/invites/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.7.0/src/commands/edge/channels/invites/delete.ts)_
+
+## `smartthings edge:channels:metainfo [IDORINDEX]`
+
+list all channels owned by you or retrieve a single channel
+
+```
+USAGE
+  $ smartthings edge:channels:metainfo [IDORINDEX]
+
+ARGUMENTS
+  IDORINDEX  the channel id or number in list
+
+OPTIONS
+  -C, --channel=channel            channel id
+  -O, --organization=organization  The organization ID to use for this command
+  -h, --help                       Show CLI help.
+  -j, --json                       use JSON format of input and/or output
+  -o, --output=output              specify output file
+  -p, --profile=profile            [default: default] configuration profile
+  -t, --token=token                the auth token to use
+  -y, --yaml                       use YAML format of input and/or output
+  --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+EXAMPLES
+  # summarize metainfo for all drivers in a channel
+  $ smartthings edge:channels:metainfo
+
+  # summarize metainfo for all drivers in the specified channel
+  $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2
+
+  # display metainfo about the third driver listed in the above command
+  $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 3
+
+  # display metainfo about a driver by using its id
+  $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 699c7308-8c72-4363-9571-880d0f5cc725
+```
+
+_See code: [src/commands/edge/channels/metainfo.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.7.0/src/commands/edge/channels/metainfo.ts)_
 
 ## `smartthings edge:channels:unassign [DRIVERID]`
 
@@ -366,7 +392,7 @@ ARGUMENTS
 OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -391,7 +417,7 @@ ARGUMENTS
 OPTIONS
   -C, --channel=channel            channel id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -413,16 +439,13 @@ ARGUMENTS
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
   -d, --dry-run                    produce JSON but don't actually submit
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -i, --input=input                specify input file
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
@@ -442,15 +465,13 @@ ARGUMENTS
 OPTIONS
   -A, --all-organizations          include entities from all organizations the user belongs to
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -V, --version=version            driver version
+  -h, --help                       Show CLI help.
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 DESCRIPTION
@@ -469,6 +490,9 @@ EXAMPLES
 
   # display details about a driver by using its id
   $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725
+
+  # get information on a specific version of a driver
+  $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725 --version 2021-10-25T00:48:23.295969
 ```
 
 _See code: [src/commands/edge/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.7.0/src/commands/edge/drivers.ts)_
@@ -486,7 +510,7 @@ ARGUMENTS
 
 OPTIONS
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -509,7 +533,7 @@ OPTIONS
   -C, --channel=channel            channel id
   -H, --hub=hub                    hub id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
@@ -538,15 +562,12 @@ ARGUMENTS
 OPTIONS
   -H, --hub=hub                    hub id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -j, --json                       use JSON format of input and/or output
   -o, --output=output              specify output file
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   -y, --yaml                       use YAML format of input and/or output
-  --compact                        use compact table format with no lines between body rows
-  --expanded                       use expanded table format with a line between each body row
-  --indent=indent                  specify indentation for formatting JSON or YAML output
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 ```
 
@@ -565,7 +586,7 @@ ARGUMENTS
 
 OPTIONS
   -a, --all                  stream from all installed drivers
-  -h, --help                 show CLI help
+  -h, --help                 Show CLI help.
   -p, --profile=profile      [default: default] configuration profile
   -t, --token=token          the auth token to use
   --hub-address=hub-address  IPv4 address of hub with optionally appended port number
@@ -595,7 +616,7 @@ OPTIONS
 
   -b, --build-only=build-only      save package to specified zip file but skip upload
 
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
 
   -j, --json                       use JSON format of input and/or output
 
@@ -611,14 +632,8 @@ OPTIONS
 
   --channel=channel                automatically assign driver to specified channel after upload
 
-  --compact                        use compact table format with no lines between body rows
-
-  --expanded                       use expanded table format with a line between each body row
-
   --hub=hub                        automatically install driver to specified hub, implies --assign if --assign or
                                    --channel not included
-
-  --indent=indent                  specify indentation for formatting JSON or YAML output
 
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
@@ -660,7 +675,7 @@ ARGUMENTS
 OPTIONS
   -H, --hub=hub                    hub id
   -O, --organization=organization  The organization ID to use for this command
-  -h, --help                       show CLI help
+  -h, --help                       Show CLI help.
   -p, --profile=profile            [default: default] configuration profile
   -t, --token=token                the auth token to use
   --language=language              ISO language code or "NONE" to not specify a language. Defaults to the OS locale

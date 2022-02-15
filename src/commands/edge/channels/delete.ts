@@ -13,11 +13,11 @@ export default class ChannelsDeleteCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsDeleteCommand)
+		const { args, argv, flags } = await this.parse(ChannelsDeleteCommand)
 		await super.setup(args, argv, flags)
 
 		const id = await chooseChannel(this, 'Choose a channel to delete.', args.id)
-		await this.edgeClient.channels.delete(id)
+		await this.client.channels.delete(id)
 		this.log(`Channel ${id} deleted.`)
 	}
 }

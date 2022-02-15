@@ -21,7 +21,7 @@ export default class ChannelsDriversCommand extends EdgeCommand {
 	static aliases = ['edge:channels:assignments']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsDriversCommand)
+		const { args, argv, flags } = await this.parse(ChannelsDriversCommand)
 		await super.setup(args, argv, flags)
 
 		const config = {
@@ -33,6 +33,6 @@ export default class ChannelsDriversCommand extends EdgeCommand {
 		const channelId = await chooseChannel(this, 'Select a channel.', args.idOrIndex,
 			this.defaultChannelId, { allowIndex: true, includeReadOnly: true })
 
-		await outputList(this, config, () => listAssignedDriversWithNames(this.edgeClient, channelId))
+		await outputList(this, config, () => listAssignedDriversWithNames(this.client, channelId))
 	}
 }

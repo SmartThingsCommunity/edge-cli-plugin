@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import inquirer from 'inquirer'
 
 import { inputAndOutputItem, userInputProcessor } from '@smartthings/cli-lib'
@@ -16,7 +16,7 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 	static description = 'create an invitation'
 
 	static flags = {
-		channel: flags.string({
+		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
 			exclusive: ['input'],
@@ -28,7 +28,7 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 	static aliases = ['edge:channels:invitations:create']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsInvitesCreateCommand)
+		const { args, argv, flags } = await this.parse(ChannelsInvitesCreateCommand)
 		await super.setup(args, argv, flags)
 
 		const create = async (_: void, input: CreateInvitation): Promise<Invitation> => {

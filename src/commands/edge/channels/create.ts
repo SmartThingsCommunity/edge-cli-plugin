@@ -1,9 +1,10 @@
 import inquirer from 'inquirer'
 
+import { Channel, ChannelCreate } from '@smartthings/core-sdk'
+
 import { inputAndOutputItem, userInputProcessor } from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../../lib/edge-command'
-import { Channel, ChannelCreate } from '../../../lib/endpoints/channels'
 
 
 const tableFieldDefinitions = ['channelId', 'name', 'description', 'type', 'termsOfServiceUrl',
@@ -43,11 +44,11 @@ export default class ChannelsCreateCommand extends EdgeCommand {
 	}
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsCreateCommand)
+		const { args, argv, flags } = await this.parse(ChannelsCreateCommand)
 		await super.setup(args, argv, flags)
 
 		await inputAndOutputItem<ChannelCreate, Channel>(this, { tableFieldDefinitions },
-			(_, input: ChannelCreate) => this.edgeClient.channels.create(input),
+			(_, input: ChannelCreate) => this.client.channels.create(input),
 			userInputProcessor(this))
 	}
 }

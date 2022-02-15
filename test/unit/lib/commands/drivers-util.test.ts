@@ -1,41 +1,110 @@
-import { Device, DeviceIntegrationType } from '@smartthings/core-sdk'
+import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDeviceIntegrationProfileKey,
+	EdgeDriver, EdgeDriverPermissions, EdgeDriverSummary, SmartThingsClient }
+	from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsWithDefaults, ListDataFunction, Naming,
-	selectFromList, SelectingConfig, SmartThingsCommandInterface, Sorting,
-	stringTranslateToId } from '@smartthings/cli-lib'
+import { APICommand, ChooseOptions, chooseOptionsWithDefaults, selectFromList, stringTranslateToId,
+	TableGenerator } from '@smartthings/cli-lib'
 
-import { chooseDriver, chooseDriverFromChannel, chooseHub, DriverChannelDetailsWithName,
-	listAssignedDriversWithNames } from '../../../../src/lib/commands/drivers-util'
+import { buildTableOutput, chooseDriver, chooseDriverFromChannel, chooseHub,
+	DriverChannelDetailsWithName, listAssignedDriversWithNames, permissionsValue }
+	from '../../../../src/lib/commands/drivers-util'
 import * as driversUtil from '../../../../src/lib/commands/drivers-util'
 import { EdgeClient } from '../../../../src/lib/edge-client'
 import { EdgeCommand } from '../../../../src/lib/edge-command'
-import { DriverChannelDetails } from '../../../../src/lib/endpoints/channels'
-import { EdgeDriverSummary } from '../../../../src/lib/endpoints/drivers'
 
 
 jest.mock('@smartthings/cli-lib', () => ({
 	chooseOptionsWithDefaults: jest.fn(),
 	stringTranslateToId: jest.fn(),
 	selectFromList: jest.fn(),
+	summarizedText: 'summarized text',
 }))
 
 describe('drivers-util', () => {
-	const selectFromListMock = selectFromList as unknown as
-		jest.Mock<Promise<string>, [SmartThingsCommandInterface, SelectingConfig<Device>, string,
-			ListDataFunction<Device>, string, boolean]>
+	const selectFromListMock = jest.mocked(selectFromList)
 
 	afterEach(() => {
 		jest.clearAllMocks()
 	})
 
+	describe('permissionsValue', () => {
+		it('returns none with no permissions at all', () => {
+			expect(permissionsValue({} as EdgeDriver)).toBe('none')
+		})
+
+		it('returns none with empty permissions array', () => {
+			expect(permissionsValue({ permissions: [] as EdgeDriverPermissions[] } as EdgeDriver)).toBe('none')
+		})
+
+		it('combines permissions names', () => {
+			expect(permissionsValue({ permissions: [
+				{ name: 'r:locations' },
+				{ name: 'r:devices' },
+			] } as EdgeDriver)).toBe('r:locations\nr:devices')
+		})
+	})
+
+	describe('buildTableOutput', () => {
+		const buildTableFromItem = jest.fn().mockReturnValue('basic info')
+		const buildTableFromList = jest.fn()
+		const tableGenerator = {
+			buildTableFromItem,
+			buildTableFromList,
+		} as unknown as TableGenerator
+		const minimalDriver: EdgeDriver = {
+			driverId: 'driver-id',
+			name: 'Driver Name',
+			version: 'driver-version',
+			packageKey: 'package key',
+			deviceIntegrationProfiles: [{ id: 'profile-id' } as EdgeDeviceIntegrationProfileKey],
+		}
+
+		it('works with minimal fields', () => {
+			buildTableFromList.mockReturnValueOnce('profiles table')
+
+			expect(buildTableOutput(tableGenerator, minimalDriver))
+				.toBe('Basic Information\nbasic info\n\n' +
+					'Device Integration Profiles\nprofiles table\n\n' +
+					'No fingerprints specified.\n\n' +
+					'summarized text')
+
+			expect(buildTableFromItem).toHaveBeenCalledTimes(1)
+			expect(buildTableFromItem).toHaveBeenCalledWith(minimalDriver,
+				expect.arrayContaining(['driverId', 'name', 'version', 'packageKey']))
+			expect(buildTableFromList).toHaveBeenCalledTimes(1)
+			expect(buildTableFromList).toHaveBeenCalledWith(minimalDriver.deviceIntegrationProfiles,
+				['id', 'majorVersion'])
+		})
+
+		it('includes fingerprints when specified', () => {
+			const driver = { ...minimalDriver, fingerprints: [{ id: 'fingerprint-id' }] } as EdgeDriver
+			buildTableFromList.mockReturnValueOnce('profiles table')
+			buildTableFromList.mockReturnValueOnce('fingerprints table')
+
+			expect(buildTableOutput(tableGenerator, driver))
+				.toBe('Basic Information\nbasic info\n\n' +
+					'Device Integration Profiles\nprofiles table\n\n' +
+					'Fingerprints\nfingerprints table\n\n' +
+					'summarized text')
+
+			expect(buildTableFromItem).toHaveBeenCalledTimes(1)
+			expect(buildTableFromItem).toHaveBeenCalledWith(driver,
+				expect.arrayContaining(['driverId', 'name', 'version', 'packageKey']))
+			expect(buildTableFromList).toHaveBeenCalledTimes(2)
+			expect(buildTableFromList).toHaveBeenCalledWith(driver.deviceIntegrationProfiles,
+				['id', 'majorVersion'])
+			expect(buildTableFromList).toHaveBeenCalledWith(driver.fingerprints,
+				['id', 'type', 'deviceLabel'])
+		})
+	})
+
 	describe('chooseDriver', () => {
 		const listDriversMock = jest.fn()
-		const edgeClient = { drivers: { list: listDriversMock } }
-		const command = { edgeClient } as unknown as EdgeCommand
+		const client = { drivers: { list: listDriversMock } }
+		const command = { client } as unknown as EdgeCommand
 
-		const chooseOptionsWithDefaultsMock = chooseOptionsWithDefaults as unknown as jest.Mock<ChooseOptions, [Partial<ChooseOptions>]>
-		const stringTranslateToIdMock = stringTranslateToId as unknown as
-			jest.Mock<Promise<string | undefined>, [Sorting & Naming, string | undefined, ListDataFunction<EdgeDriverSummary>]>
+		const chooseOptionsWithDefaultsMock = jest.mocked(chooseOptionsWithDefaults)
+		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
 
 		it('presents user with list of drivers', async () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
@@ -104,10 +173,8 @@ describe('drivers-util', () => {
 		const client = { devices: { list: listDevicesMock } }
 		const command = { client } as unknown as APICommand
 
-		const chooseOptionsWithDefaultsMock = chooseOptionsWithDefaults as unknown as
-			jest.Mock<ChooseOptions, [Partial<ChooseOptions>]>
-		const stringTranslateToIdMock = stringTranslateToId as unknown as
-			jest.Mock<Promise<string | undefined>, [Sorting & Naming, string | undefined, ListDataFunction<Device>]>
+		const chooseOptionsWithDefaultsMock = jest.mocked(chooseOptionsWithDefaults)
+		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
 
 		it('uses default hub if specified', async () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
@@ -197,7 +264,7 @@ describe('drivers-util', () => {
 		const client = { channels: {
 			listAssignedDrivers: listAssignedDriversMock,
 			getDriverChannelMetaInfo: getDriverChannelMetaInfoMock,
-		} } as unknown as EdgeClient
+		} } as unknown as SmartThingsClient
 
 		it('lists drivers with their names', async () => {
 			listAssignedDriversMock.mockReturnValueOnce(driverChannelDetailsList)
@@ -246,8 +313,8 @@ describe('drivers-util', () => {
 
 	describe('chooseDriverFromChannel', () => {
 		it('presents user with list of drivers with names', async () => {
-			const edgeClient = {} as EdgeClient
-			const command = { edgeClient } as unknown as EdgeCommand
+			const client = {} as EdgeClient
+			const command = { client } as unknown as EdgeCommand
 			selectFromListMock.mockResolvedValueOnce('chosen-driver-id')
 
 			const result = await chooseDriverFromChannel(command, 'channel-id', 'preselected-driver-id')
@@ -267,7 +334,7 @@ describe('drivers-util', () => {
 			expect(await listDrivers()).toBe(drivers)
 
 			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledTimes(1)
-			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(edgeClient, 'channel-id')
+			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(client, 'channel-id')
 		})
 	})
 })

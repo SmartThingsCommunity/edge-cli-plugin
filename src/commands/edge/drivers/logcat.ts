@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import { handle } from '@oclif/errors'
 import cli from 'cli-ux'
 import inquirer from 'inquirer'
@@ -79,11 +79,11 @@ export default class LogCatCommand extends SseCommand {
 
 	static flags = {
 		...SseCommand.flags,
-		all: flags.boolean({
+		all: Flags.boolean({
 			char: 'a',
 			description: 'stream from all installed drivers',
 		}),
-		'hub-address': flags.string({
+		'hub-address': Flags.string({
 			description: 'IPv4 address of hub with optionally appended port number',
 		}),
 	}
@@ -141,7 +141,7 @@ export default class LogCatCommand extends SseCommand {
 	async init(): Promise<void> {
 		await super.init()
 
-		const { args, argv, flags } = this.parse(LogCatCommand)
+		const { args, argv, flags } = await this.parse(LogCatCommand)
 		await super.setup(args, argv, flags)
 
 		const hubIpAddress = flags['hub-address'] ?? await askForRequiredString('Enter hub IP address with optionally appended port number:')

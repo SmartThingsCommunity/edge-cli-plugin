@@ -16,7 +16,7 @@ jest.mock('picomatch')
 describe('package-utils', () => {
 	const readdirSyncMock = fs.readdirSync as unknown as jest.Mock<string[], [fs.PathLike]>
 	const readStreamMock: fs.ReadStream = {} as fs.ReadStream
-	const createReadStreamMock = fs.createReadStream as unknown as jest.Mock<fs.ReadStream, [fs.PathLike]>
+	const createReadStreamMock = jest.mocked(fs.createReadStream)
 
 	const isFileSpy = jest.spyOn(fileUtil, 'isFile')
 	const isDirSpy = jest.spyOn(fileUtil, 'isDir')
@@ -154,7 +154,7 @@ describe('package-utils', () => {
 	})
 
 	describe('buildTestFileMatchers', () => {
-		const picomatchMock = picomatch as unknown as jest.Mock<picomatch.Matcher, [picomatch.Glob]>
+		const picomatchMock = jest.mocked(picomatch)
 		const matcher1 = (): boolean => true
 		const matcher2 = (): boolean => false
 
