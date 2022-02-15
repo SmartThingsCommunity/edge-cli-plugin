@@ -2,19 +2,27 @@ import fs from 'fs'
 
 import JSZip from 'jszip'
 
-import { CommonOutputProducer, GetDataFunction, outputItem, SmartThingsCommandInterface } from '@smartthings/cli-lib'
+import { ChannelsEndpoint, DriverChannelDetails, DriversEndpoint, EdgeDriver } from '@smartthings/core-sdk'
+
+import { outputItem } from '@smartthings/cli-lib'
 
 import PackageCommand from '../../../../../src/commands/edge/drivers/package'
-import { chooseChannel, ChooseChannelOptions } from '../../../../../src/lib/commands/channels-util'
+import { chooseChannel } from '../../../../../src/lib/commands/channels-util'
 import * as driversUtil from '../../../../../src/lib/commands/drivers-util'
 import * as packageUtil from '../../../../../src/lib/commands/drivers/package-util'
-import { ChannelsEndpoint, DriverChannelDetails } from '../../../../../src/lib/endpoints/channels'
-import { DriversEndpoint, EdgeDriver } from '../../../../../src/lib/endpoints/drivers'
-import { EdgeCommand } from '../../../../../src/lib/edge-command'
 import { HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
 
 
-jest.mock('fs')
+jest.mock('fs', () => {
+	// if this isn't done, something breaks with sub-dependency 'fs-extra'
+	const originalLib = jest.requireActual('fs')
+
+	return {
+		...originalLib,
+		createWriteStream: jest.fn(),
+		readFileSync: jest.fn(),
+	}
+})
 jest.mock('jszip')
 
 jest.mock('@smartthings/cli-lib', () => {
@@ -29,7 +37,7 @@ jest.mock('../../../../../src/lib/commands/channels-util')
 
 describe('PackageCommand', () => {
 	const zipContents = {} as Uint8Array
-	const jsZipMock = JSZip as unknown as jest.Mock<JSZip, []>
+	const jsZipMock = jest.mocked(JSZip)
 	const pipeMock = jest.fn()
 	const readableStream = {
 		pipe: pipeMock,
@@ -48,18 +56,15 @@ describe('PackageCommand', () => {
 	const processSrcDirSpy = jest.spyOn(packageUtil, 'processSrcDir')
 	const processProfilesSpy = jest.spyOn(packageUtil, 'processProfiles')
 
-	const driver = { driverId: 'driver id', version: 'driver version' } as unknown as EdgeDriver
-	const outputItemMock = outputItem as unknown as
-		jest.Mock<Promise<EdgeDriver>, [SmartThingsCommandInterface, CommonOutputProducer<EdgeDriver>, GetDataFunction<EdgeDriver>]>
-	outputItemMock.mockImplementation((_command, _config, actionFunction): Promise<EdgeDriver> => {
-		actionFunction()
-		return Promise.resolve(driver)
-	})
+	const driver = { driverId: 'driver id', version: 'driver version' } as EdgeDriver
+	const outputItemMock = jest.mocked(outputItem)
+		.mockImplementation((_command, _config, actionFunction): Promise<EdgeDriver> => {
+			actionFunction()
+			return Promise.resolve(driver)
+		})
 	const uploadSpy = jest.spyOn(DriversEndpoint.prototype, 'upload').mockResolvedValue(driver)
 
-	const chooseChannelMock = (chooseChannel as
-		jest.Mock<Promise<string>, [EdgeCommand,
-			string, string | undefined, Partial<ChooseChannelOptions> | undefined]>)
+	const chooseChannelMock = jest.mocked(chooseChannel)
 		.mockResolvedValue('channel id')
 	const assignDriverSpy = jest.spyOn(ChannelsEndpoint.prototype, 'assignDriver')
 		.mockResolvedValue({} as DriverChannelDetails)
@@ -102,7 +107,7 @@ describe('PackageCommand', () => {
 		const writeStreamMock: fs.WriteStream = {
 			on: writeStreamOnMock,
 		} as unknown as fs.WriteStream
-		const createWriteStreamMock = fs.createWriteStream as unknown as jest.Mock<fs.WriteStream, [fs.PathLike]>
+		const createWriteStreamMock = jest.mocked(fs.createWriteStream)
 
 		mockProjectDirectoryProcessing()
 		createWriteStreamMock.mockReturnValueOnce(writeStreamMock)
@@ -130,7 +135,7 @@ describe('PackageCommand', () => {
 
 	it('uploads pre-built zip file', async () => {
 		const archiveData = {} as unknown as Buffer
-		const readFileSyncMock = (fs.readFileSync as unknown as jest.Mock<Buffer, [fs.PathLike]>)
+		const readFileSyncMock = jest.mocked(fs.readFileSync)
 			.mockReturnValueOnce(archiveData)
 
 		await expect(PackageCommand.run(['--upload', 'driver.zip'])).resolves.not.toThrow()
@@ -149,7 +154,7 @@ describe('PackageCommand', () => {
 	})
 
 	it('displays error message when zip file missing', async () => {
-		const readFileSyncMock = (fs.readFileSync as unknown as jest.Mock<Buffer, [fs.PathLike]>)
+		const readFileSyncMock = jest.mocked(fs.readFileSync)
 			.mockImplementationOnce(() => { throw { code: 'ENOENT' } })
 
 		await expect(PackageCommand.run(['--upload', 'driver.zip'])).resolves.not.toThrow()
@@ -161,7 +166,7 @@ describe('PackageCommand', () => {
 	})
 
 	it('throws unexpected error when zipping file', async () => {
-		const readFileSyncMock = (fs.readFileSync as unknown as jest.Mock<Buffer, [fs.PathLike]>)
+		const readFileSyncMock = jest.mocked(fs.readFileSync)
 			.mockImplementationOnce(() => { throw Error('failure') })
 
 		await expect(PackageCommand.run(['--upload', 'driver.zip'])).rejects.toThrow(Error('failure'))

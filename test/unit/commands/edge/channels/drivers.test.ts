@@ -1,11 +1,11 @@
-import { CommonListOutputProducer, GetDataFunction, outputList, SmartThingsCommandInterface } from '@smartthings/cli-lib'
+import { SmartThingsClient } from '@smartthings/core-sdk'
 
-import { chooseChannel, ChooseChannelOptions } from '../../../../../src/lib/commands/channels-util'
+import { outputList } from '@smartthings/cli-lib'
+
+import { chooseChannel } from '../../../../../src/lib/commands/channels-util'
 import { DriverChannelDetailsWithName } from '../../../../../src/lib/commands/drivers-util'
 import * as driversUtil from '../../../../../src/lib/commands/drivers-util'
 import ChannelsDriversCommand from '../../../../../src/commands/edge/channels/drivers'
-import { EdgeClient } from '../../../../../src/lib/edge-client'
-import { EdgeCommand } from '../../../../../src/lib/edge-command'
 
 
 jest.mock('@smartthings/cli-lib', () => {
@@ -19,13 +19,8 @@ jest.mock('@smartthings/cli-lib', () => {
 jest.mock('../../../../../src/lib/commands/channels-util')
 
 describe('ChannelsDriversCommand', () => {
-	const outputListMock = outputList as unknown as
-		jest.Mock<Promise<DriverChannelDetailsWithName[]>, [SmartThingsCommandInterface,
-			CommonListOutputProducer<DriverChannelDetailsWithName>,
-			GetDataFunction<DriverChannelDetailsWithName>]>
-	const chooseChannelMock = (chooseChannel as
-			jest.Mock<Promise<string>, [EdgeCommand,
-				string, string | undefined, Partial<ChooseChannelOptions> | undefined]>)
+	const outputListMock = jest.mocked(outputList)
+	const chooseChannelMock = jest.mocked(chooseChannel)
 		.mockResolvedValue('chosen-channel-id')
 
 	const driverChannelDetailsList = [] as DriverChannelDetailsWithName[]
@@ -91,6 +86,6 @@ describe('ChannelsDriversCommand', () => {
 		expect(await getData()).toBe(drivers)
 
 		expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledTimes(1)
-		expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(expect.any(EdgeClient), 'chosen-channel-id')
+		expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(expect.any(SmartThingsClient), 'chosen-channel-id')
 	})
 })

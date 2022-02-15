@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { chooseChannel } from '../../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../../lib/edge-command'
@@ -10,7 +10,7 @@ export default class ChannelsInvitesDeleteCommand extends EdgeCommand {
 
 	static flags = {
 		...EdgeCommand.flags,
-		'channel': flags.string({
+		'channel': Flags.string({
 			char: 'C',
 			description: 'channel id',
 		}),
@@ -28,7 +28,7 @@ export default class ChannelsInvitesDeleteCommand extends EdgeCommand {
 	]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsInvitesDeleteCommand)
+		const { args, argv, flags } = await this.parse(ChannelsInvitesDeleteCommand)
 		await super.setup(args, argv, flags)
 
 		const channelId = await chooseChannel(this,

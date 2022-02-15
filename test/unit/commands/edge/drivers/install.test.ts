@@ -4,7 +4,6 @@ import { APICommand, ChooseOptions, ListDataFunction, selectFromList, SelectingC
 	SmartThingsCommandInterface } from '@smartthings/cli-lib'
 
 import { chooseDriverFromChannel, chooseHub } from '../../../../../src/lib/commands/drivers-util'
-import { EdgeCommand } from '../../../../../src/lib/edge-command'
 import DriversInstallCommand from '../../../../../src/commands/edge/drivers/install'
 import { EnrolledChannel, HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
 
@@ -23,7 +22,7 @@ describe('DriversInstallCommand', () => {
 	const chooseHubMock = chooseHub as
 		jest.Mock<Promise<string>, [APICommand, string, string | undefined, Partial<ChooseOptions>]>
 	const chooseDriverFromChannelMock = chooseDriverFromChannel as
-		jest.Mock<Promise<string>, [EdgeCommand, string, string | undefined]>
+		jest.Mock<Promise<string>, [APICommand, string, string | undefined]>
 	const selectFromListMock = selectFromList as unknown as
 		jest.Mock<Promise<string>, [SmartThingsCommandInterface, SelectingConfig<Device>,
 			string, ListDataFunction<Device>, string, boolean]>

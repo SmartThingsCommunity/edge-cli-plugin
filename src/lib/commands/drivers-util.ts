@@ -1,15 +1,34 @@
-import { Device, DeviceIntegrationType } from '@smartthings/core-sdk'
+import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDriver, EdgeDriverSummary,
+	SmartThingsClient } from '@smartthings/core-sdk'
 
 import { APICommand, ChooseOptions, chooseOptionsWithDefaults, selectFromList,
-	stringTranslateToId } from '@smartthings/cli-lib'
-
-import { DriverChannelDetails } from '../endpoints/channels'
-import { EdgeClient } from '../edge-client'
-import { EdgeCommand } from '../edge-command'
-import { EdgeDriverSummary } from '../endpoints/drivers'
+	stringTranslateToId, summarizedText, TableGenerator } from '@smartthings/cli-lib'
 
 
-export async function chooseDriver(command: EdgeCommand, promptMessage: string, commandLineDriverId?: string,
+export const listTableFieldDefinitions = ['driverId', 'name', 'version', 'packageKey']
+
+export const permissionsValue = (driver: EdgeDriver): string => driver.permissions?.map(permission => permission.name).join('\n') || 'none'
+export const buildTableOutput = (tableGenerator: TableGenerator, driver: EdgeDriver): string => {
+	const basicInfo = tableGenerator.buildTableFromItem(driver, [
+		'driverId', 'name', 'version', 'packageKey',
+		{ label: 'Permissions', value: permissionsValue },
+	])
+
+	const deviceIntegrationProfiles = 'Device Integration Profiles\n' +
+		tableGenerator.buildTableFromList(driver.deviceIntegrationProfiles,
+			['id', 'majorVersion'])
+	let fingerprints = 'No fingerprints specified.'
+	if (driver.fingerprints?.length) {
+		fingerprints = 'Fingerprints\n' +
+			tableGenerator.buildTableFromList(driver.fingerprints, ['id', 'type', 'deviceLabel'])
+	}
+	return `Basic Information\n${basicInfo}\n\n` +
+		`${deviceIntegrationProfiles}\n\n` +
+		`${fingerprints}\n\n` +
+		summarizedText
+}
+
+export async function chooseDriver(command: APICommand, promptMessage: string, commandLineDriverId?: string,
 		options?: Partial<ChooseOptions>): Promise<string> {
 	const opts = chooseOptionsWithDefaults(options)
 	const config = {
@@ -17,7 +36,7 @@ export async function chooseDriver(command: EdgeCommand, promptMessage: string, 
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',
 	}
-	const listDrivers = (): Promise<EdgeDriverSummary[]> => command.edgeClient.drivers.list()
+	const listDrivers = (): Promise<EdgeDriverSummary[]> => command.client.drivers.list()
 	const preselectedId = opts.allowIndex
 		? await stringTranslateToId(config, commandLineDriverId, listDrivers)
 		: commandLineDriverId
@@ -50,7 +69,7 @@ export interface DriverChannelDetailsWithName extends DriverChannelDetails {
 	name: string
 }
 
-export const listAssignedDriversWithNames = async (client: EdgeClient, channelId: string): Promise<DriverChannelDetailsWithName[]> => {
+export const listAssignedDriversWithNames = async (client: SmartThingsClient, channelId: string): Promise<DriverChannelDetailsWithName[]> => {
 	const drivers = await client.channels.listAssignedDrivers(channelId)
 	return (await Promise.all(
 		drivers.map(async driver => {
@@ -73,13 +92,13 @@ export const listAssignedDriversWithNames = async (client: EdgeClient, channelId
 		}))).filter((driver): driver is DriverChannelDetailsWithName => !!driver)
 }
 
-export const chooseDriverFromChannel = async (command: EdgeCommand, channelId: string,
+export const chooseDriverFromChannel = async (command: APICommand, channelId: string,
 		preselectedDriverId?: string): Promise<string> => {
 	const config = {
 		itemName: 'driver',
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',
 	}
-	const listDrivers = (): Promise<DriverChannelDetailsWithName[]> => listAssignedDriversWithNames(command.edgeClient, channelId)
+	const listDrivers = (): Promise<DriverChannelDetailsWithName[]> => listAssignedDriversWithNames(command.client, channelId)
 	return selectFromList(command, config, preselectedDriverId, listDrivers, 'Select a driver to install.')
 }

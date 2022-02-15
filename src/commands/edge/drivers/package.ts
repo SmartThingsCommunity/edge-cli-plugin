@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import JSZip from 'jszip'
 
 import { outputItem } from '@smartthings/cli-lib'
@@ -24,31 +24,31 @@ export default class PackageCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputItem.flags,
-		'build-only': flags.string({
+		'build-only': Flags.string({
 			char: 'b',
 			description: 'save package to specified zip file but skip upload',
 			exclusive: ['upload'],
 		}),
-		upload: flags.string({
+		upload: Flags.string({
 			char: 'u',
 			description: 'upload zip file previously built with --build flag',
 			exclusive: ['build-only'],
 		}),
-		assign: flags.boolean({
+		assign: Flags.boolean({
 			char: 'a',
 			description: 'prompt for a channel to assign the driver to after upload',
 			exclusive: ['channel', 'build-only'],
 		}),
-		channel: flags.string({
+		channel: Flags.string({
 			description: 'automatically assign driver to specified channel after upload',
 			exclusive: ['assign', 'build-only'],
 		}),
-		install: flags.boolean({
+		install: Flags.boolean({
 			char: 'I',
 			description: 'prompt for hub to install to after assigning it to the channel, implies --assign if --assign or --channel not included',
 			exclusive: ['hub', 'build-only'],
 		}),
-		hub: flags.string({
+		hub: Flags.string({
 			description: 'automatically install driver to specified hub, implies --assign if --assign or --channel not included',
 			exclusive: ['install', 'build-only'],
 		}),
@@ -75,14 +75,14 @@ $ smartthings edge:drivers:package -b driver.zip my-package`,
 $ smartthings edge:drivers:package -u driver.zip`]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(PackageCommand)
+		const { args, argv, flags } = await this.parse(PackageCommand)
 		await super.setup(args, argv, flags)
 
 		const uploadAndPostProcess = async (archiveData: Uint8Array): Promise<void> => {
 			const config = {
 				tableFieldDefinitions: ['driverId', 'name', 'packageKey', 'version'],
 			}
-			const driver = await outputItem(this, config, () => this.edgeClient.drivers.upload(archiveData))
+			const driver = await outputItem(this, config, () => this.client.drivers.upload(archiveData))
 			const doAssign = flags.assign || flags.channel || flags.install || flags.hub
 			const doInstall = flags.install || flags.hub
 			if (doAssign) {
@@ -90,7 +90,7 @@ $ smartthings edge:drivers:package -u driver.zip`]
 				const version = driver.version
 				const channelId = await chooseChannel(this, 'Select a channel for the driver.',
 					flags.channel, this.defaultChannelId)
-				await this.edgeClient.channels.assignDriver(channelId, driverId, version)
+				await this.client.channels.assignDriver(channelId, driverId, version)
 
 				if (doInstall) {
 					const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,

@@ -1,4 +1,7 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
+
+import { SubscriberType } from '@smartthings/core-sdk'
+
 import { outputListing, allOrganizationsFlags } from '@smartthings/cli-lib'
 import { EdgeCommand } from '../../lib/edge-command'
 import { listChannels} from '../../lib/commands/channels-util'
@@ -16,9 +19,17 @@ export default class ChannelsCommand extends EdgeCommand {
 		...EdgeCommand.flags,
 		...outputListing.flags,
 		...allOrganizationsFlags,
-		'include-read-only': flags.boolean({
+		'include-read-only': Flags.boolean({
 			char: 'I',
 			description: 'include subscribed-to channels as well as owned channels',
+		}),
+		'subscriber-type': Flags.string({
+			description: 'filter results based on subscriber type',
+			options: ['HUB'],
+		}),
+		'subscriber-id': Flags.string({
+			description: 'filter results based on subscriber id (e.g. hub id)',
+			dependsOn: ['subscriber-type'],
 		}),
 	}
 
@@ -34,10 +45,13 @@ $ smartthings edge:channels
 $ smartthings edge:channels --include-read-only`,
 	`
 # display details about the second channel listed when running "smartthings edge:channels"
-$ smartthings edge:channels 2`]
+$ smartthings edge:channels 2
+
+# display channels subscribed to by the specified hub
+$ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>`]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(ChannelsCommand)
+		const { args, argv, flags } = await this.parse(ChannelsCommand)
 		await super.setup(args, argv, flags)
 
 		const config = {
@@ -52,8 +66,8 @@ $ smartthings edge:channels 2`]
 				if (flags['all-organizations']) {
 					config.listTableFieldDefinitions.push('organization')
 				}
-				return listChannels(this)
+				return listChannels(this, flags['subscriber-type'] as SubscriberType | undefined, flags['subscriber-id'])
 			},
-			id => this.edgeClient.channels.get(id))
+			id => this.client.channels.get(id))
 	}
 }

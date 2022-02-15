@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 
 import { EdgeCommand } from '../../../lib/edge-command'
 import { selectFromList, stringTranslateToId } from '@smartthings/cli-lib'
@@ -11,7 +11,7 @@ export default class DriversUninstallCommand extends EdgeCommand {
 
 	static flags = {
 		...EdgeCommand.flags,
-		hub: flags.string({
+		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
 		}),
@@ -36,7 +36,7 @@ export default class DriversUninstallCommand extends EdgeCommand {
 	}
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = this.parse(DriversUninstallCommand)
+		const { args, argv, flags } = await this.parse(DriversUninstallCommand)
 		await super.setup(args, argv, flags)
 
 		const hubId = await chooseHub(this, 'Select a hub to uninstall from.', flags.hub,

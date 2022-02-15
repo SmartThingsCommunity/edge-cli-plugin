@@ -10,8 +10,8 @@ jest.mock('fs')
 jest.mock('js-yaml')
 
 describe('file-util', () => {
-	const existsSyncMock = fs.existsSync as unknown as jest.Mock<boolean, [fs.PathLike]>
-	const lstatSyncMock = fs.lstatSync as unknown as jest.Mock<fs.Stats, [fs.PathLike]>
+	const existsSyncMock = jest.mocked(fs.existsSync)
+	const lstatSyncMock = jest.mocked(fs.lstatSync)
 
 	afterEach(() => {
 		jest.clearAllMocks()
@@ -66,8 +66,8 @@ describe('file-util', () => {
 	})
 
 	describe('isDir', () => {
-		const existsSyncMock = fs.existsSync as unknown as jest.Mock<boolean, [fs.PathLike]>
-		const lstatSyncMock = fs.lstatSync as unknown as jest.Mock<fs.Stats, [fs.PathLike]>
+		const existsSyncMock = jest.mocked(fs.existsSync)
+		const lstatSyncMock = jest.mocked(fs.lstatSync)
 
 		it('returns false if does not exist', () => {
 			existsSyncMock.mockReturnValue(false)
@@ -152,9 +152,8 @@ describe('file-util', () => {
 	})
 
 	describe('readYAMLFile', () => {
-		const readFileSyncMock = fs.readFileSync as unknown as jest.Mock<string, [fs.PathLike]>
-		// eslint-disable-next-line @typescript-eslint/ban-types
-		const safeLoadMock = yaml.safeLoad as jest.Mock<object | string, [string]>
+		const readFileSyncMock = jest.mocked(fs.readFileSync)
+		const safeLoadMock = jest.mocked(yaml.load)
 
 		it('returns processed file', () => {
 			readFileSyncMock.mockReturnValueOnce(('file contents'))

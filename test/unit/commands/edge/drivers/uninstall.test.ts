@@ -43,7 +43,7 @@ jest.mock('../../../../../src/lib/edge-client', () => ({
 jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
 describe('DriversUninstallCommand', () => {
-	const mockSelectFromList = selectFromList as jest.Mock
+	const mockSelectFromList = jest.mocked(selectFromList)
 
 	it('prompts user with list of installed drivers', async () => {
 		mockSelectFromList.mockResolvedValueOnce(MOCK_INSTALLED_DRIVER.driverId)
