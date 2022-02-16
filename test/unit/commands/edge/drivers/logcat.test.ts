@@ -1,6 +1,6 @@
 import LogCatCommand from '../../../../../src/commands/edge/drivers/logcat'
 import { promises as fs } from 'fs'
-import { ExitError } from '@oclif/errors'
+import { Errors } from '@oclif/core'
 import inquirer from 'inquirer'
 import { HostVerifier, LiveLogClient } from '../../../../../src/lib/live-logging'
 import { Certificate, PeerCertificate } from 'tls'
@@ -40,23 +40,27 @@ const MOCK_PEER_CERT: PeerCertificate = {
 	raw: Buffer.from(''),
 }
 
-jest.mock('cli-ux')
-
 jest.mock('inquirer', () => ({
 	// answer "yes" to every host verification prompt
 	prompt: jest.fn().mockResolvedValue({ connect: true }),
 }))
 
-jest.mock('fs', () => ({
-	promises: {
-		readFile: jest.fn(() => {
-			const error: NodeJS.ErrnoException = new Error()
-			error.code = 'ENOENT'
-			throw error
-		}),
-		writeFile: jest.fn(),
-	},
-}))
+jest.mock('fs', () => {
+	// if this isn't done, something breaks with sub-dependency 'fs-extra'
+	const originalLib = jest.requireActual('fs')
+
+	return {
+		...originalLib,
+		promises: {
+			readFile: jest.fn(() => {
+				const error: NodeJS.ErrnoException = new Error()
+				error.code = 'ENOENT'
+				throw error
+			}),
+			writeFile: jest.fn(),
+		},
+	}
+})
 
 const mockLiveLogClient = {
 	getDrivers: jest.fn().mockResolvedValue([]),
@@ -98,19 +102,19 @@ describe('LogCatCommand', () => {
 		it('initializes SseCommand correctly', async () => {
 			const initSseSpy = jest.spyOn(SseCommand.prototype, 'init')
 
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(initSseSpy).toBeCalledTimes(1)
 		})
 
 		it('initializes a LogClient with a host verifier function', async () => {
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(LiveLogClient).toBeCalledWith(expect.any(String), expect.anything(), expect.any(Function))
 		})
 
 		it('checks server identity and prompts user to validate fingerprint', async () => {
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(fs.readFile).toBeCalledWith(expect.stringContaining('known_hubs.json'), 'utf-8')
 			expect(warnSpy).toBeCalledWith(expect.stringContaining(MOCK_FINGERPRINT))
@@ -129,7 +133,7 @@ describe('LogCatCommand', () => {
 		})
 
 		it('caches host details when user confirms connection', async () => {
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(fs.writeFile).toBeCalledWith(expect.stringContaining('known_hubs.json'), MOCK_KNOWN_HUBS)
 		})
@@ -153,7 +157,7 @@ describe('LogCatCommand', () => {
 
 			readFileMock.mockResolvedValueOnce(knownHubsRead)
 
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(fs.writeFile).toBeCalledWith(expect.stringContaining('known_hubs.json'), JSON.stringify(knownHubsWrite))
 		})
@@ -169,7 +173,7 @@ describe('LogCatCommand', () => {
 
 			readFileMock.mockResolvedValueOnce(knownHubsRead)
 
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(warnSpy).toBeCalledWith(expect.stringContaining(MOCK_FINGERPRINT))
 			expect(inquirer.prompt).toBeCalledWith(
@@ -183,7 +187,7 @@ describe('LogCatCommand', () => {
 		it('skips user verification on known fingerprint', async () => {
 			readFileMock.mockResolvedValueOnce(MOCK_KNOWN_HUBS)
 
-			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new ExitError(0))
+			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).rejects.toThrow(new Errors.ExitError(0))
 
 			expect(warnSpy).not.toBeCalled()
 			expect(inquirer.prompt).not.toBeCalled()

@@ -3,7 +3,7 @@ import https from 'https'
 import net from 'net'
 import { bgBlue, bgCyan, bgGray, bgGreen, bgRed, bgYellow, black, EventFormat, logManager } from '@smartthings/cli-lib'
 import { Authenticator } from '@smartthings/core-sdk'
-import { CLIError } from '@oclif/errors'
+import { Errors } from '@oclif/core'
 import { PeerCertificate, TLSSocket } from 'tls'
 import { ClientRequest } from 'http'
 import { inspect } from 'util'
@@ -136,11 +136,11 @@ export function liveLogMessageFormatter(event: any): EventFormat {
 export function parseIpAndPort(address: string): [string, string | undefined] {
 	const items = address.split(':')
 	if (items.length > 2) {
-		throw new CLIError('Invalid IPv4 address and port format.')
+		throw new Errors.CLIError('Invalid IPv4 address and port format.')
 	}
 
 	if (!net.isIPv4(items[0])) {
-		throw new CLIError('Invalid IPv4 address format.')
+		throw new Errors.CLIError('Invalid IPv4 address format.')
 	}
 
 	const ipv4 = items[0]
@@ -153,18 +153,18 @@ export function parseIpAndPort(address: string): [string, string | undefined] {
 		return [ipv4, port.toString()]
 	}
 
-	throw new CLIError('Invalid port format.')
+	throw new Errors.CLIError('Invalid port format.')
 }
 
 export function handleConnectionErrors(authority: string, error: string): never | void {
 	const generalMessage = 'Ensure hub address is correct and try again'
 
 	if (error.includes('ECONNREFUSED') || error.includes('EHOSTUNREACH')) {
-		throw new CLIError(`Unable to connect to ${authority}. ${generalMessage}`)
+		throw new Errors.CLIError(`Unable to connect to ${authority}. ${generalMessage}`)
 	} else if (error.includes('ETIMEDOUT')) {
-		throw new CLIError(`Connection to ${authority} timed out. ${generalMessage}`)
+		throw new Errors.CLIError(`Connection to ${authority} timed out. ${generalMessage}`)
 	} else if (error.includes('EHOSTDOWN')) {
-		throw new CLIError(`The host at ${authority} is down. ${generalMessage}`)
+		throw new Errors.CLIError(`The host at ${authority} is down. ${generalMessage}`)
 	}
 }
 
@@ -247,7 +247,7 @@ export class LiveLogClient {
 		if (error.code) {
 			// hack to address https://github.com/axios/axios/issues/1543
 			if (error.code === 'ECONNABORTED' && error.message.toLowerCase().includes('timeout')) {
-				throw new CLIError(`Connection to ${this.authority} timed out. ` +
+				throw new Errors.CLIError(`Connection to ${this.authority} timed out. ` +
 					'Ensure hub address is correct and try again')
 			}
 

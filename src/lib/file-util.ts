@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { CLIError } from '@oclif/errors'
+import { Errors } from '@oclif/core'
 import yaml from 'js-yaml'
 
 
@@ -28,14 +28,14 @@ export const requireFile = (filename: string): string => {
 	if (isFile(filename)) {
 		return filename
 	}
-	throw new CLIError(`missing required file: ${filename}`)
+	throw new Errors.CLIError(`missing required file: ${filename}`)
 }
 
 export const requireDir = (dirName: string): string => {
 	if (isDir(dirName)) {
 		return dirName
 	}
-	throw new CLIError(`missing required directory: ${dirName}`)
+	throw new Errors.CLIError(`missing required directory: ${dirName}`)
 }
 
 // using `object` because it is what `yaml.safeLoad` used to return
@@ -45,7 +45,7 @@ export const readYAMLFile = (filename: string, errorMessage?: string): string | 
 		// ISSUE: do more validation here and fix return type
 		return yaml.load(fs.readFileSync(filename, 'utf-8')) as string | object | undefined
 	} catch (error) {
-		throw new CLIError((errorMessage ?? 'error "{error}" reading {filename}')
+		throw new Errors.CLIError((errorMessage ?? 'error "{error}" reading {filename}')
 			.replace('{filename}', 'filename')
 			.replace('{error}', `${error}`))
 	}

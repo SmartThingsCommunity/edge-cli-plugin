@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { CLIError } from '@oclif/errors'
+import { Errors } from '@oclif/core'
 import JSZip from 'jszip'
 import picomatch from 'picomatch'
 
@@ -55,7 +55,7 @@ describe('package-utils', () => {
 		it('throws exception if directory does not exist', () => {
 			isDirSpy.mockReturnValue(false)
 
-			expect(() => resolveProjectDirName('my-bad-directory')).toThrow(CLIError)
+			expect(() => resolveProjectDirName('my-bad-directory')).toThrow(Errors.CLIError)
 		})
 	})
 
@@ -83,7 +83,7 @@ describe('package-utils', () => {
 			findYAMLFilenameSpy.mockReturnValueOnce(false)
 
 			expect(() => processConfigFile('my-project-dir', zipMock))
-				.toThrow(new CLIError('missing main config.yaml (or config.yml) file'))
+				.toThrow(new Errors.CLIError('missing main config.yaml (or config.yml) file'))
 
 			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
 			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('my-project-dir/config')
@@ -96,7 +96,7 @@ describe('package-utils', () => {
 			readYAMLFileSpy.mockImplementationOnce(() => undefined)
 
 			expect(() => processConfigFile('my-project-dir', zipMock))
-				.toThrow(new CLIError('empty config file'))
+				.toThrow(new Errors.CLIError('empty config file'))
 
 			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
 			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('my-project-dir/config')
@@ -111,7 +111,7 @@ describe('package-utils', () => {
 			readYAMLFileSpy.mockImplementationOnce(() => 'simple string')
 
 			expect(() => processConfigFile('my-project-dir', zipMock))
-				.toThrow(new CLIError('invalid config file'))
+				.toThrow(new Errors.CLIError('invalid config file'))
 
 			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
 			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('my-project-dir/config')
@@ -197,7 +197,7 @@ describe('package-utils', () => {
 			requireDirSpy.mockReturnValueOnce('src dir')
 			isFileSpy.mockReturnValueOnce(false)
 
-			expect(() => processSrcDir('project dir', zipMock, [])).toThrow(CLIError)
+			expect(() => processSrcDir('project dir', zipMock, [])).toThrow(Errors.CLIError)
 
 			expect(requireDirSpy).toHaveBeenCalledTimes(1)
 			expect(requireDirSpy).toHaveBeenCalledWith('project dir/src')
@@ -291,7 +291,7 @@ describe('package-utils', () => {
 			}
 
 			expect(() => processSrcDir('project dir', zipMock, []))
-				.toThrow(new CLIError(`drivers directory nested too deeply (at src dir${'/subdirectory'.repeat(9)}); max depth is 10`))
+				.toThrow(new Errors.CLIError(`drivers directory nested too deeply (at src dir${'/subdirectory'.repeat(9)}); max depth is 10`))
 
 			expect(requireDirSpy).toHaveBeenCalledTimes(1)
 			expect(requireDirSpy).toHaveBeenCalledWith('project dir/src')
@@ -373,7 +373,7 @@ describe('package-utils', () => {
 			readdirSyncMock.mockReturnValueOnce(['profile.exe'])
 
 			expect(() => processProfiles('project dir', zipMock))
-				.toThrow(new CLIError('invalid profile file "profiles dir/profile.exe" (must have .yaml or .yml extension)'))
+				.toThrow(new Errors.CLIError('invalid profile file "profiles dir/profile.exe" (must have .yaml or .yml extension)'))
 
 			expect(requireDirSpy).toHaveBeenCalledTimes(1)
 			expect(requireDirSpy).toHaveBeenCalledWith('project dir/profiles')

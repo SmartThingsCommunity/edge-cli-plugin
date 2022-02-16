@@ -1,5 +1,4 @@
 import { DriverInfo, DriverInfoStatus, handleConnectionErrors, LiveLogClient, LiveLogMessage, liveLogMessageFormatter, LogLevel, parseIpAndPort } from '../../../src/lib/live-logging'
-import { v4 as uuidv4 } from 'uuid'
 import stripAnsi from 'strip-ansi'
 import axios, { AxiosResponse } from 'axios'
 import { BearerTokenAuthenticator, NoOpAuthenticator } from '@smartthings/core-sdk'
@@ -14,10 +13,12 @@ jest.mock('axios', () => ({
 }))
 
 describe('live-logging', () => {
+	const driverId = 'driverId'
+
 	describe('liveLogMessageFormatter', () => {
 		const errorEvent: LiveLogMessage = {
 			timestamp: new Date().toISOString(),
-			driver_id: uuidv4(),
+			driver_id: driverId,
 			driver_name: 'Driver',
 			log_level: LogLevel.ERROR,
 			message: 'Something bad happened.',
@@ -107,7 +108,7 @@ describe('live-logging', () => {
 
 	describe('LiveLogClient', () => {
 		const authority = '192.168.0.1:9495'
-		const token = uuidv4()
+		const token = 'token'
 		const authenticator = new NoOpAuthenticator()
 		let testClient: LiveLogClient
 
@@ -125,7 +126,6 @@ describe('live-logging', () => {
 		})
 
 		it('returns log source for a specific driver', async () => {
-			const driverId = uuidv4()
 			const sourceURL = await testClient.getLogSource(driverId)
 
 			expect(sourceURL).toContain('?')
@@ -143,13 +143,13 @@ describe('live-logging', () => {
 				config: {},
 				data: [
 					{
-						driver_id: uuidv4(),
+						driver_id: driverId,
 						driver_name: 'Driver 0',
 						archive_hash: null,
 						status: DriverInfoStatus.Installed,
 					},
 					{
-						driver_id: uuidv4(),
+						driver_id: driverId,
 						driver_name: 'Driver 1',
 						archive_hash: null,
 						status: DriverInfoStatus.Installed,
