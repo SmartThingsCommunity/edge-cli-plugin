@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { CLIError } from '@oclif/errors'
+import { Errors } from '@oclif/core'
 import yaml from 'js-yaml'
 
 import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, requireFile } from '../../src/lib/file-util'
@@ -171,7 +171,7 @@ describe('file-util', () => {
 			readFileSyncMock.mockImplementation(() => { throw Error('read failure') })
 
 			expect(() => readYAMLFile('filename'))
-				.toThrow(new CLIError('error "Error: read failure" reading filename'))
+				.toThrow(new Errors.CLIError('error "Error: read failure" reading filename'))
 
 			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
 			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')
@@ -182,7 +182,7 @@ describe('file-util', () => {
 			safeLoadMock.mockImplementation(() => { throw Error('badness') })
 
 			expect(() => readYAMLFile('filename', 'error "{error}" reading config file'))
-				.toThrow(new CLIError('error "Error: badness" reading config file'))
+				.toThrow(new Errors.CLIError('error "Error: badness" reading config file'))
 
 			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
 			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')

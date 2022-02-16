@@ -53,16 +53,40 @@ export const chooseHub = async (command: APICommand, promptMessage: string,
 		sortKeyName: 'name',
 		listTableFieldDefinitions: ['label', 'name', 'deviceId'],
 	}
-	const listDrivers = (): Promise<Device[]> => command.client.devices.list(
-		{ capability: 'bridge', type: DeviceIntegrationType.HUB })
+
+	const listHubs = async (): Promise<Device[]> => {
+		const hubs = await command.client.devices.list({ capability: 'bridge', type: DeviceIntegrationType.HUB })
+		const locationIds = new Set<string>()
+		hubs.forEach(hub => {
+			if (hub.locationId !== undefined) {
+				locationIds.add(hub.locationId)
+			} else {
+				command.logger.warn('hub record found without locationId', hub)
+			}
+		})
+
+		// remove shared locations
+		for (const locationId of locationIds) {
+			const location = await command.client.locations.get(locationId, { allowed: true })
+
+			if (!location.allowed?.includes('d:locations')) {
+				command.logger.warn('filtering out location', location)
+				locationIds.delete(location.locationId)
+			}
+		}
+
+		const ownHubs = hubs.filter(hub => hub.locationId && locationIds.has(hub.locationId))
+
+		return ownHubs
+	}
 
 	const preselectedId = commandLineHubId
 		? (opts.allowIndex
-			? await stringTranslateToId(config, commandLineHubId, listDrivers)
+			? await stringTranslateToId(config, commandLineHubId, listHubs)
 			: commandLineHubId)
 		: defaultHubId
 
-	return selectFromList(command, config, preselectedId, listDrivers, promptMessage)
+	return selectFromList(command, config, preselectedId, listHubs, promptMessage)
 }
 
 export interface DriverChannelDetailsWithName extends DriverChannelDetails {

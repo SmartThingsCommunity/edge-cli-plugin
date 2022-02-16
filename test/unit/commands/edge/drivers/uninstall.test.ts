@@ -1,14 +1,13 @@
-import { v4 as uuid } from 'uuid'
 import DriversUninstallCommand from '../../../../../src/commands/edge/drivers/uninstall'
 import { InstalledDriver } from '../../../../../src/lib/endpoints/hubs'
 import { selectFromList } from '@smartthings/cli-lib'
 
 
 const MOCK_INSTALLED_DRIVER: InstalledDriver = {
-	driverId: uuid(),
+	driverId: 'driverId',
 	name: 'driver',
 	version: '1',
-	channelId: uuid(),
+	channelId: 'channelId',
 	developer: '',
 	vendorSupportInformation: '',
 	permissions: {},
@@ -25,7 +24,7 @@ jest.mock('@smartthings/cli-lib', () => {
 })
 
 jest.mock('../../../../../src/lib/commands/drivers-util', () => ({
-	chooseHub: jest.fn().mockResolvedValue(uuid()),
+	chooseHub: jest.fn().mockResolvedValue('hubId'),
 }))
 
 const mockListInstalled = jest.fn().mockResolvedValue([MOCK_INSTALLED_DRIVER])

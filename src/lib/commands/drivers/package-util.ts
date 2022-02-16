@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { CLIError } from '@oclif/errors'
+import { Errors } from '@oclif/core'
 import JSZip from 'jszip'
 import picomatch from 'picomatch'
 
@@ -20,7 +20,7 @@ export const resolveProjectDirName = (projectDirNameFromArgs: string): string =>
 		calculatedProjectDirName = calculatedProjectDirName.slice(0, -1)
 	}
 	if (!isDir(calculatedProjectDirName)) {
-		throw new CLIError(`${calculatedProjectDirName} must exist and be a directory`)
+		throw new Errors.CLIError(`${calculatedProjectDirName} must exist and be a directory`)
 	}
 	return calculatedProjectDirName
 }
@@ -28,16 +28,16 @@ export const resolveProjectDirName = (projectDirNameFromArgs: string): string =>
 export const processConfigFile = (projectDirectory: string, zip: JSZip): YAMLFileData => {
 	const configFile = findYAMLFilename(`${projectDirectory}/config`)
 	if (configFile === false) {
-		throw new CLIError('missing main config.yaml (or config.yml) file')
+		throw new Errors.CLIError('missing main config.yaml (or config.yml) file')
 	}
 
 	const parsedConfig = readYAMLFile(configFile, 'unable to parse {filename}: {error}')
 
 	if (parsedConfig == null) {
-		throw new CLIError('empty config file')
+		throw new Errors.CLIError('empty config file')
 	}
 	if (typeof parsedConfig === 'string') {
-		throw new CLIError('invalid config file')
+		throw new Errors.CLIError('invalid config file')
 	}
 
 	zip.file('config.yml', fs.createReadStream(configFile))
@@ -75,7 +75,7 @@ export const buildTestFileMatchers = (matchersFromConfig?: string | string[]): p
 export const processSrcDir = (projectDirectory: string, zip: JSZip, testFileMatchers: picomatch.Matcher[]): void => {
 	const srcDir = requireDir(`${projectDirectory}/src`)
 	if (!isFile(`${srcDir}/init.lua`)) {
-		throw new CLIError(`missing required ${srcDir}/init.lua file`)
+		throw new Errors.CLIError(`missing required ${srcDir}/init.lua file`)
 	}
 
 	// The max depth is 10 but the main project directory and the src directory itself count,
@@ -88,7 +88,7 @@ export const processSrcDir = (projectDirectory: string, zip: JSZip, testFileMatc
 				if (nested < 10) {
 					walkDir(fullFilename, nested + 1)
 				} else {
-					throw new CLIError(`drivers directory nested too deeply (at ${fullFilename}); max depth is 10`)
+					throw new Errors.CLIError(`drivers directory nested too deeply (at ${fullFilename}); max depth is 10`)
 				}
 			} else {
 				const filenameForTestMatch = fullFilename.substr(srcDir.length + 1)
@@ -117,7 +117,7 @@ export const processProfiles = (projectDirectory: string, zip: JSZip): void => {
 			}
 			zip.file(archiveName, fs.createReadStream(fullFilename))
 		} else {
-			throw new CLIError(`invalid profile file "${fullFilename}" (must have .yaml or .yml extension)`)
+			throw new Errors.CLIError(`invalid profile file "${fullFilename}" (must have .yaml or .yml extension)`)
 		}
 	}
 }

@@ -1,6 +1,4 @@
-import { Flags } from '@oclif/core'
-import { handle } from '@oclif/errors'
-import cli from 'cli-ux'
+import { CliUx, Errors, Flags } from '@oclif/core'
 import inquirer from 'inquirer'
 import { promises as fs } from 'fs'
 import { PeerCertificate } from 'tls'
@@ -166,7 +164,7 @@ export default class LogCatCommand extends SseCommand {
 		// ensure this resolves before connecting to the event source
 		const installedDrivers = await installedDriversPromise
 
-		cli.action.start('connecting')
+		CliUx.ux.action.start('connecting')
 		await this.initSource(sourceURL)
 
 		this.source.onopen = () => {
@@ -174,12 +172,12 @@ export default class LogCatCommand extends SseCommand {
 				this.warn('No drivers currently installed.')
 			}
 
-			cli.action.start('listening for logs')
+			CliUx.ux.action.start('listening for logs')
 		}
 
 		// error Event from eventsource doesn't always overlap with MessageEvent
 		this.source.onerror = (error: MessageEvent & Partial<{ status: number; message: string | undefined }>) => {
-			cli.action.stop('failed')
+			CliUx.ux.action.stop('failed')
 			this.teardown()
 			this.logger.debug(`Error from eventsource. URL: ${sourceURL} Error: ${inspect(error)}`)
 
@@ -195,7 +193,7 @@ export default class LogCatCommand extends SseCommand {
 				this.error(`Unexpected error from event source ${inspect(error)}`)
 			} catch (error) {
 				if (error instanceof Error) {
-					handle(error)
+					Errors.handle(error)
 				}
 			}
 		}
