@@ -43,7 +43,7 @@ $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 699
 		const { args, argv, flags } = await this.parse(ChannelsMetaInfoCommand)
 		await super.setup(args, argv, flags)
 
-		const channelId = await chooseChannel(this, 'Choose a channel to get metadata for.',
+		const channelId = await chooseChannel(this, 'Choose a channel to get meta info for.',
 			flags.channel, this.defaultChannelId)
 
 		const config = {

@@ -4,6 +4,11 @@ import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizatio
 	stringTranslateToId } from '@smartthings/cli-lib'
 
 
+export const listTableFieldDefinitions = ['channelId', 'name', 'description', 'termsOfServiceUrl',
+	'createdDate', 'lastModifiedDate']
+
+export const tableFieldDefinitions = listTableFieldDefinitions
+
 export interface ChooseChannelOptions extends ChooseOptions {
 	includeReadOnly: boolean
 }
@@ -40,10 +45,7 @@ export async function listChannels(command: APICommand, subscriberType?: Subscri
 	const allOrganizations = command.flags['all-organizations']
 	const includeReadOnly = (options && options.includeReadOnly) || command.flags['include-read-only']
 	if (allOrganizations) {
-		const result = await forAllOrganizations(command.client, (org) => {
-			const orgClient = command.client.clone({ 'X-ST-Organization': org.organizationId })
-			return orgClient.channels.list()
-		})
+		const result = await forAllOrganizations(command.client, orgClient => orgClient.channels.list())
 		if (includeReadOnly) {
 			const possibleShared = await command.client.channels.list({ includeReadOnly, subscriberType, subscriberId })
 			for (const channel of possibleShared) {

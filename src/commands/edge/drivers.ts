@@ -1,10 +1,10 @@
 import { Flags } from '@oclif/core'
 
-import { outputListing, forAllOrganizations, allOrganizationsFlags } from '@smartthings/cli-lib'
-import { EdgeDriver, EdgeDriverSummary } from '@smartthings/core-sdk'
+import { outputListing, allOrganizationsFlags } from '@smartthings/cli-lib'
+import { EdgeDriver } from '@smartthings/core-sdk'
 
 import { EdgeCommand } from '../../lib/edge-command'
-import { buildTableOutput, listTableFieldDefinitions } from '../../lib/commands/drivers-util'
+import { buildTableOutput, listDrivers, listTableFieldDefinitions } from '../../lib/commands/drivers-util'
 
 
 export default class DriversCommand extends EdgeCommand {
@@ -54,20 +54,15 @@ $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725 --version 2021-1
 			listTableFieldDefinitions,
 		}
 
-		const listDrivers = (): Promise<EdgeDriverSummary[]> => {
-			if (flags['all-organizations']) {
-				config.listTableFieldDefinitions.push('organization')
-				return forAllOrganizations(this.client, org => {
-					const orgClient = this.client.clone({ 'X-ST-Organization': org.organizationId })
-					return orgClient.drivers.list()
-				})
-			}
-			return this.client.drivers.list()
+		if (flags['all-organizations']) {
+			config.listTableFieldDefinitions.push('organization')
 		}
 
 		const getDriver = (id: string): Promise<EdgeDriver> =>
 			flags.version ? this.client.drivers.getRevision(id, flags.version) : this.client.drivers.get(id)
 
-		await outputListing(this, config, args.idOrIndex, listDrivers, getDriver)
+		await outputListing(this, config, args.idOrIndex,
+			() => listDrivers(this.client, flags['all-organizations']),
+			getDriver)
 	}
 }
