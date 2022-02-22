@@ -1,7 +1,7 @@
 import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDriver, EdgeDriverSummary,
 	SmartThingsClient } from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsWithDefaults, selectFromList,
+import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
 	stringTranslateToId, summarizedText, TableGenerator } from '@smartthings/cli-lib'
 
 
@@ -10,7 +10,7 @@ export const listTableFieldDefinitions = ['driverId', 'name', 'version', 'packag
 export const permissionsValue = (driver: EdgeDriver): string => driver.permissions?.map(permission => permission.name).join('\n') || 'none'
 export const buildTableOutput = (tableGenerator: TableGenerator, driver: EdgeDriver): string => {
 	const basicInfo = tableGenerator.buildTableFromItem(driver, [
-		'driverId', 'name', 'version', 'packageKey',
+		'driverId', 'name', 'version', 'packageKey', 'description',
 		{ label: 'Permissions', value: permissionsValue },
 	])
 
@@ -27,6 +27,12 @@ export const buildTableOutput = (tableGenerator: TableGenerator, driver: EdgeDri
 		`${fingerprints}\n\n` +
 		summarizedText
 }
+
+export const listDrivers = async (client: SmartThingsClient, includeAllOrganizations?: boolean): Promise<EdgeDriver[]> =>
+	includeAllOrganizations
+		? forAllOrganizations(client, orgClient => orgClient.drivers.list())
+		: client.drivers.list()
+
 
 export async function chooseDriver(command: APICommand, promptMessage: string, commandLineDriverId?: string,
 		options?: Partial<ChooseOptions>): Promise<string> {

@@ -4,13 +4,8 @@ import { SubscriberType } from '@smartthings/core-sdk'
 
 import { outputListing, allOrganizationsFlags } from '@smartthings/cli-lib'
 import { EdgeCommand } from '../../lib/edge-command'
-import { listChannels} from '../../lib/commands/channels-util'
+import { listChannels, listTableFieldDefinitions, tableFieldDefinitions } from '../../lib/commands/channels-util'
 
-
-export const listTableFieldDefinitions = ['channelId', 'name', 'description', 'termsOfServiceUrl',
-	'createdDate', 'lastModifiedDate']
-
-export const tableFieldDefinitions = listTableFieldDefinitions
 
 export default class ChannelsCommand extends EdgeCommand {
 	static description = 'list all channels owned by you or retrieve a single channel'
@@ -60,14 +55,12 @@ $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>`]
 			listTableFieldDefinitions,
 			tableFieldDefinitions,
 		}
+		if (flags['all-organizations']) {
+			config.listTableFieldDefinitions.push('organization')
+		}
 
 		await outputListing(this, config, args.idOrIndex,
-			async () => {
-				if (flags['all-organizations']) {
-					config.listTableFieldDefinitions.push('organization')
-				}
-				return listChannels(this, flags['subscriber-type'] as SubscriberType | undefined, flags['subscriber-id'])
-			},
+			async () => listChannels(this, flags['subscriber-type'] as SubscriberType | undefined, flags['subscriber-id']),
 			id => this.client.channels.get(id))
 	}
 }
