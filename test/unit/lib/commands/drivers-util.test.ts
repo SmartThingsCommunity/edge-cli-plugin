@@ -260,8 +260,7 @@ describe('drivers-util', () => {
 			expect(await listFunction()).toStrictEqual(list)
 
 			expect(listDevicesMock).toHaveBeenCalledTimes(1)
-			expect(listDevicesMock).toHaveBeenCalledWith(
-				{ capability: 'bridge', type: DeviceIntegrationType.HUB })
+			expect(listDevicesMock).toHaveBeenCalledWith({ type: DeviceIntegrationType.HUB })
 		})
 
 		test('list function checks hub locations for ownership', async () => {
