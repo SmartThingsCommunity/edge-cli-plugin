@@ -61,7 +61,7 @@ export const chooseHub = async (command: APICommand, promptMessage: string,
 	}
 
 	const listHubs = async (): Promise<Device[]> => {
-		const hubs = await command.client.devices.list({ capability: 'bridge', type: DeviceIntegrationType.HUB })
+		const hubs = await command.client.devices.list({ type: DeviceIntegrationType.HUB })
 		const locationIds = new Set<string>()
 		hubs.forEach(hub => {
 			if (hub.locationId !== undefined) {
