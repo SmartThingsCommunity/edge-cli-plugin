@@ -190,31 +190,44 @@ function scrubAuthInfo(obj: unknown): string {
  */
 export type HostVerifier = (cert: PeerCertificate) => Promise<void | never>
 
+export interface LiveLogClientConfig {
+	/**
+	 * @example 192.168.0.1:9495
+	 */
+	authority: string
+	authenticator: Authenticator
+	verifier?: HostVerifier
+	/**
+	 * milliseconds
+	 */
+	timeout: number
+}
+
 export class LiveLogClient {
-	private authority: string
 	private driversURL: URL
 	private logsURL: URL
-	private authenticator: Authenticator
 	private hostVerified: boolean
-	private verifier?: HostVerifier
 
-	constructor(authority: string, authenticator: Authenticator, verifier?: HostVerifier) {
-		const baseURL = new URL(`https://${authority}`)
+	constructor(private readonly config: LiveLogClientConfig) {
+		const baseURL = new URL(`https://${config.authority}`)
 
-		this.authority = authority
 		this.driversURL = new URL('drivers', baseURL)
 		this.logsURL = new URL('drivers/logs', baseURL)
-		this.authenticator = authenticator
-		this.hostVerified = verifier === undefined
-		this.verifier = verifier
+		this.hostVerified = config.verifier === undefined
 	}
 
 	private async request(url: string, method: Method = 'GET'): Promise<AxiosResponse> {
-		const config = await this.authenticator.authenticate({
+		const config = await this.config.authenticator.authenticate({
 			url: url,
 			method: method,
 			httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-			timeout: 5000, // milliseconds
+			timeout: this.config.timeout,
+			transitional: {
+				silentJSONParsing: true,
+				forcedJSONParsing: true,
+				// throw ETIMEDOUT error instead of generic ECONNABORTED on request timeouts
+				clarifyTimeoutError: true,
+			},
 		})
 
 		let response
@@ -235,8 +248,8 @@ export class LiveLogClient {
 			throw error
 		}
 
-		if (!this.hostVerified && this.verifier) {
-			await this.verifier(this.getCertificate(response))
+		if (!this.hostVerified && this.config.verifier) {
+			await this.config.verifier(this.getCertificate(response))
 			this.hostVerified = true
 		}
 
@@ -245,13 +258,7 @@ export class LiveLogClient {
 
 	private handleAxiosConnectionErrors(error: AxiosError): never | void {
 		if (error.code) {
-			// hack to address https://github.com/axios/axios/issues/1543
-			if (error.code === 'ECONNABORTED' && error.message.toLowerCase().includes('timeout')) {
-				throw new Errors.CLIError(`Connection to ${this.authority} timed out. ` +
-					'Ensure hub address is correct and try again')
-			}
-
-			handleConnectionErrors(this.authority, error.code)
+			handleConnectionErrors(this.config.authority, error.code)
 		}
 	}
 
