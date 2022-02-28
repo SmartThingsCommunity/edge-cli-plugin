@@ -6,6 +6,7 @@ import {
 	DriverInfo,
 	handleConnectionErrors,
 	LiveLogClient,
+	LiveLogClientConfig,
 	LiveLogMessage,
 	liveLogMessageFormatter,
 	parseIpAndPort,
@@ -25,6 +26,7 @@ import { inspect } from 'util'
 
 const DEFAULT_ALL_TEXT = 'all'
 const DEFAULT_LIVE_LOG_PORT = 9495
+const DEFAULT_LIVE_LOG_TIMEOUT = 30_000 // milliseconds
 
 /**
  * Define labels to stay consistent with other driver commands
@@ -84,6 +86,11 @@ export default class LogCatCommand extends SseCommand {
 		'hub-address': Flags.string({
 			description: 'IPv4 address of hub with optionally appended port number',
 		}),
+		'connect-timeout': Flags.integer({
+			description: 'max time allowed when connecting to hub',
+			helpValue: '<milliseconds>',
+			default: DEFAULT_LIVE_LOG_TIMEOUT,
+		}),
 	}
 
 	static args = [
@@ -104,26 +111,28 @@ export default class LogCatCommand extends SseCommand {
 
 		const known = knownHubs[this.authority]
 		if (!known || known.fingerprint !== cert.fingerprint) {
-			this.warn(`The authenticity of ${this.authority} can't be established. Certificate fingerprint is ${cert.fingerprint}`)
-			const verified = (await inquirer.prompt({
-				type: 'confirm',
-				name: 'connect',
-				message: 'Are you sure you want to continue connecting?',
-				default: false,
-			})).connect
+			await CliUx.ux.action.pauseAsync(async () => {
+				this.warn(`The authenticity of ${this.authority} can't be established. Certificate fingerprint is ${cert.fingerprint}`)
+				const verified = (await inquirer.prompt({
+					type: 'confirm',
+					name: 'connect',
+					message: 'Are you sure you want to continue connecting?',
+					default: false,
+				})).connect
 
-			if (!verified) {
-				this.error('Hub verification failed.')
-			}
+				if (!verified) {
+					this.error('Hub verification failed.')
+				}
 
-			knownHubs[this.authority] = { hostname: this.authority, fingerprint: cert.fingerprint }
-			await fs.writeFile(knownHubsPath, JSON.stringify(knownHubs))
+				knownHubs[this.authority] = { hostname: this.authority, fingerprint: cert.fingerprint }
+				await fs.writeFile(knownHubsPath, JSON.stringify(knownHubs))
 
-			this.warn(`Permanently added ${this.authority} to the list of known hubs.`)
+				this.warn(`Permanently added ${this.authority} to the list of known hubs.`)
+			})
 		}
 	}
 
-	private async chooseHubDrivers(commandLineDriverId?: string, driversList?: Promise<DriverInfo[]>): Promise<string> {
+	private async chooseHubDrivers(commandLineDriverId?: string, driversList?: DriverInfo[]): Promise<string> {
 		const config = {
 			itemName: 'driver',
 			primaryKeyName: 'driver_id',
@@ -131,7 +140,7 @@ export default class LogCatCommand extends SseCommand {
 			listTableFieldDefinitions: driverFieldDefinitions,
 		}
 
-		const list = driversList ?? this.logClient.getDrivers()
+		const list = driversList !== undefined ? Promise.resolve(driversList) : this.logClient.getDrivers()
 		const preselectedId = await stringTranslateToId(config, commandLineDriverId, () => list)
 		return selectGeneric(this, config, preselectedId, () => list, promptForDrivers)
 	}
@@ -147,27 +156,47 @@ export default class LogCatCommand extends SseCommand {
 		const liveLogPort = port ?? DEFAULT_LIVE_LOG_PORT
 		this.authority = `${ipv4}:${liveLogPort}`
 
-		this.logClient = new LiveLogClient(this.authority, this.authenticator, this.checkServerIdentity.bind(this))
+		const config: LiveLogClientConfig = {
+			authority: this.authority,
+			authenticator: this.authenticator,
+			verifier: this.checkServerIdentity.bind(this),
+			timeout: flags['connect-timeout'],
+		}
+
+		this.logClient = new LiveLogClient(config)
 	}
 
 	async run(): Promise<void> {
-		const installedDriversPromise = this.logClient.getDrivers()
+		CliUx.ux.action.start('connecting')
+
+		// ensure host verification resolves before connecting to the event source
+		const installedDrivers = await this.logClient.getDrivers()
 
 		let sourceURL: string
 		if (this.flags.all) {
 			sourceURL = this.logClient.getLogSource()
 		} else {
-			const driverId = await this.chooseHubDrivers(this.args.driverId, installedDriversPromise)
+			const driverId = await CliUx.ux.action.pauseAsync(() => this.chooseHubDrivers(this.args.driverId, installedDrivers))
 			sourceURL = driverId == DEFAULT_ALL_TEXT ? this.logClient.getLogSource() : this.logClient.getLogSource(driverId)
 		}
 
-		// ensure this resolves before connecting to the event source
-		const installedDrivers = await installedDriversPromise
-
-		CliUx.ux.action.start('connecting')
 		await this.initSource(sourceURL)
 
+		const sourceTimeoutID = setTimeout(() => {
+			this.teardown()
+			CliUx.ux.action.stop('failed')
+			try {
+				handleConnectionErrors(this.authority, 'ETIMEDOUT')
+			} catch (error) {
+				if (error instanceof Error) {
+					Errors.handle(error)
+				}
+			}
+		}, this.flags['connect-timeout']).unref() // unref lets Node exit before callback is invoked
+
 		this.source.onopen = () => {
+			clearTimeout(sourceTimeoutID)
+
 			if (installedDrivers.length === 0) {
 				this.warn('No drivers currently installed.')
 			}
@@ -176,11 +205,10 @@ export default class LogCatCommand extends SseCommand {
 		}
 
 		// error Event from eventsource doesn't always overlap with MessageEvent
-		this.source.onerror = (error: MessageEvent & Partial<{ status: number; message: string | undefined }>) => {
-			CliUx.ux.action.stop('failed')
+		this.source.onerror = (error: MessageEvent & Partial<{ status: number; message: string }>) => {
 			this.teardown()
+			CliUx.ux.action.stop('failed')
 			this.logger.debug(`Error from eventsource. URL: ${sourceURL} Error: ${inspect(error)}`)
-
 			try {
 				if (error.status === 401 || error.status === 403) {
 					this.error(`Unauthorized at ${this.authority}`)
@@ -201,5 +229,16 @@ export default class LogCatCommand extends SseCommand {
 		this.source.onmessage = (event: MessageEvent<LiveLogMessage>) => {
 			logEvent(event, liveLogMessageFormatter)
 		}
+	}
+
+	async catch(error: unknown): Promise<void> {
+		this.teardown()
+		// exit gracefully for Command.exit(0)
+		if (error instanceof Errors.ExitError && error.oclif.exit === 0) {
+			return
+		}
+
+		CliUx.ux.action.stop('failed')
+		await super.catch(error)
 	}
 }

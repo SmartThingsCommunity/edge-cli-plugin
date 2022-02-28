@@ -1,4 +1,4 @@
-import { DriverInfo, DriverInfoStatus, handleConnectionErrors, LiveLogClient, LiveLogMessage, liveLogMessageFormatter, LogLevel, parseIpAndPort } from '../../../src/lib/live-logging'
+import { DriverInfo, DriverInfoStatus, handleConnectionErrors, LiveLogClient, LiveLogClientConfig, LiveLogMessage, liveLogMessageFormatter, LogLevel, parseIpAndPort } from '../../../src/lib/live-logging'
 import stripAnsi from 'strip-ansi'
 import axios, { AxiosResponse } from 'axios'
 import { BearerTokenAuthenticator, NoOpAuthenticator } from '@smartthings/core-sdk'
@@ -107,13 +107,21 @@ describe('live-logging', () => {
 	})
 
 	describe('LiveLogClient', () => {
+		const axiosRequestSpy = jest.spyOn(axios, 'request')
+
 		const authority = '192.168.0.1:9495'
-		const token = 'token'
 		const authenticator = new NoOpAuthenticator()
+		const timeout = 1000
+		const token = 'token'
+		const config: LiveLogClientConfig = {
+			authority,
+			authenticator,
+			timeout,
+		}
 		let testClient: LiveLogClient
 
 		beforeEach(() => {
-			testClient = new LiveLogClient(authority, authenticator)
+			testClient = new LiveLogClient(config)
 		})
 
 		afterEach(() => {
@@ -134,7 +142,11 @@ describe('live-logging', () => {
 
 		it('calls drivers endpoint with auth and timeout', async () => {
 			const bearerAuthenticator = new BearerTokenAuthenticator(token)
-			testClient = new LiveLogClient(authority, bearerAuthenticator)
+			const bearerConfig = {
+				...config,
+				authenticator: bearerAuthenticator,
+			}
+			testClient = new LiveLogClient(bearerConfig)
 
 			const axiosResponse: AxiosResponse<DriverInfo[]> = {
 				status: 200,
@@ -157,14 +169,28 @@ describe('live-logging', () => {
 				],
 			}
 
-			const axiosSpy = jest.spyOn(axios, 'request').mockResolvedValueOnce(axiosResponse)
+			axiosRequestSpy.mockResolvedValueOnce(axiosResponse)
 
 			await testClient.getDrivers()
 
-			expect(axiosSpy).toBeCalledWith(
+			expect(axiosRequestSpy).toBeCalledWith(
 				expect.objectContaining({
 					headers: expect.objectContaining({ Authorization: `Bearer ${token}` }),
-					timeout: expect.any(Number),
+					timeout: timeout,
+				}),
+			)
+		})
+
+		it('calls axios with transitional options to enable ETIMEDOUT', async () => {
+			axiosRequestSpy.mockResolvedValueOnce({ data: [] })
+
+			await testClient.getDrivers()
+
+			expect(axiosRequestSpy).toBeCalledWith(
+				expect.objectContaining({
+					transitional: expect.objectContaining({
+						clarifyTimeoutError: true,
+					}),
 				}),
 			)
 		})
@@ -193,7 +219,7 @@ describe('live-logging', () => {
 				toJSON: () => ({}),
 			}
 
-			jest.spyOn(axios, 'request').mockRejectedValueOnce(axiosError)
+			axiosRequestSpy.mockRejectedValueOnce(axiosError)
 
 			await expect(testClient.getDrivers()).rejects.toThrow('Ensure hub address is correct and try again')
 		})
@@ -215,8 +241,12 @@ describe('live-logging', () => {
 			}
 
 			const mockHostVerifier = jest.fn()
-			testClient = new LiveLogClient(authority, authenticator, mockHostVerifier)
-			jest.spyOn(axios, 'request').mockResolvedValue(certResponse)
+			const verifierConfig = {
+				...config,
+				verifier: mockHostVerifier,
+			}
+			testClient = new LiveLogClient(verifierConfig)
+			axiosRequestSpy.mockResolvedValue(certResponse)
 
 			await testClient.getDrivers()
 

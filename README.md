@@ -653,18 +653,19 @@ stream logs from installed drivers
 ```
 USAGE
   $ smartthings edge:drivers:logcat [DRIVERID] [-h] [-p <value>] [-t <value>] [--language <value>] [-a] [--hub-address
-    <value>]
+    <value>] [--connect-timeout <value>]
 
 ARGUMENTS
   DRIVERID  a specific driver to stream logs from
 
 FLAGS
-  -a, --all              stream from all installed drivers
-  -h, --help             Show CLI help.
-  -p, --profile=<value>  [default: default] configuration profile
-  -t, --token=<value>    the auth token to use
-  --hub-address=<value>  IPv4 address of hub with optionally appended port number
-  --language=<value>     ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+  -a, --all                         stream from all installed drivers
+  -h, --help                        Show CLI help.
+  -p, --profile=<value>             [default: default] configuration profile
+  -t, --token=<value>               the auth token to use
+  --connect-timeout=<milliseconds>  [default: 30000] max time allowed when connecting to hub
+  --hub-address=<value>             IPv4 address of hub with optionally appended port number
+  --language=<value>                ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 DESCRIPTION
   stream logs from installed drivers
