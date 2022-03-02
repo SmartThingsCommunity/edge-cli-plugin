@@ -67,6 +67,9 @@ jest.mock('../../../../../src/lib/live-logging', () => ({
 	handleConnectionErrors: jest.fn(),
 }))
 
+// avoid creating a bunch of signal listeners between tests
+jest.spyOn(SseCommand.prototype, 'init').mockImplementation()
+
 describe('LogCatCommand', () => {
 	const mockStringTranslateToId = jest.mocked(stringTranslateToId).mockResolvedValue('all')
 	const mockSelectGeneric = jest.mocked(selectGeneric).mockRejectedValue(new Errors.ExitError(0))

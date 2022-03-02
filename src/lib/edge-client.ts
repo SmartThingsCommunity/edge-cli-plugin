@@ -17,6 +17,7 @@ export class EdgeClient extends RESTClient {
 	}
 
 	public cloneEdge(headers?: HttpClientHeaders): EdgeClient {
-		return new EdgeClient(this.config.authenticator, {...this.config, headers})
+		const config: RESTClientConfig = { ...this.config, headers: { ...this.config.headers, ...headers } }
+		return new EdgeClient(this.config.authenticator, config)
 	}
 }
