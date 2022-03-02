@@ -14,6 +14,7 @@ import {
 import {
 	askForRequiredString,
 	convertToId,
+	EventSourceError,
 	logEvent,
 	selectGeneric,
 	Sorting,
@@ -161,6 +162,7 @@ export default class LogCatCommand extends SseCommand {
 			authenticator: this.authenticator,
 			verifier: this.checkServerIdentity.bind(this),
 			timeout: flags['connect-timeout'],
+			userAgent: this.userAgent,
 		}
 
 		this.logClient = new LiveLogClient(config)
@@ -204,8 +206,7 @@ export default class LogCatCommand extends SseCommand {
 			CliUx.ux.action.start('listening for logs')
 		}
 
-		// error Event from eventsource doesn't always overlap with MessageEvent
-		this.source.onerror = (error: MessageEvent & Partial<{ status: number; message: string }>) => {
+		this.source.onerror = (error: EventSourceError) => {
 			this.teardown()
 			CliUx.ux.action.stop('failed')
 			this.logger.debug(`Error from eventsource. URL: ${sourceURL} Error: ${inspect(error)}`)
@@ -232,9 +233,9 @@ export default class LogCatCommand extends SseCommand {
 	}
 
 	async catch(error: unknown): Promise<void> {
-		this.teardown()
 		// exit gracefully for Command.exit(0)
 		if (error instanceof Errors.ExitError && error.oclif.exit === 0) {
+			this.teardown()
 			return
 		}
 

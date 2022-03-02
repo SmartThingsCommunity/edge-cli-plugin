@@ -201,6 +201,7 @@ export interface LiveLogClientConfig {
 	 * milliseconds
 	 */
 	timeout: number
+	userAgent: string
 }
 
 export class LiveLogClient {
@@ -222,6 +223,7 @@ export class LiveLogClient {
 			method: method,
 			httpsAgent: new https.Agent({ rejectUnauthorized: false }),
 			timeout: this.config.timeout,
+			headers: { 'User-Agent': this.config.userAgent },
 			transitional: {
 				silentJSONParsing: true,
 				forcedJSONParsing: true,

@@ -1,4 +1,4 @@
-import { BearerTokenAuthenticator } from '@smartthings/core-sdk'
+import { BearerTokenAuthenticator, HttpClientHeaders } from '@smartthings/core-sdk'
 
 import { APIOrganizationCommand, LoginAuthenticator, logManager } from '@smartthings/cli-lib'
 
@@ -29,10 +29,9 @@ export abstract class EdgeCommand extends APIOrganizationCommand {
 
 		const authenticator = this.token
 			? new BearerTokenAuthenticator(this.token)
-			: new LoginAuthenticator(this.profileName, this.clientIdProvider)
+			: new LoginAuthenticator(this.profileName, this.clientIdProvider, this.userAgent)
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const headers: { [name: string]: any } = {}
+		const headers: HttpClientHeaders = { 'User-Agent': this.userAgent }
 
 		if (flags.organization) {
 			headers[ORGANIZATION_HEADER] = flags.organization

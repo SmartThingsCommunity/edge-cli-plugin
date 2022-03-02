@@ -112,11 +112,13 @@ describe('live-logging', () => {
 		const authority = '192.168.0.1:9495'
 		const authenticator = new NoOpAuthenticator()
 		const timeout = 1000
+		const userAgent = 'userAgent'
 		const token = 'token'
 		const config: LiveLogClientConfig = {
 			authority,
 			authenticator,
 			timeout,
+			userAgent,
 		}
 		let testClient: LiveLogClient
 
@@ -128,13 +130,13 @@ describe('live-logging', () => {
 			jest.clearAllMocks()
 		})
 
-		it('returns log source for all drivers', async () => {
-			const sourceURL = await testClient.getLogSource()
+		it('returns log source for all drivers', () => {
+			const sourceURL = testClient.getLogSource()
 			expect(sourceURL).not.toContain('?')
 		})
 
-		it('returns log source for a specific driver', async () => {
-			const sourceURL = await testClient.getLogSource(driverId)
+		it('returns log source for a specific driver', () => {
+			const sourceURL = testClient.getLogSource(driverId)
 
 			expect(sourceURL).toContain('?')
 			expect(sourceURL).toContain(driverId)
@@ -190,6 +192,20 @@ describe('live-logging', () => {
 				expect.objectContaining({
 					transitional: expect.objectContaining({
 						clarifyTimeoutError: true,
+					}),
+				}),
+			)
+		})
+
+		it('uses CLI User-Agent in axios requests', async () => {
+			axiosRequestSpy.mockResolvedValueOnce({ data: [] })
+
+			await testClient.getDrivers()
+
+			expect(axiosRequestSpy).toBeCalledWith(
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						'User-Agent': userAgent,
 					}),
 				}),
 			)
