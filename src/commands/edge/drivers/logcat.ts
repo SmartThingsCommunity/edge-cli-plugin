@@ -23,6 +23,8 @@ import {
 	TableFieldDefinition,
 } from '@smartthings/cli-lib'
 import { inspect } from 'util'
+// TODO: export text colors from cli-lib
+import chalk from 'chalk'
 
 
 const DEFAULT_ALL_TEXT = 'all'
@@ -186,7 +188,7 @@ export default class LogCatCommand extends SseCommand {
 
 		const sourceTimeoutID = setTimeout(() => {
 			this.teardown()
-			CliUx.ux.action.stop('failed')
+			CliUx.ux.action.stop(chalk.red('failed'))
 			try {
 				handleConnectionErrors(this.authority, 'ETIMEDOUT')
 			} catch (error) {
@@ -203,12 +205,12 @@ export default class LogCatCommand extends SseCommand {
 				this.warn('No drivers currently installed.')
 			}
 
-			CliUx.ux.action.start('listening for logs')
+			CliUx.ux.action.stop(chalk.green('connected'))
 		}
 
 		this.source.onerror = (error: EventSourceError) => {
 			this.teardown()
-			CliUx.ux.action.stop('failed')
+			CliUx.ux.action.stop(chalk.red('failed'))
 			this.logger.debug(`Error from eventsource. URL: ${sourceURL} Error: ${inspect(error)}`)
 			try {
 				if (error.status === 401 || error.status === 403) {
@@ -239,7 +241,7 @@ export default class LogCatCommand extends SseCommand {
 			return
 		}
 
-		CliUx.ux.action.stop('failed')
+		CliUx.ux.action.stop(chalk.red('failed'))
 		await super.catch(error)
 	}
 }
