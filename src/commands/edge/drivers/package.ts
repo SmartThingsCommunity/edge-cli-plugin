@@ -118,7 +118,9 @@ $ smartthings edge:drivers:package -u driver.zip`]
 			processConfigFile(projectDirectory, zip)
 
 			processFingerprintsFile(projectDirectory, zip)
-			const testFileMatchers = buildTestFileMatchers(this.profileConfig.edgeDriverTestDirs)
+			// TODO: do more type checking here
+			const edgeDriverTestDirs = this.profile.edgeDriverTestDirs as string | string[]
+			const testFileMatchers = buildTestFileMatchers(edgeDriverTestDirs)
 			processSrcDir(projectDirectory, zip, testFileMatchers)
 
 			processProfiles(projectDirectory, zip)
