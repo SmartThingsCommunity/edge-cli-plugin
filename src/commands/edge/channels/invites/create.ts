@@ -72,7 +72,7 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 			validate: input => input ? true : 'termsUrl is required',
 		})).termsUrl as string
 
-		const profileId = (this.profileConfig.defaultInvitationProfileId as string)
+		const profileId = (this.profile.defaultInvitationProfileId as string)
 			?? defaultInvitationProfileId
 		return {
 			resource: {

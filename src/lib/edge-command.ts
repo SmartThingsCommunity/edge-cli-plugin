@@ -1,11 +1,7 @@
-import { BearerTokenAuthenticator, HttpClientHeaders } from '@smartthings/core-sdk'
-
-import { APIOrganizationCommand, LoginAuthenticator, logManager } from '@smartthings/cli-lib'
+import { APIOrganizationCommand, logManager } from '@smartthings/cli-lib'
 
 import { EdgeClient } from './edge-client'
 
-
-const ORGANIZATION_HEADER = 'X-ST-Organization'
 
 export abstract class EdgeCommand extends APIOrganizationCommand {
 
@@ -27,21 +23,9 @@ export abstract class EdgeCommand extends APIOrganizationCommand {
 	async setup(args: { [name: string]: any }, argv: string[], flags: { [name: string]: any }): Promise<void> {
 		await super.setup(args, argv, flags)
 
-		const authenticator = this.token
-			? new BearerTokenAuthenticator(this.token)
-			: new LoginAuthenticator(this.profileName, this.clientIdProvider, this.userAgent)
-
-		const headers: HttpClientHeaders = { 'User-Agent': this.userAgent }
-
-		if (flags.organization) {
-			headers[ORGANIZATION_HEADER] = flags.organization
-		} else if ('organization' in this.profileConfig) {
-			headers[ORGANIZATION_HEADER] = this.profileConfig.organization
-		}
-
 		const logger = logManager.getLogger('rest-client')
-		this._edgeClient = new EdgeClient(authenticator,
-			{ urlProvider: this.clientIdProvider, logger, headers })
+		this._edgeClient = new EdgeClient(this.authenticator,
+			{ urlProvider: this.clientIdProvider, logger, headers: this.headers })
 
 		this.defaultChannelId = this.stringConfigValue('defaultChannel')
 		this.defaultHubId = this.stringConfigValue('defaultHub')

@@ -153,18 +153,18 @@ describe('file-util', () => {
 
 	describe('readYAMLFile', () => {
 		const readFileSyncMock = jest.mocked(fs.readFileSync)
-		const safeLoadMock = jest.mocked(yaml.load)
+		const yamlLoadMock = jest.mocked(yaml.load)
 
 		it('returns processed file', () => {
 			readFileSyncMock.mockReturnValueOnce(('file contents'))
-			safeLoadMock.mockReturnValueOnce('parsed yaml file')
+			yamlLoadMock.mockReturnValueOnce('parsed yaml file')
 
 			expect(readYAMLFile('filename')).toBe('parsed yaml file')
 
 			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
 			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')
-			expect(safeLoadMock).toHaveBeenCalledTimes(1)
-			expect(safeLoadMock).toHaveBeenCalledWith('file contents')
+			expect(yamlLoadMock).toHaveBeenCalledTimes(1)
+			expect(yamlLoadMock).toHaveBeenCalledWith('file contents')
 		})
 
 		it('has default error message', () => {
@@ -179,15 +179,15 @@ describe('file-util', () => {
 
 		it('uses specified error message', () => {
 			readFileSyncMock.mockReturnValueOnce(('file contents'))
-			safeLoadMock.mockImplementation(() => { throw Error('badness') })
+			yamlLoadMock.mockImplementation(() => { throw Error('badness') })
 
 			expect(() => readYAMLFile('filename', 'error "{error}" reading config file'))
 				.toThrow(new Errors.CLIError('error "Error: badness" reading config file'))
 
 			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
 			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')
-			expect(safeLoadMock).toHaveBeenCalledTimes(1)
-			expect(safeLoadMock).toHaveBeenCalledWith('file contents')
+			expect(yamlLoadMock).toHaveBeenCalledTimes(1)
+			expect(yamlLoadMock).toHaveBeenCalledWith('file contents')
 		})
 	})
 })
