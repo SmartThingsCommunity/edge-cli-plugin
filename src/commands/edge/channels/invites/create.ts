@@ -42,7 +42,7 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 
 	async getInputFromUser(): Promise<CreateInvitation> {
 		const channelId = await chooseChannel(this, 'Choose a channel:', this.flags.channel,
-			this.defaultChannelId)
+			{ useConfigDefault: true })
 
 		const name = (await inquirer.prompt({
 			type: 'input',

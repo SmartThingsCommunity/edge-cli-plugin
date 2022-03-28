@@ -16,7 +16,7 @@ import {
 	convertToId,
 	EventSourceError,
 	logEvent,
-	selectGeneric,
+	selectFromList,
 	Sorting,
 	SseCommand,
 	stringTranslateToId,
@@ -80,6 +80,7 @@ export default class LogCatCommand extends SseCommand {
 
 	static description = 'stream logs from installed drivers'
 
+	/* eslint-disable @typescript-eslint/naming-convention */
 	static flags = {
 		...SseCommand.flags,
 		all: Flags.boolean({
@@ -95,6 +96,7 @@ export default class LogCatCommand extends SseCommand {
 			default: DEFAULT_LIVE_LOG_TIMEOUT,
 		}),
 	}
+	/* eslint-enable @typescript-eslint/naming-convention */
 
 	static args = [
 		{
@@ -145,7 +147,8 @@ export default class LogCatCommand extends SseCommand {
 
 		const list = driversList !== undefined ? Promise.resolve(driversList) : this.logClient.getDrivers()
 		const preselectedId = await stringTranslateToId(config, commandLineDriverId, () => list)
-		return selectGeneric(this, config, preselectedId, () => list, promptForDrivers)
+		return selectFromList(this, config,
+			{ preselectedId, listItems: () => list, getIdFromUser: promptForDrivers })
 	}
 
 	async init(): Promise<void> {

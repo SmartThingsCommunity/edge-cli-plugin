@@ -121,41 +121,19 @@ describe('package-utils', () => {
 		})
 	})
 
-	describe('buildTestFileMatchers', () => {
+	test('buildTestFileMatchers converts to matchers', () => {
 		const picomatchMock = jest.mocked(picomatch)
 		const matcher1 = (): boolean => true
 		const matcher2 = (): boolean => false
 
-		it('returns single match if config is a string', () => {
-			picomatchMock.mockReturnValueOnce(matcher1)
+		picomatchMock.mockReturnValueOnce(matcher1)
+		picomatchMock.mockReturnValueOnce(matcher2)
 
-			expect(buildTestFileMatchers('match string')).toEqual([matcher1])
+		expect(buildTestFileMatchers(['1', '2'])).toEqual([matcher1, matcher2])
 
-			expect(picomatchMock).toHaveBeenCalledTimes(1)
-			expect(picomatchMock).toHaveBeenCalledWith('match string')
-		})
-
-		it('returns array if config is an array', () => {
-			picomatchMock.mockReturnValueOnce(matcher1)
-			picomatchMock.mockReturnValueOnce(matcher2)
-
-			expect(buildTestFileMatchers(['1', '2'])).toEqual([matcher1, matcher2])
-
-			expect(picomatchMock).toHaveBeenCalledTimes(2)
-			expect(picomatchMock).toHaveBeenCalledWith('1')
-			expect(picomatchMock).toHaveBeenCalledWith('2')
-		})
-
-		it('returns preset value when no config specified', () => {
-			picomatchMock.mockReturnValueOnce(matcher1)
-			picomatchMock.mockReturnValueOnce(matcher2)
-
-			expect(buildTestFileMatchers(undefined)).toEqual([matcher1, matcher2])
-
-			expect(picomatchMock).toHaveBeenCalledTimes(2)
-			expect(picomatchMock).toHaveBeenCalledWith('test/**')
-			expect(picomatchMock).toHaveBeenCalledWith('tests/**')
-		})
+		expect(picomatchMock).toHaveBeenCalledTimes(2)
+		expect(picomatchMock).toHaveBeenCalledWith('1')
+		expect(picomatchMock).toHaveBeenCalledWith('2')
 	})
 
 	describe('processSrcDir', () => {

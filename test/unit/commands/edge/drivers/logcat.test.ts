@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 import inquirer from 'inquirer'
 import { DriverInfo, handleConnectionErrors, LiveLogClient, LiveLogMessage, liveLogMessageFormatter, parseIpAndPort } from '../../../../../src/lib/live-logging'
 import { PeerCertificate } from 'tls'
-import { askForRequiredString, convertToId, logEvent, selectGeneric, Sorting, SseCommand, stringTranslateToId } from '@smartthings/cli-lib'
+import { askForRequiredString, convertToId, logEvent, selectFromList, Sorting, SseCommand, stringTranslateToId } from '@smartthings/cli-lib'
 import EventSource from 'eventsource'
 import { CliUx, Errors } from '@oclif/core'
 
@@ -47,7 +47,7 @@ jest.mock('@smartthings/cli-lib', () => {
 	return {
 		...originalLib,
 		stringTranslateToId: jest.fn(),
-		selectGeneric: jest.fn(),
+		selectFromList: jest.fn(),
 		askForRequiredString: jest.fn(),
 		logEvent: jest.fn(),
 		convertToId: jest.fn().mockResolvedValue('driverId'),
@@ -72,7 +72,7 @@ jest.spyOn(SseCommand.prototype, 'init').mockImplementation()
 
 describe('LogCatCommand', () => {
 	const mockStringTranslateToId = jest.mocked(stringTranslateToId).mockResolvedValue('all')
-	const mockSelectGeneric = jest.mocked(selectGeneric).mockRejectedValue(new Errors.ExitError(0))
+	const mockSelectFromList = jest.mocked(selectFromList).mockRejectedValue(new Errors.ExitError(0))
 	const mockAskForRequiredString = jest.mocked(askForRequiredString).mockResolvedValue(MOCK_IPV4)
 	const mockPrompt = jest.mocked(inquirer.prompt)
 	const mockReadFile = jest.mocked(fs.readFile)
@@ -291,7 +291,7 @@ describe('LogCatCommand', () => {
 		const driverId = 'driverId'
 		const driverLogSource = `${MOCK_SOURCE_URL}?driver_id=${driverId}`
 		mockStringTranslateToId.mockResolvedValueOnce(driverId)
-		mockSelectGeneric.mockResolvedValueOnce(driverId)
+		mockSelectFromList.mockResolvedValueOnce(driverId)
 		mockGetLogSource.mockReturnValueOnce(driverLogSource)
 
 		await expect(LogCatCommand.run([driverId])).resolves.not.toThrow()
@@ -326,21 +326,21 @@ describe('LogCatCommand', () => {
 
 		expect(await stringTranslateListDataFunction()).toStrictEqual(driverList)
 
-		expect(mockSelectGeneric).toBeCalledWith(
+		expect(mockSelectFromList).toBeCalledWith(
 			expect.any(LogCatCommand),
 			expectedConfig,
-			undefined,
-			expect.any(Function),
-			expect.any(Function),
+			expect.objectContaining({ getIdFromUser: expect.any(Function) }),
 		)
 
-		const selectGenericListDataFunction = mockSelectGeneric.mock.calls[0][3]
+		const selectGenericListDataFunction = mockSelectFromList.mock.calls[0][2].listItems
 
 		expect(await selectGenericListDataFunction()).toStrictEqual(driverList)
 
-		const selectGenericIdRetrievalFunction = mockSelectGeneric.mock.calls[0][4]
+		const idRetrievalFunction = mockSelectFromList.mock.calls[0][2].getIdFromUser
 
-		await selectGenericIdRetrievalFunction({ primaryKeyName: 'primaryKeyName' } as Sorting, driverList)
+		expect(idRetrievalFunction).toBeDefined()
+		expect(await idRetrievalFunction?.({ primaryKeyName: 'primaryKeyName' } as Sorting, driverList))
+			.toBe('driverId')
 
 		expect(inquirer.prompt).toBeCalledWith(
 			expect.objectContaining({
@@ -354,7 +354,7 @@ describe('LogCatCommand', () => {
 	})
 
 	it('uses correct source URL when "all" is specified during prompt', async () => {
-		mockSelectGeneric.mockResolvedValueOnce('all')
+		mockSelectFromList.mockResolvedValueOnce('all')
 
 		await expect(LogCatCommand.run([])).resolves.not.toThrow()
 

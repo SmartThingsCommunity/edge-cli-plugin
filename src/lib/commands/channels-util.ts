@@ -20,7 +20,6 @@ export const chooseChannelOptionsWithDefaults = (options?: Partial<ChooseChannel
 
 export async function chooseChannel(command: APICommand, promptMessage: string,
 		channelFromArg?: string,
-		defaultChannelId?: string,
 		options?: Partial<ChooseChannelOptions>): Promise<string> {
 	const opts = chooseChannelOptionsWithDefaults(options)
 	const config = {
@@ -29,15 +28,17 @@ export async function chooseChannel(command: APICommand, promptMessage: string,
 		sortKeyName: 'name',
 	}
 
-	const channels = (): Promise<Channel[]> => listChannels(command, undefined, undefined, opts)
+	const listItems = (): Promise<Channel[]> => listChannels(command, undefined, undefined, opts)
 
 	const preselectedId = channelFromArg
 		? (opts.allowIndex
-			? await stringTranslateToId(config, channelFromArg, channels)
+			? await stringTranslateToId(config, channelFromArg, listItems)
 			: channelFromArg)
-		: defaultChannelId
+		: undefined
 
-	return selectFromList(command, config, preselectedId, channels, promptMessage)
+	const configKeyForDefaultValue = opts.useConfigDefault ? 'defaultChannel' : undefined
+	return selectFromList(command, config,
+		{ preselectedId, listItems, promptMessage, configKeyForDefaultValue })
 }
 
 export async function listChannels(command: APICommand, subscriberType?: SubscriberType, subscriberId?: string,

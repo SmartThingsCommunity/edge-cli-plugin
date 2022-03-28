@@ -30,9 +30,9 @@ export default class DriversUninstallCommand extends EdgeCommand {
 			sortKeyName: 'name',
 		}
 
-		const installedDrivers = (): Promise<InstalledDriver[]> => this.edgeClient.hubs.listInstalled(hubId)
-		const preselectedId = await stringTranslateToId(config, commandLineDriverId, installedDrivers)
-		return selectFromList(this, config, preselectedId, installedDrivers, promptMessage)
+		const listItems = (): Promise<InstalledDriver[]> => this.edgeClient.hubs.listInstalled(hubId)
+		const preselectedId = await stringTranslateToId(config, commandLineDriverId, listItems)
+		return selectFromList(this, config, { preselectedId, listItems, promptMessage })
 	}
 
 	async run(): Promise<void> {
@@ -40,7 +40,7 @@ export default class DriversUninstallCommand extends EdgeCommand {
 		await super.setup(args, argv, flags)
 
 		const hubId = await chooseHub(this, 'Select a hub to uninstall from.', flags.hub,
-			this.defaultHubId)
+			{ useConfigDefault: true })
 		const driverId = await this.chooseInstalledDriver(hubId, 'Select a driver to uninstall.',
 			args.driverId)
 		await this.edgeClient.hubs.uninstallDriver(driverId, hubId)

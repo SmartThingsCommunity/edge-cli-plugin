@@ -34,7 +34,7 @@ export class ChannelsAssignCommand extends EdgeCommand {
 		await super.setup(args, argv, flags)
 
 		const channelId = await chooseChannel(this, 'Select a channel for the driver.',
-			flags.channel, this.defaultChannelId)
+			flags.channel, { useConfigDefault: true })
 		const driverId = await chooseDriver(this, 'Select a driver to assign.', args.driverId)
 
 		// If the version wasn't specified, grab it from the driver.

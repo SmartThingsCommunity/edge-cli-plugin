@@ -120,7 +120,7 @@ describe('drivers-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
-				'command-line-driver-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'command-line-driver-id', promptMessage: 'prompt message' }))
 		})
 
 		it('translates id from index if allowed', async () => {
@@ -140,7 +140,7 @@ describe('drivers-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
-				'translated-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'translated-id', promptMessage: 'prompt message' }))
 		})
 
 		it('uses list function that lists drivers', async () => {
@@ -156,14 +156,14 @@ describe('drivers-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
-				'command-line-driver-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'command-line-driver-id', promptMessage: 'prompt message' }))
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
 			const list = [{ name: 'Driver' }] as EdgeDriverSummary[]
 			listDriversMock.mockResolvedValueOnce(list)
 
-			expect(await listFunction()).toBe(list)
+			expect(await listItems()).toBe(list)
 
 			expect(listDriversMock).toHaveBeenCalledTimes(1)
 			expect(listDriversMock).toHaveBeenCalledWith()
@@ -180,35 +180,39 @@ describe('drivers-util', () => {
 		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
 
 		it('uses default hub if specified', async () => {
-			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
+			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false, useConfigDefault: true } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
 			expect(await chooseHub(command, 'prompt message', undefined,
-				'default-hub-id')).toBe('chosen-hub-id')
+				{ useConfigDefault: true })).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
-			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith(undefined)
+			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith({ useConfigDefault: true })
 			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(0)
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'deviceId', sortKeyName: 'name' }),
-				'default-hub-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ configKeyForDefaultValue: 'defaultHub', promptMessage: 'prompt message' }))
 		})
 
 		it('prefers command line over default', async () => {
-			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
+			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false, useConfigDefault: true } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
 			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				'default-hub-id')).toBe('chosen-hub-id')
+				{ useConfigDefault: true })).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
-			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith(undefined)
+			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith({ useConfigDefault: true })
 			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(0)
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'deviceId', sortKeyName: 'name' }),
-				'command-line-hub-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({
+					preselectedId: 'command-line-hub-id',
+					configKeyForDefaultValue: 'defaultHub',
+					promptMessage: 'prompt message',
+				}))
 		})
 
 		it('translates id from index if allowed', async () => {
@@ -217,10 +221,11 @@ describe('drivers-util', () => {
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
 			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				'default-hub-id', { allowIndex: true })).toBe('chosen-hub-id')
+				{ useConfigDefault: true, allowIndex: true })).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
-			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith({ allowIndex: true })
+			expect(chooseOptionsWithDefaultsMock)
+				.toHaveBeenCalledWith({ allowIndex: true, useConfigDefault: true })
 			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(1)
 			expect(stringTranslateToIdMock).toHaveBeenCalledWith(
 				expect.objectContaining({ primaryKeyName: 'deviceId', sortKeyName: 'name' }),
@@ -228,15 +233,14 @@ describe('drivers-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'deviceId', sortKeyName: 'name' }),
-				'translated-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'translated-id', promptMessage: 'prompt message' }))
 		})
 
 		it('uses list function that specifies hubs', async () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
-			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				'default-hub-id')).toBe('chosen-hub-id')
+			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id')).toBe('chosen-hub-id')
 
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledTimes(1)
 			expect(chooseOptionsWithDefaultsMock).toHaveBeenCalledWith(undefined)
@@ -244,9 +248,9 @@ describe('drivers-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'deviceId', sortKeyName: 'name' }),
-				'command-line-hub-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'command-line-hub-id', promptMessage: 'prompt message' }))
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
 			const list = [{ name: 'Hub', locationId: 'locationId' }] as Device[]
 			listDevicesMock.mockResolvedValueOnce(list)
@@ -257,7 +261,7 @@ describe('drivers-util', () => {
 				'locationId': 'locationId',
 			})
 
-			expect(await listFunction()).toStrictEqual(list)
+			expect(await listItems()).toStrictEqual(list)
 
 			expect(listDevicesMock).toHaveBeenCalledTimes(1)
 			expect(listDevicesMock).toHaveBeenCalledWith({ type: DeviceIntegrationType.HUB })
@@ -267,8 +271,7 @@ describe('drivers-util', () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
-			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				'default-hub-id')).toBe('chosen-hub-id')
+			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id')).toBe('chosen-hub-id')
 
 			const hubList = [
 				{ name: 'Hub', locationId: 'locationId' },
@@ -285,9 +288,9 @@ describe('drivers-util', () => {
 			listDevicesMock.mockResolvedValueOnce(hubList)
 			getLocationsMock.mockResolvedValue(location)
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
-			expect(await listFunction()).toStrictEqual(hubList)
+			expect(await listItems()).toStrictEqual(hubList)
 
 			expect(getLocationsMock).toBeCalledTimes(2)
 			expect(getLocationsMock).toBeCalledWith('locationId', { allowed: true })
@@ -298,8 +301,7 @@ describe('drivers-util', () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
-			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				'default-hub-id')).toBe('chosen-hub-id')
+			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id')).toBe('chosen-hub-id')
 
 			const ownedHub = { name: 'Hub', locationId: 'locationId' }
 			const hubList = [
@@ -339,9 +341,9 @@ describe('drivers-util', () => {
 				.mockResolvedValueOnce(nullAllowedLocation)
 				.mockResolvedValueOnce(undefinedAllowedLocation)
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
-			expect(await listFunction()).toStrictEqual([ownedHub])
+			expect(await listItems()).toStrictEqual([ownedHub])
 
 			expect(getLocationsMock).toBeCalledTimes(4)
 			expect(command.logger.warn).toBeCalledWith('filtering out location', sharedLocation)
@@ -353,16 +355,15 @@ describe('drivers-util', () => {
 			chooseOptionsWithDefaultsMock.mockReturnValueOnce({ allowIndex: false } as ChooseOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-hub-id')
 
-			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id',
-				'default-hub-id')).toBe('chosen-hub-id')
+			expect(await chooseHub(command, 'prompt message', 'command-line-hub-id')).toBe('chosen-hub-id')
 
 			const hub = { name: 'Hub' } as Device
 
 			listDevicesMock.mockResolvedValueOnce([hub])
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
-			expect(await listFunction()).toStrictEqual([])
+			expect(await listItems()).toStrictEqual([])
 
 			expect(command.logger.warn).toBeCalledWith('hub record found without locationId', hub)
 		})
@@ -435,15 +436,18 @@ describe('drivers-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
-				'preselected-driver-id', expect.any(Function), 'Select a driver to install.')
+				expect.objectContaining({
+					preselectedId: 'preselected-driver-id',
+					promptMessage: 'Select a driver to install.',
+				}))
 
 			const drivers = [{ name: 'driver' }] as DriverChannelDetailsWithName[]
 			const listAssignedDriversWithNamesSpy = jest.spyOn(driversUtil, 'listAssignedDriversWithNames')
 				.mockResolvedValueOnce(drivers)
 
-			const listDrivers = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
-			expect(await listDrivers()).toBe(drivers)
+			expect(await listItems()).toBe(drivers)
 
 			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledTimes(1)
 			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(client, 'channel-id')

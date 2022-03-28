@@ -22,15 +22,22 @@ for information on running the CLI.
 <!-- commands -->
 * [`smartthings edge:channels [IDORINDEX]`](#smartthings-edgechannels-idorindex)
 * [`smartthings edge:channels:assign [DRIVERID] [VERSION]`](#smartthings-edgechannelsassign-driverid-version)
+* [`smartthings edge:channels:assignments [IDORINDEX]`](#smartthings-edgechannelsassignments-idorindex)
 * [`smartthings edge:channels:create`](#smartthings-edgechannelscreate)
 * [`smartthings edge:channels:delete [ID]`](#smartthings-edgechannelsdelete-id)
 * [`smartthings edge:channels:drivers [IDORINDEX]`](#smartthings-edgechannelsdrivers-idorindex)
 * [`smartthings edge:channels:enroll [HUBID]`](#smartthings-edgechannelsenroll-hubid)
 * [`smartthings edge:channels:enrollments [IDORINDEX]`](#smartthings-edgechannelsenrollments-idorindex)
+* [`smartthings edge:channels:invitations [IDORINDEX]`](#smartthings-edgechannelsinvitations-idorindex)
+* [`smartthings edge:channels:invitations:accept ID`](#smartthings-edgechannelsinvitationsaccept-id)
+* [`smartthings edge:channels:invitations:create`](#smartthings-edgechannelsinvitationscreate)
+* [`smartthings edge:channels:invitations:delete [ID]`](#smartthings-edgechannelsinvitationsdelete-id)
+* [`smartthings edge:channels:invitations:revoke [ID]`](#smartthings-edgechannelsinvitationsrevoke-id)
 * [`smartthings edge:channels:invites [IDORINDEX]`](#smartthings-edgechannelsinvites-idorindex)
 * [`smartthings edge:channels:invites:accept ID`](#smartthings-edgechannelsinvitesaccept-id)
 * [`smartthings edge:channels:invites:create`](#smartthings-edgechannelsinvitescreate)
 * [`smartthings edge:channels:invites:delete [ID]`](#smartthings-edgechannelsinvitesdelete-id)
+* [`smartthings edge:channels:invites:revoke [ID]`](#smartthings-edgechannelsinvitesrevoke-id)
 * [`smartthings edge:channels:metainfo [IDORINDEX]`](#smartthings-edgechannelsmetainfo-idorindex)
 * [`smartthings edge:channels:unassign [DRIVERID]`](#smartthings-edgechannelsunassign-driverid)
 * [`smartthings edge:channels:unenroll [HUBID]`](#smartthings-edgechannelsunenroll-hubid)
@@ -41,7 +48,9 @@ for information on running the CLI.
 * [`smartthings edge:drivers:installed [IDORINDEX]`](#smartthings-edgedriversinstalled-idorindex)
 * [`smartthings edge:drivers:logcat [DRIVERID]`](#smartthings-edgedriverslogcat-driverid)
 * [`smartthings edge:drivers:package [PROJECTDIRECTORY]`](#smartthings-edgedriverspackage-projectdirectory)
+* [`smartthings edge:drivers:publish [DRIVERID] [VERSION]`](#smartthings-edgedriverspublish-driverid-version)
 * [`smartthings edge:drivers:uninstall [DRIVERID]`](#smartthings-edgedriversuninstall-driverid)
+* [`smartthings edge:drivers:unpublish [DRIVERID]`](#smartthings-edgedriversunpublish-driverid)
 
 ## `smartthings edge:channels [IDORINDEX]`
 
@@ -116,6 +125,35 @@ ALIASES
 ```
 
 _See code: [src/commands/edge/channels/assign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.10.1/src/commands/edge/channels/assign.ts)_
+
+## `smartthings edge:channels:assignments [IDORINDEX]`
+
+list all drivers assigned to a given channel
+
+```
+USAGE
+  $ smartthings edge:channels:assignments [IDORINDEX] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>] [-j]
+    [-y] [-o <value>]
+
+ARGUMENTS
+  IDORINDEX  the channel id or number in list
+
+FLAGS
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -j, --json                  use JSON format of input and/or output
+  -o, --output=<value>        specify output file
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  -y, --yaml                  use YAML format of input and/or output
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  list all drivers assigned to a given channel
+
+ALIASES
+  $ smartthings edge:channels:assignments
+```
 
 ## `smartthings edge:channels:create`
 
@@ -253,6 +291,157 @@ DESCRIPTION
 
 _See code: [src/commands/edge/channels/enrollments.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.10.1/src/commands/edge/channels/enrollments.ts)_
 
+## `smartthings edge:channels:invitations [IDORINDEX]`
+
+list invitations or retrieve a single invitation by id or index
+
+```
+USAGE
+  $ smartthings edge:channels:invitations [IDORINDEX] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>] [-j]
+    [-y] [-o <value>] [-C <value>]
+
+ARGUMENTS
+  IDORINDEX  the invitation id or number in list
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -j, --json                  use JSON format of input and/or output
+  -o, --output=<value>        specify output file
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  -y, --yaml                  use YAML format of input and/or output
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  list invitations or retrieve a single invitation by id or index
+
+ALIASES
+  $ smartthings edge:channels:invitations
+
+EXAMPLES
+  $ smartthings edge:channels:invites                  # list all invites on all channels you own
+
+  $ smartthings edge:channels:invites 2                # list details about the second invite show when listed as in the example above
+
+  $ smartthings edge:channels:invites -C <channel id>  # list all invites on channel with id <channel id>
+
+  $ smartthings edge:channels:invites <invite id>      # list details about the invite with id <invite id>
+```
+
+## `smartthings edge:channels:invitations:accept ID`
+
+accept a channel invitation
+
+```
+USAGE
+  $ smartthings edge:channels:invitations:accept [ID] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>]
+
+ARGUMENTS
+  ID  invite UUID
+
+FLAGS
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  accept a channel invitation
+
+ALIASES
+  $ smartthings edge:channels:invitations:accept
+```
+
+## `smartthings edge:channels:invitations:create`
+
+create an invitation
+
+```
+USAGE
+  $ smartthings edge:channels:invitations:create [-C <value> | -i <value>] [-h] [-p <value>] [-t <value>] [--language <value>] [-O
+    <value>] [-j] [-y] [-o <value>] [-d]
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -d, --dry-run               produce JSON but don't actually submit
+  -h, --help                  Show CLI help.
+  -i, --input=<value>         specify input file
+  -j, --json                  use JSON format of input and/or output
+  -o, --output=<value>        specify output file
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  -y, --yaml                  use YAML format of input and/or output
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  create an invitation
+
+ALIASES
+  $ smartthings edge:channels:invitations:create
+```
+
+## `smartthings edge:channels:invitations:delete [ID]`
+
+delete a channel invitation
+
+```
+USAGE
+  $ smartthings edge:channels:invitations:delete [ID] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>]
+  [-C <value>]
+
+ARGUMENTS
+  ID  invitation UUID
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  delete a channel invitation
+
+ALIASES
+  $ smartthings edge:channels:invitations:revoke
+  $ smartthings edge:channels:invitations:delete
+  $ smartthings edge:channels:invites:revoke
+```
+
+## `smartthings edge:channels:invitations:revoke [ID]`
+
+delete a channel invitation
+
+```
+USAGE
+  $ smartthings edge:channels:invitations:revoke [ID] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>]
+  [-C <value>]
+
+ARGUMENTS
+  ID  invitation UUID
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  delete a channel invitation
+
+ALIASES
+  $ smartthings edge:channels:invitations:revoke
+  $ smartthings edge:channels:invitations:delete
+  $ smartthings edge:channels:invites:revoke
+```
+
 ## `smartthings edge:channels:invites [IDORINDEX]`
 
 list invitations or retrieve a single invitation by id or index
@@ -382,6 +571,35 @@ ALIASES
 ```
 
 _See code: [src/commands/edge/channels/invites/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.10.1/src/commands/edge/channels/invites/delete.ts)_
+
+## `smartthings edge:channels:invites:revoke [ID]`
+
+delete a channel invitation
+
+```
+USAGE
+  $ smartthings edge:channels:invites:revoke [ID] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>] [-C
+  <value>]
+
+ARGUMENTS
+  ID  invitation UUID
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  delete a channel invitation
+
+ALIASES
+  $ smartthings edge:channels:invitations:revoke
+  $ smartthings edge:channels:invitations:delete
+  $ smartthings edge:channels:invites:revoke
+```
 
 ## `smartthings edge:channels:metainfo [IDORINDEX]`
 
@@ -727,6 +945,34 @@ EXAMPLES
 
 _See code: [src/commands/edge/drivers/package.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.10.1/src/commands/edge/drivers/package.ts)_
 
+## `smartthings edge:drivers:publish [DRIVERID] [VERSION]`
+
+assign a driver to a channel
+
+```
+USAGE
+  $ smartthings edge:drivers:publish [DRIVERID] [VERSION] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>]
+    [-C <value>]
+
+ARGUMENTS
+  DRIVERID  driver id
+  VERSION   driver version
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  assign a driver to a channel
+
+ALIASES
+  $ smartthings edge:drivers:publish
+```
+
 ## `smartthings edge:drivers:uninstall [DRIVERID]`
 
 uninstall an edge driver from a hub
@@ -752,6 +998,33 @@ DESCRIPTION
 ```
 
 _See code: [src/commands/edge/drivers/uninstall.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.10.1/src/commands/edge/drivers/uninstall.ts)_
+
+## `smartthings edge:drivers:unpublish [DRIVERID]`
+
+remove a driver from a channel
+
+```
+USAGE
+  $ smartthings edge:drivers:unpublish [DRIVERID] [-h] [-p <value>] [-t <value>] [--language <value>] [-O <value>] [-C
+    <value>]
+
+ARGUMENTS
+  DRIVERID  driver id
+
+FLAGS
+  -C, --channel=<value>       channel id
+  -O, --organization=<value>  The organization ID to use for this command
+  -h, --help                  Show CLI help.
+  -p, --profile=<value>       [default: default] configuration profile
+  -t, --token=<value>         the auth token to use
+  --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
+
+DESCRIPTION
+  remove a driver from a channel
+
+ALIASES
+  $ smartthings edge:drivers:unpublish
+```
 <!-- commandsstop -->
 
 # Building

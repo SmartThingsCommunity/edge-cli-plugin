@@ -3,7 +3,7 @@ import fs from 'fs'
 import { Flags } from '@oclif/core'
 import JSZip from 'jszip'
 
-import { outputItem } from '@smartthings/cli-lib'
+import { outputItem, readFile } from '@smartthings/cli-lib'
 
 import { buildTestFileMatchers, processConfigFile, processFingerprintsFile, processProfiles,
 	processSrcDir, resolveProjectDirName } from '../../../lib/commands/drivers/package-util'
@@ -24,6 +24,7 @@ export default class PackageCommand extends EdgeCommand {
 	static flags = {
 		...EdgeCommand.flags,
 		...outputItem.flags,
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		'build-only': Flags.string({
 			char: 'b',
 			description: 'save package to specified zip file but skip upload',
@@ -89,12 +90,12 @@ $ smartthings edge:drivers:package -u driver.zip`]
 				const driverId = driver.driverId
 				const version = driver.version
 				const channelId = await chooseChannel(this, 'Select a channel for the driver.',
-					flags.channel, this.defaultChannelId)
+					flags.channel, { useConfigDefault: true })
 				await this.client.channels.assignDriver(channelId, driverId, version)
 
 				if (doInstall) {
 					const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,
-						this.defaultChannelId)
+						{ useConfigDefault: true })
 					await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
 				}
 			}
@@ -102,7 +103,7 @@ $ smartthings edge:drivers:package -u driver.zip`]
 
 		if (flags.upload) {
 			try {
-				const data = fs.readFileSync(flags.upload)
+				const data = await readFile(flags.upload)
 				await uploadAndPostProcess(data)
 			} catch (error) {
 				if ((error as { code?: string }).code === 'ENOENT') {
@@ -118,8 +119,7 @@ $ smartthings edge:drivers:package -u driver.zip`]
 			processConfigFile(projectDirectory, zip)
 
 			processFingerprintsFile(projectDirectory, zip)
-			// TODO: do more type checking here
-			const edgeDriverTestDirs = this.profile.edgeDriverTestDirs as string | string[]
+			const edgeDriverTestDirs = this.stringArrayConfigValue('edgeDriverTestDirs', ['test/**', 'tests/**'])
 			const testFileMatchers = buildTestFileMatchers(edgeDriverTestDirs)
 			processSrcDir(projectDirectory, zip, testFileMatchers)
 

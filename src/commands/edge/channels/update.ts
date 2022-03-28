@@ -24,7 +24,7 @@ export default class ChannelsUpdateCommand extends EdgeCommand {
 		await super.setup(args, argv, flags)
 
 		const id = await chooseChannel(this, 'Choose a channel to patch.', args.id,
-			this.defaultChannelId)
+			{ useConfigDefault: true })
 		await inputAndOutputItem<ChannelUpdate, Channel>(this, { tableFieldDefinitions },
 			(_, channelMods) => this.client.channels.update(id, channelMods))
 	}

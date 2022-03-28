@@ -33,7 +33,7 @@ export default class ChannelsInvitesDeleteCommand extends EdgeCommand {
 
 		const channelId = await chooseChannel(this,
 			'Which channel is the invite you want to delete for?',
-			flags.channel, this.defaultChannelId)
+			flags.channel, { useConfigDefault: true })
 
 		const id = await chooseInvite(this, 'Choose an invitation to delete.', channelId, args.id)
 		await this.edgeClient.invites.delete(id)

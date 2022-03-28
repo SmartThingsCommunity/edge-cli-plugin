@@ -51,15 +51,13 @@ describe('DriversUninstallCommand', () => {
 
 		expect(mockSelectFromList).toBeCalledWith(
 			expect.any(DriversUninstallCommand),
-			expect.anything(),
-			undefined,
-			expect.any(Function),
-			expect.any(String),
+			expect.objectContaining({}),
+			expect.objectContaining({}),
 		)
 
-		const listFunction = mockSelectFromList.mock.calls[0][3]
+		const listItems = mockSelectFromList.mock.calls[0][2].listItems
 
-		expect(await listFunction()).toContain(MOCK_INSTALLED_DRIVER)
+		expect(await listItems()).toContain(MOCK_INSTALLED_DRIVER)
 		expect(mockListInstalled).toBeCalled()
 	})
 })

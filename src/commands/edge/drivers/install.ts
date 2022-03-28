@@ -39,10 +39,13 @@ export default class DriversInstallCommand extends EdgeCommand {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 		}
-		const listChannels = (): Promise<EnrolledChannel[]> =>
+		const listItems = (): Promise<EnrolledChannel[]> =>
 			this.edgeClient.hubs.enrolledChannels(hubId)
-		return selectFromList(this, config, this.defaultChannelId, listChannels,
-			'Select a channel to install the driver from.')
+		return selectFromList(this, config, {
+			listItems,
+			promptMessage: 'Select a channel to install the driver from.',
+			configKeyForDefaultValue: 'defaultChannel',
+		})
 	}
 
 	async run(): Promise<void> {
@@ -50,7 +53,7 @@ export default class DriversInstallCommand extends EdgeCommand {
 		await super.setup(args, argv, flags)
 
 		const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,
-			this.defaultHubId)
+			{ useConfigDefault: true })
 		const channelId = flags.channel ?? await this.chooseChannelFromEnrollments(hubId)
 		const driverId = await chooseDriverFromChannel(this, channelId, args.driverId)
 		await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
