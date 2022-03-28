@@ -36,8 +36,8 @@ export default class DriversInstalledCommand extends EdgeCommand {
 				'developer', 'vendorSummaryInformation'],
 		}
 
-		const hubId = await chooseHub(this, 'Select a hub.', flags.hub, this.defaultHubId,
-			{ allowIndex: true })
+		const hubId = await chooseHub(this, 'Select a hub.', flags.hub,
+			{ allowIndex: true, useConfigDefault: true })
 
 		await outputListing(this, config, args.idOrIndex,
 			() => this.edgeClient.hubs.listInstalled(hubId),

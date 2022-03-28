@@ -35,8 +35,8 @@ describe('ChannelsDriversCommand', () => {
 
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
-			'Select a channel.', undefined, undefined,
-			expect.objectContaining({ allowIndex: true, includeReadOnly: true }))
+			'Select a channel.', undefined,
+			{ allowIndex: true, includeReadOnly: true, useConfigDefault: true })
 		expect(outputListMock).toHaveBeenCalledTimes(1)
 		expect(outputListMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
 			expect.objectContaining({
@@ -51,8 +51,8 @@ describe('ChannelsDriversCommand', () => {
 
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
-			'Select a channel.', 'id-or-index', undefined,
-			expect.objectContaining({ allowIndex: true, includeReadOnly: true }))
+			'Select a channel.', 'id-or-index',
+			{ allowIndex: true, includeReadOnly: true, useConfigDefault: true })
 		expect(outputListMock).toHaveBeenCalledTimes(1)
 		expect(outputListMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
 			expect.objectContaining({
@@ -67,8 +67,8 @@ describe('ChannelsDriversCommand', () => {
 
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
-			'Select a channel.', undefined, undefined,
-			expect.objectContaining({ allowIndex: true, includeReadOnly: true }))
+			'Select a channel.', undefined,
+			{ allowIndex: true, includeReadOnly: true, useConfigDefault: true })
 		expect(outputListMock).toHaveBeenCalledTimes(1)
 		expect(outputListMock).toHaveBeenCalledWith(expect.any(ChannelsDriversCommand),
 			expect.objectContaining({

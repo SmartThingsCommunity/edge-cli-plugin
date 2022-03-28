@@ -35,7 +35,7 @@ describe('ChannelsMetaInfoCommand', () => {
 
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsMetaInfoCommand),
-			'Choose a channel to get meta info for.', undefined, undefined)
+			'Choose a channel to get meta info for.', undefined, { useConfigDefault: true })
 		expect(outputListingMock).toHaveBeenCalledTimes(1)
 		expect(outputListingMock).toHaveBeenCalledWith(
 			expect.any(ChannelsMetaInfoCommand),
@@ -52,7 +52,7 @@ describe('ChannelsMetaInfoCommand', () => {
 
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsMetaInfoCommand),
-			'Choose a channel to get meta info for.', 'channel-id-from-cmd-line', undefined)
+			'Choose a channel to get meta info for.', 'channel-id-from-cmd-line', { useConfigDefault: true })
 		expect(outputListingMock).toHaveBeenCalledTimes(1)
 	})
 

@@ -27,9 +27,10 @@ export class ChannelsUnenrollCommand extends EdgeCommand {
 		const { args, argv, flags } = await this.parse(ChannelsUnenrollCommand)
 		await super.setup(args, argv, flags)
 
-		const channelId = await chooseChannel(this, 'Select a channel.', flags.channel, undefined,
+		const channelId = await chooseChannel(this, 'Select a channel.', flags.channel,
 			{ includeReadOnly: true })
-		const hubId = await chooseHub(this, 'Select a hub.', args.hubId, this.defaultHubId)
+		const hubId = await chooseHub(this, 'Select a hub.', args.hubId,
+			{ useConfigDefault: true })
 
 		await this.client.channels.unenrollHub(channelId, hubId)
 

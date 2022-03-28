@@ -58,36 +58,20 @@ describe('channels-util', () => {
 
 		it('uses default channel if specified', async () => {
 			chooseChannelOptionsWithDefaultsSpy.mockReturnValueOnce(
-				{ allowIndex: false } as ChooseChannelOptions)
+				{ allowIndex: false, useConfigDefault: true } as ChooseChannelOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
-			expect(await chooseChannel(command, 'prompt message', undefined, 'default-channel-id'))
+			expect(await chooseChannel(command, 'prompt message', undefined, { useConfigDefault: true }))
 				.toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
-			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
+			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith({ useConfigDefault: true })
 			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(0)
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'channelId', sortKeyName: 'name' }),
-				'default-channel-id', expect.any(Function), 'prompt message')
-		})
-
-		it('prefers command line over default', async () => {
-			chooseChannelOptionsWithDefaultsSpy.mockReturnValueOnce(
-				{ allowIndex: false } as ChooseChannelOptions)
-			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
-
-			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
-				'default-channel-id')).toBe('chosen-channel-id')
-
-			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
-			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
-			expect(stringTranslateToIdMock).toHaveBeenCalledTimes(0)
-			expect(selectFromListMock).toHaveBeenCalledTimes(1)
-			expect(selectFromListMock).toHaveBeenCalledWith(command,
-				expect.objectContaining({ primaryKeyName: 'channelId', sortKeyName: 'name' }),
-				'command-line-channel-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ configKeyForDefaultValue: 'defaultChannel',
+					promptMessage: 'prompt message' }))
 		})
 
 		it('translates id from index if allowed', async () => {
@@ -97,7 +81,7 @@ describe('channels-util', () => {
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
 			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
-				'default-channel-id', { allowIndex: true })).toBe('chosen-channel-id')
+				{ allowIndex: true })).toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith({ allowIndex: true })
@@ -108,7 +92,7 @@ describe('channels-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'channelId', sortKeyName: 'name' }),
-				'translated-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'translated-id' }))
 		})
 
 		it('uses list function that lists channels', async () => {
@@ -116,8 +100,8 @@ describe('channels-util', () => {
 				{ allowIndex: false, includeReadOnly: false } as ChooseChannelOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
-			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
-				'default-channel-id')).toBe('chosen-channel-id')
+			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id'))
+				.toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
@@ -125,14 +109,14 @@ describe('channels-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'channelId', sortKeyName: 'name' }),
-				'command-line-channel-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'command-line-channel-id' }))
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
 			const list = [{ name: 'Channel' }] as Channel[]
 			listChannelsMock.mockResolvedValueOnce(list)
 
-			expect(await listFunction()).toBe(list)
+			expect(await listItems()).toBe(list)
 
 			expect(listChannelsMock).toHaveBeenCalledTimes(1)
 			expect(listChannelsMock).toHaveBeenCalledWith({ includeReadOnly: false })
@@ -143,8 +127,8 @@ describe('channels-util', () => {
 				{ allowIndex: false, includeReadOnly: true } as ChooseChannelOptions)
 			selectFromListMock.mockImplementation(async () => 'chosen-channel-id')
 
-			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id',
-				'default-channel-id')) .toBe('chosen-channel-id')
+			expect(await chooseChannel(command, 'prompt message', 'command-line-channel-id'))
+				.toBe('chosen-channel-id')
 
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledTimes(1)
 			expect(chooseChannelOptionsWithDefaultsSpy).toHaveBeenCalledWith(undefined)
@@ -152,14 +136,14 @@ describe('channels-util', () => {
 			expect(selectFromListMock).toHaveBeenCalledTimes(1)
 			expect(selectFromListMock).toHaveBeenCalledWith(command,
 				expect.objectContaining({ primaryKeyName: 'channelId', sortKeyName: 'name' }),
-				'command-line-channel-id', expect.any(Function), 'prompt message')
+				expect.objectContaining({ preselectedId: 'command-line-channel-id' }))
 
-			const listFunction = selectFromListMock.mock.calls[0][3]
+			const listItems = selectFromListMock.mock.calls[0][2].listItems
 
 			const list = [{ name: 'Channel' }] as Channel[]
 			listChannelsMock.mockResolvedValueOnce(list)
 
-			expect(await listFunction()).toBe(list)
+			expect(await listItems()).toBe(list)
 
 			expect(listChannelsMock).toHaveBeenCalledTimes(1)
 			expect(listChannelsMock).toHaveBeenCalledWith({ includeReadOnly: true })

@@ -39,11 +39,11 @@ describe('DriversInstallCommand', () => {
 
 		expect(chooseHubMock).toHaveBeenCalledTimes(1)
 		expect(chooseHubMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
-			'Select a hub to install to.', undefined, undefined)
+			'Select a hub to install to.', undefined, { useConfigDefault: true })
 		expect(selectFromListMock).toHaveBeenCalledTimes(1)
 		expect(selectFromListMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
-			expect.objectContaining({ primaryKeyName: 'channelId' }), undefined,
-			expect.any(Function), 'Select a channel to install the driver from.')
+			expect.objectContaining({ primaryKeyName: 'channelId' }),
+			expect.objectContaining({ promptMessage: 'Select a channel to install the driver from.' }))
 		expect(chooseDriverFromChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseDriverFromChannelMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
 			'chosen-channel-id', undefined)
@@ -55,9 +55,9 @@ describe('DriversInstallCommand', () => {
 		const channelsList = [{ name: 'channel' }] as EnrolledChannel[]
 		enrolledChannelsSpy.mockResolvedValue(channelsList)
 
-		const listChannels = selectFromListMock.mock.calls[0][3]
+		const listItems = selectFromListMock.mock.calls[0][2].listItems
 
-		expect(await listChannels()).toBe(channelsList)
+		expect(await listItems()).toBe(channelsList)
 
 		expect(enrolledChannelsSpy).toHaveBeenCalledTimes(1)
 		expect(enrolledChannelsSpy).toHaveBeenCalledWith('chosen-hub-id')
@@ -68,7 +68,7 @@ describe('DriversInstallCommand', () => {
 
 		expect(chooseHubMock).toHaveBeenCalledTimes(1)
 		expect(chooseHubMock).toHaveBeenCalledWith(expect.any(DriversInstallCommand),
-			'Select a hub to install to.', 'command-line-hub-id', undefined)
+			'Select a hub to install to.', 'command-line-hub-id', { useConfigDefault: true })
 	})
 
 	it('uses channel from command line if specified', async () => {

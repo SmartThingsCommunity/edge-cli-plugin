@@ -36,11 +36,11 @@ export async function chooseInvite(command: EdgeCommand, promptMessage: string, 
 		sortKeyName: 'id', // only supports simple properties so we can't sort by metadata.name even though we can use that in the table
 		listTableFieldDefinitions: ['id', 'metadata.name'],
 	}
-	const listChannels = buildListFunction(command, channelId)
+	const listItems = buildListFunction(command, channelId)
 	const preselectedId = opts.allowIndex
-		? await stringTranslateToId(config, inviteFromArg, listChannels)
+		? await stringTranslateToId(config, inviteFromArg, listItems)
 		: inviteFromArg
-	return selectFromList(command, config, preselectedId, listChannels, promptMessage)
+	return selectFromList(command, config, { preselectedId, listItems, promptMessage })
 }
 
 

@@ -31,7 +31,7 @@ export default class ChannelsDriversCommand extends EdgeCommand {
 		}
 
 		const channelId = await chooseChannel(this, 'Select a channel.', args.idOrIndex,
-			this.defaultChannelId, { allowIndex: true, includeReadOnly: true })
+			{ allowIndex: true, includeReadOnly: true, useConfigDefault: true })
 
 		await outputList(this, config, () => listAssignedDriversWithNames(this.client, channelId))
 	}

@@ -54,23 +54,8 @@ export const processFingerprintsFile = (projectDirectory: string, zip: JSZip): v
 	}
 }
 
-export const buildTestFileMatchers = (matchersFromConfig?: string | string[]): picomatch.Matcher[] => {
-	const retVal = []
-
-	const config = matchersFromConfig
-	if (typeof config === 'string') {
-		retVal.push(picomatch(config))
-	} else if (Array.isArray(config)) {
-		for (const glob of config) {
-			retVal.push(picomatch(glob))
-		}
-	} else {
-		retVal.push(picomatch('test/**'))
-		retVal.push(picomatch('tests/**'))
-	}
-
-	return retVal
-}
+export const buildTestFileMatchers = (matchersFromConfig: string[]): picomatch.Matcher[] =>
+	matchersFromConfig.map(glob => picomatch(glob))
 
 export const processSrcDir = (projectDirectory: string, zip: JSZip, testFileMatchers: picomatch.Matcher[]): void => {
 	const srcDir = requireDir(`${projectDirectory}/src`)

@@ -10,6 +10,7 @@ import { listChannels, listTableFieldDefinitions, tableFieldDefinitions } from '
 export default class ChannelsCommand extends EdgeCommand {
 	static description = 'list all channels owned by you or retrieve a single channel'
 
+	/* eslint-disable @typescript-eslint/naming-convention */
 	static flags = {
 		...EdgeCommand.flags,
 		...outputListing.flags,
@@ -27,6 +28,7 @@ export default class ChannelsCommand extends EdgeCommand {
 			dependsOn: ['subscriber-type'],
 		}),
 	}
+	/* eslint-enable @typescript-eslint/naming-convention */
 
 	static args = [{
 		name: 'idOrIndex',

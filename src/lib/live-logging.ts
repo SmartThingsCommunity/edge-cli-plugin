@@ -223,6 +223,7 @@ export class LiveLogClient {
 			method: method,
 			httpsAgent: new https.Agent({ rejectUnauthorized: false }),
 			timeout: this.config.timeout,
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			headers: { 'User-Agent': this.config.userAgent },
 			transitional: {
 				silentJSONParsing: true,
