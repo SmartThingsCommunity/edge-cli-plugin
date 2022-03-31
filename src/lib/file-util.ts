@@ -38,15 +38,30 @@ export const requireDir = (dirName: string): string => {
 	throw new Errors.CLIError(`missing required directory: ${dirName}`)
 }
 
-// using `object` because it is what `yaml.safeLoad` used to return
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const readYAMLFile = (filename: string, errorMessage?: string): string | object | undefined => {
+export interface YAMLFileData {
+	[key: string]: string | object | number | undefined
+}
+
+function isYAMLFileData(data: unknown): data is YAMLFileData {
+	return data !== null &&
+		typeof data === 'object' &&
+		Object.keys(data).length > 0 &&
+		Object.values(data).every(value => ['string', 'object', 'number'].includes(typeof value))
+}
+
+export const readYAMLFile = (filename: string): YAMLFileData => {
 	try {
-		// ISSUE: do more validation here and fix return type
-		return yaml.load(fs.readFileSync(filename, 'utf-8')) as string | object | undefined
+		const data = yaml.load(fs.readFileSync(filename, 'utf-8'))
+		if (isYAMLFileData(data)) {
+			return data
+		}
+
+		if (data == null) {
+			throw new Error('empty file')
+		}
+
+		throw new Error('invalid file')
 	} catch (error) {
-		throw new Errors.CLIError((errorMessage ?? 'error "{error}" reading {filename}')
-			.replace('{filename}', 'filename')
-			.replace('{error}', `${error}`))
+		throw new Errors.CLIError(`error "${error.message}" reading ${filename}`)
 	}
 }
