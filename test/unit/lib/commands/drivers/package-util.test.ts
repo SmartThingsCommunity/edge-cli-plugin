@@ -71,8 +71,7 @@ describe('package-utils', () => {
 			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
 			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('my-project-dir/config')
 			expect(readYAMLFileSpy).toHaveBeenCalledTimes(1)
-			expect(readYAMLFileSpy)
-				.toHaveBeenCalledWith('config.yaml filename', 'unable to parse {filename}: {error}')
+			expect(readYAMLFileSpy).toHaveBeenCalledWith('config.yaml filename')
 			expect(createReadStreamMock).toHaveBeenCalledTimes(1)
 			expect(createReadStreamMock).toHaveBeenCalledWith('config.yaml filename')
 			expect(zipFileMock).toHaveBeenCalledTimes(1)
@@ -90,36 +89,6 @@ describe('package-utils', () => {
 			expect(readYAMLFileSpy).toHaveBeenCalledTimes(0)
 			expect(zipFileMock).toHaveBeenCalledTimes(0)
 		})
-
-		it('throws error for empty config file', () => {
-			findYAMLFilenameSpy.mockReturnValueOnce('config.yaml filename')
-			readYAMLFileSpy.mockImplementationOnce(() => undefined)
-
-			expect(() => processConfigFile('my-project-dir', zipMock))
-				.toThrow(new Errors.CLIError('empty config file'))
-
-			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
-			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('my-project-dir/config')
-			expect(readYAMLFileSpy).toHaveBeenCalledTimes(1)
-			expect(readYAMLFileSpy)
-				.toHaveBeenCalledWith('config.yaml filename', 'unable to parse {filename}: {error}')
-			expect(zipFileMock).toHaveBeenCalledTimes(0)
-		})
-
-		it('throws error for simple string config file', () => {
-			findYAMLFilenameSpy.mockReturnValueOnce('config.yaml filename')
-			readYAMLFileSpy.mockImplementationOnce(() => 'simple string')
-
-			expect(() => processConfigFile('my-project-dir', zipMock))
-				.toThrow(new Errors.CLIError('invalid config file'))
-
-			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
-			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('my-project-dir/config')
-			expect(readYAMLFileSpy).toHaveBeenCalledTimes(1)
-			expect(readYAMLFileSpy)
-				.toHaveBeenCalledWith('config.yaml filename', 'unable to parse {filename}: {error}')
-			expect(zipFileMock).toHaveBeenCalledTimes(0)
-		})
 	})
 
 	describe('processFingerprintsFile', () => {
@@ -133,8 +102,7 @@ describe('package-utils', () => {
 			expect(findYAMLFilenameSpy).toHaveBeenCalledTimes(1)
 			expect(findYAMLFilenameSpy).toHaveBeenCalledWith('project dir/fingerprints')
 			expect(readYAMLFileSpy).toHaveBeenCalledTimes(1)
-			expect(readYAMLFileSpy)
-				.toHaveBeenCalledWith('fingerprints filename', 'unable to parse {filename}: {error}')
+			expect(readYAMLFileSpy).toHaveBeenCalledWith('fingerprints filename')
 			expect(createReadStreamMock).toHaveBeenCalledTimes(1)
 			expect(createReadStreamMock).toHaveBeenCalledWith('fingerprints filename')
 			expect(zipFileMock).toHaveBeenCalledTimes(1)

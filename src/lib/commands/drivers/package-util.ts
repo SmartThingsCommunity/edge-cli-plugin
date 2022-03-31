@@ -4,15 +4,11 @@ import { Errors } from '@oclif/core'
 import JSZip from 'jszip'
 import picomatch from 'picomatch'
 
-import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir } from '../../file-util'
+import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, YAMLFileData } from '../../file-util'
 
 
 // Utility methods specific to the `edge:drivers:package` command. Split out here to make
 // unit testing easier.
-
-export interface YAMLFileData {
-	[key: string]: string
-}
 
 export const resolveProjectDirName = (projectDirNameFromArgs: string): string => {
 	let calculatedProjectDirName = projectDirNameFromArgs
@@ -31,25 +27,18 @@ export const processConfigFile = (projectDirectory: string, zip: JSZip): YAMLFil
 		throw new Errors.CLIError('missing main config.yaml (or config.yml) file')
 	}
 
-	const parsedConfig = readYAMLFile(configFile, 'unable to parse {filename}: {error}')
-
-	if (parsedConfig == null) {
-		throw new Errors.CLIError('empty config file')
-	}
-	if (typeof parsedConfig === 'string') {
-		throw new Errors.CLIError('invalid config file')
-	}
+	const parsedConfig = readYAMLFile(configFile)
 
 	zip.file('config.yml', fs.createReadStream(configFile))
 
-	return parsedConfig as YAMLFileData
+	return parsedConfig
 }
 
 export const processFingerprintsFile = (projectDirectory: string, zip: JSZip): void => {
 	const fingerprintsFile = findYAMLFilename(`${projectDirectory}/fingerprints`)
 	if (fingerprintsFile !== false) {
 		// validate file is at least parsable as a YAML file
-		readYAMLFile(fingerprintsFile, 'unable to parse {filename}: {error}')
+		readYAMLFile(fingerprintsFile)
 		zip.file('fingerprints.yml', fs.createReadStream(fingerprintsFile))
 	}
 }

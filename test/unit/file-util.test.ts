@@ -3,7 +3,7 @@ import fs from 'fs'
 import { Errors } from '@oclif/core'
 import yaml from 'js-yaml'
 
-import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, requireFile } from '../../src/lib/file-util'
+import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, requireFile, YAMLFileData } from '../../src/lib/file-util'
 
 
 jest.mock('fs')
@@ -156,10 +156,11 @@ describe('file-util', () => {
 		const yamlLoadMock = jest.mocked(yaml.load)
 
 		it('returns processed file', () => {
-			readFileSyncMock.mockReturnValueOnce(('file contents'))
-			yamlLoadMock.mockReturnValueOnce('parsed yaml file')
+			const yamlFile: YAMLFileData = { key: 'value' }
+			readFileSyncMock.mockReturnValueOnce('file contents')
+			yamlLoadMock.mockReturnValueOnce(yamlFile)
 
-			expect(readYAMLFile('filename')).toBe('parsed yaml file')
+			expect(readYAMLFile('filename')).toBe(yamlFile)
 
 			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
 			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')
@@ -167,27 +168,27 @@ describe('file-util', () => {
 			expect(yamlLoadMock).toHaveBeenCalledWith('file contents')
 		})
 
-		it('has default error message', () => {
+		it('passes error message into user-facing error', () => {
 			readFileSyncMock.mockImplementation(() => { throw Error('read failure') })
 
 			expect(() => readYAMLFile('filename'))
-				.toThrow(new Errors.CLIError('error "Error: read failure" reading filename'))
+				.toThrow(new Errors.CLIError('error "read failure" reading filename'))
 
 			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
 			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')
 		})
 
-		it('uses specified error message', () => {
-			readFileSyncMock.mockReturnValueOnce(('file contents'))
-			yamlLoadMock.mockImplementation(() => { throw Error('badness') })
+		it.each`
+			invalidYaml	| errorMessage
+			${{}}	| ${'error "invalid file" reading filename'}
+			${null}	| ${'error "empty file" reading filename'}
+			${''}	| ${'error "invalid file" reading filename'}
+			${0}	| ${'error "invalid file" reading filename'}
+		`('throws $errorMessage when reading $invalidYaml', ({ invalidYaml, errorMessage }) => {
+			readFileSyncMock.mockReturnValueOnce('file contents')
+			yamlLoadMock.mockReturnValueOnce(invalidYaml)
 
-			expect(() => readYAMLFile('filename', 'error "{error}" reading config file'))
-				.toThrow(new Errors.CLIError('error "Error: badness" reading config file'))
-
-			expect(readFileSyncMock).toHaveBeenCalledTimes(1)
-			expect(readFileSyncMock).toHaveBeenCalledWith('filename', 'utf-8')
-			expect(yamlLoadMock).toHaveBeenCalledTimes(1)
-			expect(yamlLoadMock).toHaveBeenCalledWith('file contents')
+			expect(() => readYAMLFile('filename')).toThrow(new Errors.CLIError(errorMessage))
 		})
 	})
 })
