@@ -18,6 +18,7 @@ export default class ChannelsCommand extends EdgeCommand {
 		'include-read-only': Flags.boolean({
 			char: 'I',
 			description: 'include subscribed-to channels as well as owned channels',
+			exclusive: ['all-organizations'],
 		}),
 		'subscriber-type': Flags.string({
 			description: 'filter results based on subscriber type',
@@ -62,7 +63,11 @@ $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>`]
 		}
 
 		await outputListing(this, config, args.idOrIndex,
-			async () => listChannels(this, flags['subscriber-type'] as SubscriberType | undefined, flags['subscriber-id']),
+			async () => listChannels(this.client, {
+				subscriberType: flags['subscriber-type'] as SubscriberType | undefined,
+				subscriberId: flags['subscriber-id'],
+				includeReadOnly: flags['include-read-only'],
+			}),
 			id => this.client.channels.get(id))
 	}
 }

@@ -1,7 +1,7 @@
-import { Channel } from '@smartthings/core-sdk'
+import { Channel, OrganizationResponse, SmartThingsClient } from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsWithDefaults, selectFromList, stringTranslateToId }
-	from '@smartthings/cli-lib'
+import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
+	stringTranslateToId } from '@smartthings/cli-lib'
 
 import { chooseChannel, listChannels, ChooseChannelOptions, chooseChannelOptionsWithDefaults }
 	from '../../../../src/lib/commands/channels-util'
@@ -13,6 +13,7 @@ jest.mock('@smartthings/cli-lib', () => ({
 	chooseOptionsWithDefaults: jest.fn(),
 	stringTranslateToId: jest.fn(),
 	selectFromList: jest.fn(),
+	forAllOrganizations: jest.fn(),
 }))
 
 
@@ -152,20 +153,11 @@ describe('channels-util', () => {
 
 	describe('listChannels', () => {
 		const apiListChannelsMock = jest.fn()
-		const apiListOrganizationsMock = jest.fn()
 		const client = {
 			channels: {
 				list: apiListChannelsMock,
 			},
-			organizations: {
-				list: apiListOrganizationsMock,
-			},
-			clone: () => ({
-				channels: {
-					list: apiListChannelsMock,
-				},
-			}),
-		}
+		} as unknown as SmartThingsClient
 
 		const result = [
 			{
@@ -174,40 +166,24 @@ describe('channels-util', () => {
 			},
 		]
 		apiListChannelsMock.mockResolvedValue(result)
-		apiListOrganizationsMock.mockResolvedValue([
-			{ organizationId: 'org1', name: 'Organization One' },
-			{ organizationId: 'org2', name: 'Organization Two' },
-		])
 
 		it('lists channels', async () => {
-			const flags = { 'all-organizations': false, 'include-read-only': false }
-			const command = { client, flags } as unknown as APICommand
+			expect(await listChannels(client)).toBe(result)
 
-			expect(await listChannels(command)).toBe(result)
-
-			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(0)
 			expect(apiListChannelsMock).toHaveBeenCalledTimes(1)
-			expect(apiListChannelsMock).toHaveBeenCalledWith({ includeReadOnly: false })
+			expect(apiListChannelsMock).toHaveBeenCalledWith(expect.not.objectContaining({ includeReadOnly: true }))
 		})
 
 		it('lists channels including read-only', async () => {
-			const flags = { 'all-organizations': false, 'include-read-only': true }
-			const command = { client, flags } as unknown as APICommand
+			expect(await listChannels(client, { allOrganizations: false, includeReadOnly: true })).toBe(result)
 
-			expect(await listChannels(command)).toBe(result)
-
-			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(0)
 			expect(apiListChannelsMock).toHaveBeenCalledTimes(1)
 			expect(apiListChannelsMock).toHaveBeenCalledWith({ includeReadOnly: true })
 		})
 
 		it('passes subscriber filters on', async () => {
-			const flags = { 'all-organizations': false, 'include-read-only': false }
-			const command = { client, flags } as unknown as APICommand
+			expect(await listChannels(client, { subscriberType: 'HUB', subscriberId: 'subscriber-id', allOrganizations: false, includeReadOnly: false })).toBe(result)
 
-			expect(await listChannels(command, 'HUB', 'subscriber-id')).toBe(result)
-
-			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(0)
 			expect(apiListChannelsMock).toHaveBeenCalledTimes(1)
 			expect(apiListChannelsMock).toHaveBeenCalledWith({
 				includeReadOnly: false, subscriberType: 'HUB', subscriberId: 'subscriber-id',
@@ -215,17 +191,26 @@ describe('channels-util', () => {
 		})
 
 		it('lists channels in all organizations', async () => {
-			const flags = { 'all-organizations': true, 'include-read-only': false }
-			const command = { client, flags } as unknown as APICommand
 			const thisResult = [
 				{ ...result[0], organization: 'Organization One' },
 				{ ...result[0], organization: 'Organization Two' },
 			]
+			const forAllOrganizationsMock = jest.mocked(forAllOrganizations).mockResolvedValueOnce(thisResult)
 
-			expect(await listChannels(command)).toStrictEqual(thisResult)
+			expect(await listChannels(client, { allOrganizations: true, includeReadOnly: false })).toStrictEqual(thisResult)
 
-			expect(apiListOrganizationsMock).toHaveBeenCalledTimes(1)
-			expect(apiListChannelsMock).toHaveBeenCalledTimes(2)
+			expect(forAllOrganizationsMock).toHaveBeenCalledTimes(1)
+			expect(forAllOrganizationsMock).toHaveBeenCalledWith(client, expect.any(Function))
+			expect(apiListChannelsMock).toHaveBeenCalledTimes(0)
+
+			const listChannelsFunction = forAllOrganizationsMock.mock.calls[0][1]
+
+			expect(await listChannelsFunction(client, { organizationId: 'unused' } as OrganizationResponse)).toBe(result)
+		})
+
+		it('throws error when both allOrganizations and includeReadOnly included', async () => {
+			await expect(listChannels(client, { allOrganizations: true, includeReadOnly: true }))
+				.rejects.toThrow('includeReadOnly and allOrganizations options are incompatible')
 		})
 	})
 })
