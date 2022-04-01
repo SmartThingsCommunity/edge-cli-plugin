@@ -1,4 +1,4 @@
-import { Channel, SubscriberType } from '@smartthings/core-sdk'
+import { Channel, SmartThingsClient, SubscriberType } from '@smartthings/core-sdk'
 
 import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
 	stringTranslateToId } from '@smartthings/cli-lib'
@@ -28,7 +28,7 @@ export async function chooseChannel(command: APICommand, promptMessage: string,
 		sortKeyName: 'name',
 	}
 
-	const listItems = (): Promise<Channel[]> => listChannels(command, undefined, undefined, opts)
+	const listItems = (): Promise<Channel[]> => listChannels(command.client, { includeReadOnly: opts.includeReadOnly })
 
 	const preselectedId = channelFromArg
 		? (opts.allowIndex
@@ -41,21 +41,21 @@ export async function chooseChannel(command: APICommand, promptMessage: string,
 		{ preselectedId, listItems, promptMessage, configKeyForDefaultValue })
 }
 
-export async function listChannels(command: APICommand, subscriberType?: SubscriberType, subscriberId?: string,
-		options?: Partial<ChooseChannelOptions>): Promise<Channel[]> {
-	const allOrganizations = command.flags['all-organizations']
-	const includeReadOnly = (options && options.includeReadOnly) || command.flags['include-read-only']
-	if (allOrganizations) {
-		const result = await forAllOrganizations(command.client, orgClient => orgClient.channels.list())
+export interface ListChannelOptions {
+	allOrganizations: boolean
+	includeReadOnly: boolean
+	subscriberType?: SubscriberType
+	subscriberId?: string
+}
+export async function listChannels(client: SmartThingsClient, options?: Partial<ListChannelOptions>): Promise<Channel[]> {
+	const includeReadOnly = options?.includeReadOnly
+	const subscriberType = options?.subscriberType
+	const subscriberId = options?.subscriberId
+	if (options?.allOrganizations) {
 		if (includeReadOnly) {
-			const possibleShared = await command.client.channels.list({ includeReadOnly, subscriberType, subscriberId })
-			for (const channel of possibleShared) {
-				if (!result.find(it => it.channelId === channel.channelId)) {
-					result.push(channel)
-				}
-			}
+			throw Error('includeReadOnly and allOrganizations options are incompatible')
 		}
-		return result
+		return await forAllOrganizations(client, orgClient => orgClient.channels.list({ subscriberType, subscriberId }))
 	}
-	return command.client.channels.list({ includeReadOnly, subscriberType, subscriberId })
+	return client.channels.list({ includeReadOnly, subscriberType, subscriberId })
 }
