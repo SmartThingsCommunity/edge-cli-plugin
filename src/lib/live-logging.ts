@@ -1,7 +1,8 @@
 import axios, { AxiosError, AxiosResponse, Method } from 'axios'
 import https from 'https'
 import net from 'net'
-import { bgBlue, bgCyan, bgGray, bgGreen, bgRed, bgYellow, black, EventFormat, logManager } from '@smartthings/cli-lib'
+import log4js from '@log4js-node/log4js-api'
+import { bgBlue, bgCyan, bgGray, bgGreen, bgRed, bgYellow, black, EventFormat } from '@smartthings/cli-lib'
 import { Authenticator } from '@smartthings/core-sdk'
 import { Errors } from '@oclif/core'
 import { PeerCertificate, TLSSocket } from 'tls'
@@ -121,8 +122,7 @@ function logLevelColor(level: LogLevel): string {
 	return black(colorString)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function liveLogMessageFormatter(event: any): EventFormat {
+export function liveLogMessageFormatter(event: unknown): EventFormat {
 	if (isLiveLogMessage(event)) {
 		const formatString = `${logLevelColor(event.log_level)} ${event.driver_name}  ${event.message}`
 		const time = event.timestamp
@@ -239,10 +239,10 @@ export class LiveLogClient {
 		} catch (error) {
 			if (error.isAxiosError) {
 				const axiosError = error as AxiosError
-				const cliLogger = logManager.getLogger('cli')
+				const cliLogger = log4js.getLogger('cli')
 				if (cliLogger.isDebugEnabled()) {
 					const errorString = scrubAuthInfo(axiosError.toJSON())
-					logManager.getLogger('cli').debug(`Error connecting to live-logging: ${errorString}\n\nLocal network interfaces: ${networkEnvironmentInfo()}`)
+					cliLogger.debug(`Error connecting to live-logging: ${errorString}\n\nLocal network interfaces: ${networkEnvironmentInfo()}`)
 				}
 
 				this.handleAxiosConnectionErrors(axiosError)
