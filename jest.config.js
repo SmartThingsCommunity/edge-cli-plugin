@@ -12,7 +12,7 @@ module.exports = {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
 	},
 	setupFiles: [
-		'<rootDir>/test/unit/jest.setup.ts',
+		'@smartthings/cli-testlib',
 	],
 	collectCoverageFrom: ['src/**/*.ts'],
 }

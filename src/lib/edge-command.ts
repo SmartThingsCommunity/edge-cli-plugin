@@ -1,4 +1,5 @@
-import { APIOrganizationCommand, logManager } from '@smartthings/cli-lib'
+import log4js from '@log4js-node/log4js-api'
+import { APIOrganizationCommand } from '@smartthings/cli-lib'
 
 import { EdgeClient } from './edge-client'
 
@@ -20,7 +21,7 @@ export abstract class EdgeCommand extends APIOrganizationCommand {
 	async setup(args: { [name: string]: any }, argv: string[], flags: { [name: string]: any }): Promise<void> {
 		await super.setup(args, argv, flags)
 
-		const logger = logManager.getLogger('rest-client')
+		const logger = log4js.getLogger('rest-client')
 		this._edgeClient = new EdgeClient(this.authenticator,
 			{ urlProvider: this.clientIdProvider, logger, headers: this.headers })
 	}
