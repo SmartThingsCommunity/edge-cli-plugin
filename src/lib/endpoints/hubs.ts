@@ -35,12 +35,25 @@ export class HubsEndpoint extends Endpoint {
 		return this.client.put(`${hubId}/drivers/${driverId}`, { channelId })
 	}
 
+	/**
+	 * Change the driver for a device to the one specified by driverId.
+	 */
+	public async switchDriver(driverId: string, hubId: string, deviceId: string): Promise<void> {
+		return this.client.patch(`${hubId}/childdevice/${deviceId}`, { driverId })
+	}
+
 	public async uninstallDriver(driverId: string, hubId: string): Promise<void> {
 		return this.client.delete(`${hubId}/drivers/${driverId}`)
 	}
 
-	public async listInstalled(hubId: string): Promise<InstalledDriver[]> {
-		return this.client.get(`${hubId}/drivers`)
+	/**
+	 * List drivers installed on the hub.
+	 *
+	 * @param deviceId When included, limit the drivers to those marked as matching the specified device.
+	 */
+	public async listInstalled(hubId: string, deviceId?: string): Promise<InstalledDriver[]> {
+		const params = deviceId? { deviceId } : undefined
+		return this.client.get(`${hubId}/drivers`, params)
 	}
 
 	public async getInstalled(hubId: string, driverId: string): Promise<InstalledDriver> {
