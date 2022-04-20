@@ -16,6 +16,9 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 			char: 'H',
 			description: 'hub id',
 		}),
+		device: Flags.string({
+			description: 'return drivers matching the specified device',
+		}),
 	}
 
 	static args = [{
@@ -37,7 +40,7 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 			{ allowIndex: true, useConfigDefault: true })
 
 		await outputListing(this, config, this.args.idOrIndex,
-			() => this.edgeClient.hubs.listInstalled(hubId),
+			() => this.edgeClient.hubs.listInstalled(hubId, this.flags.device),
 			id => this.edgeClient.hubs.getInstalled(hubId, id))
 	}
 }

@@ -1,13 +1,15 @@
 import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDriver, EdgeDriverSummary,
 	SmartThingsClient } from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
+import { APICommand, ChooseOptions, chooseOptionsDefaults, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
 	stringTranslateToId, summarizedText, TableGenerator } from '@smartthings/cli-lib'
+import { EdgeClient } from '../edge-client'
 
 
 export const listTableFieldDefinitions = ['driverId', 'name', 'version', 'packageKey']
 
 export const permissionsValue = (driver: EdgeDriver): string => driver.permissions?.map(permission => permission.name).join('\n') || 'none'
+
 export const buildTableOutput = (tableGenerator: TableGenerator, driver: EdgeDriver): string => {
 	const basicInfo = tableGenerator.buildTableFromItem(driver, [
 		'driverId', 'name', 'version', 'packageKey', 'description',
@@ -33,20 +35,60 @@ export const listDrivers = async (client: SmartThingsClient, includeAllOrganizat
 		? forAllOrganizations(client, orgClient => orgClient.drivers.list())
 		: client.drivers.list()
 
+/**
+ * Filter the driver currently in use by a device out of a list of drivers.
+ */
+export const withoutCurrentDriver = async (client: SmartThingsClient, deviceId: string, drivers: DriverChoice[]): Promise<DriverChoice[]> => {
+	const device = await client.devices.get(deviceId)
+	const currentDriverId = device.lan?.driverId ??
+		device.matter?.driverId ??
+		device.zigbee?.driverId ??
+		device.zwave?.driverId
+
+	return drivers.filter(driver => driver.driverId !== currentDriverId)
+}
+
+export const listAllAvailableDrivers = async (client: SmartThingsClient, edgeClient: EdgeClient, deviceId: string, hubId: string): Promise<DriverChoice[]> => {
+	const installedDrivers = await edgeClient.hubs.listInstalled(hubId)
+	const defaultDrivers = (await client.drivers.listDefault())
+		.filter(driver => !installedDrivers.find(installed => installed.driverId === driver.driverId))
+	return withoutCurrentDriver(client, deviceId, [...installedDrivers, ...defaultDrivers ])
+}
+
+export const listMatchingDrivers = async (client: SmartThingsClient, edgeClient: EdgeClient, deviceId: string, hubId: string): Promise<DriverChoice[]> =>
+	withoutCurrentDriver(client, deviceId, await edgeClient.hubs.listInstalled(hubId, deviceId))
+
+/**
+ * When presenting a list of drivers to choose from, we only use the `driverId` and `name` fields.
+ * Using this type instead of `EdgeDriverSummary` allows the caller of `chooseDriver` (below)
+ * to use functions that return other objects as long as they include these two fields.
+ */
+export type DriverChoice = Pick<EdgeDriverSummary, 'driverId' | 'name'>
+
+export interface ChooseDriverOptions extends ChooseOptions {
+	/**
+	 * By default drivers owned by the user are included, using `command.client.drivers.list()`
+	 * but if you need a different list of drivers, you can include your own function here.
+	 */
+	listItems: () => Promise<DriverChoice[]>
+}
 
 export async function chooseDriver(command: APICommand<typeof APICommand.flags>, promptMessage: string, commandLineDriverId?: string,
-		options?: Partial<ChooseOptions>): Promise<string> {
-	const opts = chooseOptionsWithDefaults(options)
+		options?: Partial<ChooseDriverOptions>): Promise<string> {
+	const opts = {
+		...chooseOptionsDefaults,
+		listItems: (): Promise<DriverChoice[]> => command.client.drivers.list(),
+		...options,
+	}
 	const config = {
 		itemName: 'driver',
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',
 	}
-	const listItems = (): Promise<EdgeDriverSummary[]> => command.client.drivers.list()
 	const preselectedId = opts.allowIndex
-		? await stringTranslateToId(config, commandLineDriverId, listItems)
+		? await stringTranslateToId(config, commandLineDriverId, opts.listItems)
 		: commandLineDriverId
-	return selectFromList(command, config, { preselectedId, listItems, promptMessage })
+	return selectFromList(command, config, { preselectedId, listItems: opts.listItems, promptMessage })
 }
 
 export const chooseHub = async (command: APICommand<typeof APICommand.flags>, promptMessage: string,
