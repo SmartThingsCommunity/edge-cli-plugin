@@ -74,7 +74,7 @@ interface KnownHub {
 	fingerprint: string
 }
 
-export default class LogCatCommand extends SseCommand {
+export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags> {
 	private authority!: string
 	private logClient!: LiveLogClient
 
@@ -154,10 +154,7 @@ export default class LogCatCommand extends SseCommand {
 	async init(): Promise<void> {
 		await super.init()
 
-		const { args, argv, flags } = await this.parse(LogCatCommand)
-		await super.setup(args, argv, flags)
-
-		const hubIpAddress = flags['hub-address'] ?? await askForRequiredString('Enter hub IP address with optionally appended port number:')
+		const hubIpAddress = this.flags['hub-address'] ?? await askForRequiredString('Enter hub IP address with optionally appended port number:')
 		const [ipv4, port] = parseIpAndPort(hubIpAddress)
 		const liveLogPort = port ?? DEFAULT_LIVE_LOG_PORT
 		this.authority = `${ipv4}:${liveLogPort}`
@@ -166,7 +163,7 @@ export default class LogCatCommand extends SseCommand {
 			authority: this.authority,
 			authenticator: this.authenticator,
 			verifier: this.checkServerIdentity.bind(this),
-			timeout: flags['connect-timeout'],
+			timeout: this.flags['connect-timeout'],
 			userAgent: this.userAgent,
 		}
 

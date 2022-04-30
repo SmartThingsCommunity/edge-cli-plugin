@@ -12,7 +12,7 @@ import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export default class PackageCommand extends EdgeCommand {
+export default class PackageCommand extends EdgeCommand<typeof PackageCommand.flags> {
 	static description = 'build and upload an edge package'
 
 	static args = [{
@@ -76,38 +76,35 @@ $ smartthings edge:drivers:package -b driver.zip my-package`,
 $ smartthings edge:drivers:package -u driver.zip`]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(PackageCommand)
-		await super.setup(args, argv, flags)
-
 		const uploadAndPostProcess = async (archiveData: Uint8Array): Promise<void> => {
 			const config = {
 				tableFieldDefinitions: ['driverId', 'name', 'packageKey', 'version'],
 			}
 			const driver = await outputItem(this, config, () => this.client.drivers.upload(archiveData))
-			const doAssign = flags.assign || flags.channel || flags.install || flags.hub
-			const doInstall = flags.install || flags.hub
+			const doAssign = this.flags.assign || this.flags.channel || this.flags.install || this.flags.hub
+			const doInstall = this.flags.install || this.flags.hub
 			if (doAssign) {
 				const driverId = driver.driverId
 				const version = driver.version
 				const channelId = await chooseChannel(this, 'Select a channel for the driver.',
-					flags.channel, { useConfigDefault: true })
+					this.flags.channel, { useConfigDefault: true })
 				await this.client.channels.assignDriver(channelId, driverId, version)
 
 				if (doInstall) {
-					const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,
+					const hubId = await chooseHub(this, 'Select a hub to install to.', this.flags.hub,
 						{ useConfigDefault: true })
 					await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
 				}
 			}
 		}
 
-		if (flags.upload) {
+		if (this.flags.upload) {
 			try {
-				const data = await readFile(flags.upload)
+				const data = await readFile(this.flags.upload)
 				await uploadAndPostProcess(data)
 			} catch (error) {
 				if ((error as { code?: string }).code === 'ENOENT') {
-					this.log(`No file named "${flags.upload}" found.`)
+					this.log(`No file named "${this.flags.upload}" found.`)
 				} else {
 					throw error
 				}
@@ -124,11 +121,11 @@ $ smartthings edge:drivers:package -u driver.zip`]
 			processSrcDir(projectDirectory, zip, testFileMatchers)
 
 			processProfiles(projectDirectory, zip)
-			if (flags['build-only']) {
+			if (this.flags['build-only']) {
 				zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true, compression: 'DEFLATE' })
-					.pipe(fs.createWriteStream(flags['build-only']))
+					.pipe(fs.createWriteStream(this.flags['build-only']))
 					.on('finish', () => {
-						this.log(`wrote ${flags['build-only']}`)
+						this.log(`wrote ${this.flags['build-only']}`)
 					})
 			} else {
 				const zipContents = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' })

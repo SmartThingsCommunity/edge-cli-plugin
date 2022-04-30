@@ -1,7 +1,7 @@
 import { EdgeCommand } from '../../../../lib/edge-command'
 
 
-export default class ChannelsInvitesAcceptCommand extends EdgeCommand {
+export default class ChannelsInvitesAcceptCommand extends EdgeCommand<typeof ChannelsInvitesAcceptCommand.flags> {
 	static description = 'accept a channel invitation'
 
 	static flags = EdgeCommand.flags
@@ -15,10 +15,7 @@ export default class ChannelsInvitesAcceptCommand extends EdgeCommand {
 	static aliases = ['edge:channels:invitations:accept']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsInvitesAcceptCommand)
-		await super.setup(args, argv, flags)
-
-		const id = args.id
+		const id = this.args.id
 		await this.edgeClient.invites.accept(id)
 		this.log(`Invitation ${id} accepted.`)
 	}

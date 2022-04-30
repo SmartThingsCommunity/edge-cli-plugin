@@ -12,7 +12,7 @@ export interface NamedDriverChannelDetails extends DriverChannelDetails {
 	name: string
 }
 
-export async function chooseAssignedDriver(command: APICommand, promptMessage: string,
+export async function chooseAssignedDriver(command: APICommand<typeof APICommand.flags>, promptMessage: string,
 		channelId: string, commandLineDriverId?: string, options?: Partial<ChooseOptions>): Promise<string> {
 	const opts = chooseOptionsWithDefaults(options)
 	const config = {
@@ -40,7 +40,7 @@ export async function chooseAssignedDriver(command: APICommand, promptMessage: s
 	return selectFromList(command, config, { preselectedId, listItems, promptMessage })
 }
 
-export class ChannelsUnassignCommand extends EdgeCommand {
+export class ChannelsUnassignCommand extends EdgeCommand<typeof ChannelsUnassignCommand.flags> {
 	static description = 'remove a driver from a channel'
 
 	static flags = {
@@ -61,13 +61,10 @@ export class ChannelsUnassignCommand extends EdgeCommand {
 	static aliases = ['edge:drivers:unpublish']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsUnassignCommand)
-		await super.setup(args, argv, flags)
-
 		const channelId = await chooseChannel(this, 'Select a channel for the driver.',
-			flags.channel, { useConfigDefault: true })
+			this.flags.channel, { useConfigDefault: true })
 		const driverId = await chooseAssignedDriver(this, 'Select a driver to remove from channel.',
-			channelId, args.driverId)
+			channelId, this.args.driverId)
 
 		await this.client.channels.unassignDriver(channelId, driverId)
 

@@ -4,7 +4,7 @@ import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export default class ChannelsEnrollmentsCommand extends EdgeCommand {
+export default class ChannelsEnrollmentsCommand extends EdgeCommand<typeof ChannelsEnrollmentsCommand.flags> {
 	static description = 'list all channels a given hub is enrolled in'
 
 	static flags = {
@@ -18,16 +18,13 @@ export default class ChannelsEnrollmentsCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsEnrollmentsCommand)
-		await super.setup(args, argv, flags)
-
 		const config = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 			listTableFieldDefinitions: ['channelId', 'name', 'description', 'createdDate', 'lastModifiedDate', 'subscriptionUrl'],
 		}
 
-		const hubId = await chooseHub(this, 'Select a hub.', args.idOrIndex,
+		const hubId = await chooseHub(this, 'Select a hub.', this.args.idOrIndex,
 			{ allowIndex: true, useConfigDefault: true })
 
 		await outputList(this, config, () => this.edgeClient.hubs.enrolledChannels(hubId))

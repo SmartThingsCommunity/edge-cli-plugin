@@ -7,7 +7,7 @@ import { EdgeCommand } from '../../../lib/edge-command'
 import { EnrolledChannel } from '../../../lib/endpoints/hubs'
 
 
-export default class DriversInstallCommand extends EdgeCommand {
+export default class DriversInstallCommand extends EdgeCommand<typeof DriversInstallCommand.flags> {
 	static description = 'install an edge driver onto a hub'
 
 	static examples = [
@@ -49,13 +49,10 @@ export default class DriversInstallCommand extends EdgeCommand {
 	}
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(DriversInstallCommand)
-		await super.setup(args, argv, flags)
-
-		const hubId = await chooseHub(this, 'Select a hub to install to.', flags.hub,
+		const hubId = await chooseHub(this, 'Select a hub to install to.', this.flags.hub,
 			{ useConfigDefault: true })
-		const channelId = flags.channel ?? await this.chooseChannelFromEnrollments(hubId)
-		const driverId = await chooseDriverFromChannel(this, channelId, args.driverId)
+		const channelId = this.flags.channel ?? await this.chooseChannelFromEnrollments(hubId)
+		const driverId = await chooseDriverFromChannel(this, channelId, this.args.driverId)
 		await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
 		this.log(`driver ${driverId} installed to hub ${hubId}`)
 	}

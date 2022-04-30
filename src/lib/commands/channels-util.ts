@@ -18,7 +18,7 @@ export const chooseChannelOptionsWithDefaults = (options?: Partial<ChooseChannel
 	...chooseOptionsWithDefaults(options),
 })
 
-export async function chooseChannel(command: APICommand, promptMessage: string,
+export async function chooseChannel(command: APICommand<typeof APICommand.flags>, promptMessage: string,
 		channelFromArg?: string,
 		options?: Partial<ChooseChannelOptions>): Promise<string> {
 	const opts = chooseChannelOptionsWithDefaults(options)

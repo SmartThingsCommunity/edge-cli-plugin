@@ -6,7 +6,7 @@ import { chooseHub } from '../../../lib/commands/drivers-util'
 import { InstalledDriver } from '../../../lib/endpoints/hubs'
 
 
-export default class DriversUninstallCommand extends EdgeCommand {
+export default class DriversUninstallCommand extends EdgeCommand<typeof DriversUninstallCommand.flags> {
 	static description = 'uninstall an edge driver from a hub'
 
 	static flags = {
@@ -36,13 +36,10 @@ export default class DriversUninstallCommand extends EdgeCommand {
 	}
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(DriversUninstallCommand)
-		await super.setup(args, argv, flags)
-
-		const hubId = await chooseHub(this, 'Select a hub to uninstall from.', flags.hub,
+		const hubId = await chooseHub(this, 'Select a hub to uninstall from.', this.flags.hub,
 			{ useConfigDefault: true })
 		const driverId = await this.chooseInstalledDriver(hubId, 'Select a driver to uninstall.',
-			args.driverId)
+			this.args.driverId)
 		await this.edgeClient.hubs.uninstallDriver(driverId, hubId)
 		this.log(`driver ${driverId} uninstalled from hub ${hubId}`)
 	}

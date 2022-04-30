@@ -21,14 +21,14 @@ export const tableFieldDefinitions = [
 	'profileId',
 ]
 
-const buildListFunction = (command: EdgeCommand, channelId?: string) => async (): Promise<Invitation[]> => {
+const buildListFunction = (command: EdgeCommand<typeof EdgeCommand.flags>, channelId?: string) => async (): Promise<Invitation[]> => {
 	const channelIds = channelId
 		? [channelId]
 		: (await command.client.channels.list()).map(channel => channel.channelId)
 	return (await Promise.all(channelIds.map(async channelId => await command.edgeClient.invites.list(channelId)))).flat()
 }
 
-export async function chooseInvite(command: EdgeCommand, promptMessage: string, channelId?: string, inviteFromArg?: string, options?: Partial<ChooseOptions>): Promise<string> {
+export async function chooseInvite(command: EdgeCommand<typeof EdgeCommand.flags>, promptMessage: string, channelId?: string, inviteFromArg?: string, options?: Partial<ChooseOptions>): Promise<string> {
 	const opts = chooseOptionsWithDefaults(options)
 	const config = {
 		itemName: 'invitation',
@@ -44,7 +44,7 @@ export async function chooseInvite(command: EdgeCommand, promptMessage: string, 
 }
 
 
-export default class ChannelsInvitesCommand extends EdgeCommand {
+export default class ChannelsInvitesCommand extends EdgeCommand<typeof ChannelsInvitesCommand.flags> {
 	static description = 'list invitations or retrieve a single invitation by id or index'
 
 	static flags = {
@@ -71,9 +71,6 @@ export default class ChannelsInvitesCommand extends EdgeCommand {
 	]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsInvitesCommand)
-		await super.setup(args, argv, flags)
-
 		const config = {
 			primaryKeyName: 'id',
 			sortKeyName: 'id',
@@ -81,8 +78,8 @@ export default class ChannelsInvitesCommand extends EdgeCommand {
 			tableFieldDefinitions,
 		}
 
-		await outputListing<Invitation, Invitation>(this, config, args.idOrIndex,
-			buildListFunction(this, flags.channel),
+		await outputListing<Invitation, Invitation>(this, config, this.args.idOrIndex,
+			buildListFunction(this, this.flags.channel),
 			id => this.edgeClient.invites.get(id))
 	}
 }

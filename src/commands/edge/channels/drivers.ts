@@ -5,7 +5,7 @@ import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export default class ChannelsDriversCommand extends EdgeCommand {
+export default class ChannelsDriversCommand extends EdgeCommand<typeof ChannelsDriversCommand.flags> {
 	static description = 'list all drivers assigned to a given channel'
 
 	static flags = {
@@ -21,16 +21,13 @@ export default class ChannelsDriversCommand extends EdgeCommand {
 	static aliases = ['edge:channels:assignments']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsDriversCommand)
-		await super.setup(args, argv, flags)
-
 		const config = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'version',
 			listTableFieldDefinitions: ['name', 'driverId', 'version', 'createdDate', 'lastModifiedDate'],
 		}
 
-		const channelId = await chooseChannel(this, 'Select a channel.', args.idOrIndex,
+		const channelId = await chooseChannel(this, 'Select a channel.', this.args.idOrIndex,
 			{ allowIndex: true, includeReadOnly: true, useConfigDefault: true })
 
 		await outputList(this, config, () => listAssignedDriversWithNames(this.client, channelId))

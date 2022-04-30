@@ -34,7 +34,7 @@ export const listDrivers = async (client: SmartThingsClient, includeAllOrganizat
 		: client.drivers.list()
 
 
-export async function chooseDriver(command: APICommand, promptMessage: string, commandLineDriverId?: string,
+export async function chooseDriver(command: APICommand<typeof APICommand.flags>, promptMessage: string, commandLineDriverId?: string,
 		options?: Partial<ChooseOptions>): Promise<string> {
 	const opts = chooseOptionsWithDefaults(options)
 	const config = {
@@ -49,7 +49,7 @@ export async function chooseDriver(command: APICommand, promptMessage: string, c
 	return selectFromList(command, config, { preselectedId, listItems, promptMessage })
 }
 
-export const chooseHub = async (command: APICommand, promptMessage: string,
+export const chooseHub = async (command: APICommand<typeof APICommand.flags>, promptMessage: string,
 		commandLineHubId: string | undefined,
 		options?: Partial<ChooseOptions>): Promise<string> => {
 	const opts = chooseOptionsWithDefaults(options)
@@ -124,7 +124,7 @@ export const listAssignedDriversWithNames = async (client: SmartThingsClient, ch
 		}))).filter((driver): driver is DriverChannelDetailsWithName => !!driver)
 }
 
-export const chooseDriverFromChannel = async (command: APICommand, channelId: string,
+export const chooseDriverFromChannel = async (command: APICommand<typeof APICommand.flags>, channelId: string,
 		preselectedId?: string): Promise<string> => {
 	const config = {
 		itemName: 'driver',

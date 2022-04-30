@@ -11,7 +11,7 @@ module.exports = {
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
 	},
-	setupFiles: [
+	setupFilesAfterEnv: [
 		'@smartthings/cli-testlib',
 	],
 	collectCoverageFrom: ['src/**/*.ts'],

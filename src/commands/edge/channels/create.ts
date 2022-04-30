@@ -10,7 +10,7 @@ import { EdgeCommand } from '../../../lib/edge-command'
 const tableFieldDefinitions = ['channelId', 'name', 'description', 'type', 'termsOfServiceUrl',
 	'createdDate', 'lastModifiedDate']
 
-export default class ChannelsCreateCommand extends EdgeCommand {
+export default class ChannelsCreateCommand extends EdgeCommand<typeof ChannelsCreateCommand.flags> {
 	static description = 'create a channel'
 
 	static flags = {
@@ -44,9 +44,6 @@ export default class ChannelsCreateCommand extends EdgeCommand {
 	}
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsCreateCommand)
-		await super.setup(args, argv, flags)
-
 		await inputAndOutputItem<ChannelCreate, Channel>(this, { tableFieldDefinitions },
 			(_, input: ChannelCreate) => this.client.channels.create(input),
 			userInputProcessor(this))

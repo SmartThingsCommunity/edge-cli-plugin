@@ -70,3 +70,6 @@ typings/
 
 .DS_Store
 .*.swp
+
+# oclif
+oclif.manifest.json

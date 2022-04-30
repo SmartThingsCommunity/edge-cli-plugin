@@ -6,7 +6,7 @@ import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export default class DriversInstalledCommand extends EdgeCommand {
+export default class DriversInstalledCommand extends EdgeCommand<typeof DriversInstalledCommand.flags> {
 	static description = 'list all drivers installed on a given hub'
 
 	static flags = {
@@ -24,9 +24,6 @@ export default class DriversInstalledCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(DriversInstalledCommand)
-		await super.setup(args, argv, flags)
-
 		const config = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
@@ -36,10 +33,10 @@ export default class DriversInstalledCommand extends EdgeCommand {
 				'developer', 'vendorSummaryInformation'],
 		}
 
-		const hubId = await chooseHub(this, 'Select a hub.', flags.hub,
+		const hubId = await chooseHub(this, 'Select a hub.', this.flags.hub,
 			{ allowIndex: true, useConfigDefault: true })
 
-		await outputListing(this, config, args.idOrIndex,
+		await outputListing(this, config, this.args.idOrIndex,
 			() => this.edgeClient.hubs.listInstalled(hubId),
 			id => this.edgeClient.hubs.getInstalled(hubId, id))
 	}

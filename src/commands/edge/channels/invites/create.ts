@@ -12,7 +12,7 @@ const tableFieldDefinitions = ['id', 'metadata.name', 'profileId', 'expiration',
 
 const defaultInvitationProfileId = '61a79569-e8fd-4a4d-9b9c-a4a55ccdd15e'
 
-export default class ChannelsInvitesCreateCommand extends EdgeCommand {
+export default class ChannelsInvitesCreateCommand extends EdgeCommand<typeof ChannelsInvitesCreateCommand.flags> {
 	static description = 'create an invitation'
 
 	static flags = {
@@ -28,9 +28,6 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand {
 	static aliases = ['edge:channels:invitations:create']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsInvitesCreateCommand)
-		await super.setup(args, argv, flags)
-
 		const create = async (_: void, input: CreateInvitation): Promise<Invitation> => {
 			const { invitationId } = await this.edgeClient.invites.create(input)
 			const invitation = await this.edgeClient.invites.get(invitationId)
