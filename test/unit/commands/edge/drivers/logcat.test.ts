@@ -51,6 +51,7 @@ jest.mock('@smartthings/cli-lib', () => {
 		askForRequiredString: jest.fn(),
 		logEvent: jest.fn(),
 		convertToId: jest.fn().mockResolvedValue('driverId'),
+		handleSignals: jest.fn(),
 	}
 })
 
@@ -67,8 +68,6 @@ jest.mock('../../../../../src/lib/live-logging', () => ({
 	handleConnectionErrors: jest.fn(),
 }))
 
-// avoid creating a bunch of signal listeners between tests
-jest.spyOn(SseCommand.prototype, 'init').mockImplementation()
 
 describe('LogCatCommand', () => {
 	const mockStringTranslateToId = jest.mocked(stringTranslateToId).mockResolvedValue('all')
@@ -87,7 +86,6 @@ describe('LogCatCommand', () => {
 	const errorSpy = jest.spyOn(LogCatCommand.prototype, 'error').mockImplementation()
 	const warnSpy = jest.spyOn(LogCatCommand.prototype, 'warn').mockImplementation()
 
-	jest.spyOn(LogCatCommand.prototype.logger, 'debug').mockImplementation()
 	jest.spyOn(CliUx.ux.action, 'start').mockImplementation()
 	jest.spyOn(CliUx.ux.action, 'stop').mockImplementation()
 	jest.spyOn(CliUx.ux.action, 'pauseAsync').mockImplementation(async (fn) => {

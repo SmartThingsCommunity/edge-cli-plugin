@@ -5,7 +5,7 @@ import { EdgeCommand } from '../../../../lib/edge-command'
 import { chooseInvite } from '../invites'
 
 
-export default class ChannelsInvitesDeleteCommand extends EdgeCommand {
+export default class ChannelsInvitesDeleteCommand extends EdgeCommand<typeof ChannelsInvitesDeleteCommand.flags> {
 	static description = 'delete a channel invitation'
 
 	static flags = {
@@ -28,14 +28,11 @@ export default class ChannelsInvitesDeleteCommand extends EdgeCommand {
 	]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsInvitesDeleteCommand)
-		await super.setup(args, argv, flags)
-
 		const channelId = await chooseChannel(this,
 			'Which channel is the invite you want to delete for?',
-			flags.channel, { useConfigDefault: true })
+			this.flags.channel, { useConfigDefault: true })
 
-		const id = await chooseInvite(this, 'Choose an invitation to delete.', channelId, args.id)
+		const id = await chooseInvite(this, 'Choose an invitation to delete.', channelId, this.args.id)
 		await this.edgeClient.invites.delete(id)
 		this.log(`Invitation ${id} deleted.`)
 	}

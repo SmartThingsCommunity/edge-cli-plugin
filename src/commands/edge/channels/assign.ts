@@ -5,7 +5,7 @@ import { chooseDriver } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export class ChannelsAssignCommand extends EdgeCommand {
+export class ChannelsAssignCommand extends EdgeCommand<typeof ChannelsAssignCommand.flags> {
 	static description = 'assign a driver to a channel'
 
 	static flags = {
@@ -30,18 +30,15 @@ export class ChannelsAssignCommand extends EdgeCommand {
 	static aliases = ['edge:drivers:publish']
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsAssignCommand)
-		await super.setup(args, argv, flags)
-
 		const channelId = await chooseChannel(this, 'Select a channel for the driver.',
-			flags.channel, { useConfigDefault: true })
-		const driverId = await chooseDriver(this, 'Select a driver to assign.', args.driverId)
+			this.flags.channel, { useConfigDefault: true })
+		const driverId = await chooseDriver(this, 'Select a driver to assign.', this.args.driverId)
 
 		// If the version wasn't specified, grab it from the driver.
-		const version = args.version ?? (await this.client.drivers.get(driverId)).version
+		const version = this.args.version ?? (await this.client.drivers.get(driverId)).version
 
 		await this.client.channels.assignDriver(channelId, driverId, version)
 
-		this.log(`${driverId} ${args.version ? `(version ${args.version})` : ''} assigned to channel ${channelId}`)
+		this.log(`${driverId} ${this.args.version ? `(version ${this.args.version})` : ''} assigned to channel ${channelId}`)
 	}
 }

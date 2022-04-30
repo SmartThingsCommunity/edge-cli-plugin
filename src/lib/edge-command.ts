@@ -4,22 +4,18 @@ import { APIOrganizationCommand } from '@smartthings/cli-lib'
 import { EdgeClient } from './edge-client'
 
 
-export abstract class EdgeCommand extends APIOrganizationCommand {
+export abstract class EdgeCommand<T extends typeof EdgeCommand.flags> extends APIOrganizationCommand<T> {
 
 	static flags = APIOrganizationCommand.flags
 
-	private _edgeClient?: EdgeClient
+	private _edgeClient!: EdgeClient
 
 	get edgeClient(): EdgeClient {
-		if (this._edgeClient) {
-			return this._edgeClient
-		}
-		throw new Error('EdgeCommand not initialized properly')
+		return this._edgeClient
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	async setup(args: { [name: string]: any }, argv: string[], flags: { [name: string]: any }): Promise<void> {
-		await super.setup(args, argv, flags)
+	async init(): Promise<void> {
+		await super.init()
 
 		const logger = log4js.getLogger('rest-client')
 		this._edgeClient = new EdgeClient(this.authenticator,

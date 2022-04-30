@@ -7,7 +7,7 @@ import { EdgeCommand } from '../../lib/edge-command'
 import { listChannels, listTableFieldDefinitions, tableFieldDefinitions } from '../../lib/commands/channels-util'
 
 
-export default class ChannelsCommand extends EdgeCommand {
+export default class ChannelsCommand extends EdgeCommand<typeof ChannelsCommand.flags> {
 	static description = 'list all channels owned by you or retrieve a single channel'
 
 	/* eslint-disable @typescript-eslint/naming-convention */
@@ -49,24 +49,21 @@ $ smartthings edge:channels 2
 $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>`]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsCommand)
-		await super.setup(args, argv, flags)
-
 		const config = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 			listTableFieldDefinitions,
 			tableFieldDefinitions,
 		}
-		if (flags['all-organizations']) {
+		if (this.flags['all-organizations']) {
 			config.listTableFieldDefinitions.push('organization')
 		}
 
-		await outputListing(this, config, args.idOrIndex,
+		await outputListing(this, config, this.args.idOrIndex,
 			async () => listChannels(this.client, {
-				subscriberType: flags['subscriber-type'] as SubscriberType | undefined,
-				subscriberId: flags['subscriber-id'],
-				includeReadOnly: flags['include-read-only'],
+				subscriberType: this.flags['subscriber-type'] as SubscriberType | undefined,
+				subscriberId: this.flags['subscriber-id'],
+				includeReadOnly: this.flags['include-read-only'],
 			}),
 			id => this.client.channels.get(id))
 	}

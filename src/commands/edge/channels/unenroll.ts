@@ -5,7 +5,7 @@ import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export class ChannelsUnenrollCommand extends EdgeCommand {
+export class ChannelsUnenrollCommand extends EdgeCommand<typeof ChannelsUnenrollCommand.flags> {
 	static description = 'unenroll a hub from a channel'
 
 	static flags = {
@@ -24,12 +24,9 @@ export class ChannelsUnenrollCommand extends EdgeCommand {
 	]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsUnenrollCommand)
-		await super.setup(args, argv, flags)
-
-		const channelId = await chooseChannel(this, 'Select a channel.', flags.channel,
+		const channelId = await chooseChannel(this, 'Select a channel.', this.flags.channel,
 			{ includeReadOnly: true })
-		const hubId = await chooseHub(this, 'Select a hub.', args.hubId,
+		const hubId = await chooseHub(this, 'Select a hub.', this.args.hubId,
 			{ useConfigDefault: true })
 
 		await this.client.channels.unenrollHub(channelId, hubId)

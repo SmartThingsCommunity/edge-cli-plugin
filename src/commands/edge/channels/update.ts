@@ -6,7 +6,7 @@ import { chooseChannel, tableFieldDefinitions } from '../../../lib/commands/chan
 import { EdgeCommand } from '../../../lib/edge-command'
 
 
-export default class ChannelsUpdateCommand extends EdgeCommand {
+export default class ChannelsUpdateCommand extends EdgeCommand<typeof ChannelsUpdateCommand.flags> {
 	static description = 'update a channel'
 
 	static flags = {
@@ -20,10 +20,7 @@ export default class ChannelsUpdateCommand extends EdgeCommand {
 	}]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsUpdateCommand)
-		await super.setup(args, argv, flags)
-
-		const id = await chooseChannel(this, 'Choose a channel to patch.', args.id,
+		const id = await chooseChannel(this, 'Choose a channel to patch.', this.args.id,
 			{ useConfigDefault: true })
 		await inputAndOutputItem<ChannelUpdate, Channel>(this, { tableFieldDefinitions },
 			(_, channelMods) => this.client.channels.update(id, channelMods))

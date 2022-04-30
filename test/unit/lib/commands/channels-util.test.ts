@@ -52,7 +52,7 @@ describe('channels-util', () => {
 		const listChannelsMock = jest.fn()
 		const client = { channels: { list: listChannelsMock } }
 		const flags = { 'all-organizations': false, 'include-read-only': false }
-		const command = { client, flags } as unknown as APICommand
+		const command = { client, flags } as unknown as APICommand<typeof APICommand.flags>
 
 		const chooseChannelOptionsWithDefaultsSpy = jest.spyOn(channelsUtil, 'chooseChannelOptionsWithDefaults')
 		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)

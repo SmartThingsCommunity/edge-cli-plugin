@@ -136,7 +136,7 @@ describe('drivers-util', () => {
 	})
 
 	describe('chooseDriver', () => {
-		const command = { client } as unknown as EdgeCommand
+		const command = { client } as unknown as EdgeCommand<typeof EdgeCommand.flags>
 
 		const chooseOptionsWithDefaultsMock = jest.mocked(chooseOptionsWithDefaults)
 		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
@@ -206,7 +206,7 @@ describe('drivers-util', () => {
 		const listDevicesMock = jest.fn()
 		const getLocationsMock = jest.fn()
 		const client = { devices: { list: listDevicesMock }, locations: { get: getLocationsMock } }
-		const command = { client, logger: { warn: jest.fn() } } as unknown as APICommand
+		const command = { client, logger: { warn: jest.fn() } } as unknown as APICommand<typeof APICommand.flags>
 
 		const chooseOptionsWithDefaultsMock = jest.mocked(chooseOptionsWithDefaults)
 		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
@@ -459,7 +459,7 @@ describe('drivers-util', () => {
 	describe('chooseDriverFromChannel', () => {
 		it('presents user with list of drivers with names', async () => {
 			const client = {} as EdgeClient
-			const command = { client } as unknown as EdgeCommand
+			const command = { client } as unknown as EdgeCommand<typeof EdgeCommand.flags>
 			selectFromListMock.mockResolvedValueOnce('chosen-driver-id')
 
 			const result = await chooseDriverFromChannel(command, 'channel-id', 'preselected-driver-id')

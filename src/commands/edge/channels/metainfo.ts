@@ -9,7 +9,7 @@ import { chooseChannel } from '../../../lib/commands/channels-util'
 import { buildTableOutput, listTableFieldDefinitions } from '../../../lib/commands/drivers-util'
 
 
-export default class ChannelsMetaInfoCommand extends EdgeCommand {
+export default class ChannelsMetaInfoCommand extends EdgeCommand<typeof ChannelsMetaInfoCommand.flags> {
 	static description = 'list all channels owned by you or retrieve a single channel'
 
 	static flags = {
@@ -40,11 +40,8 @@ $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 3`,
 $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 699c7308-8c72-4363-9571-880d0f5cc725`]
 
 	async run(): Promise<void> {
-		const { args, argv, flags } = await this.parse(ChannelsMetaInfoCommand)
-		await super.setup(args, argv, flags)
-
 		const channelId = await chooseChannel(this, 'Choose a channel to get meta info for.',
-			flags.channel, { useConfigDefault: true })
+			this.flags.channel, { useConfigDefault: true })
 
 		const config = {
 			primaryKeyName: 'driverId',
@@ -59,7 +56,7 @@ $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 699
 				await this.client.channels.getDriverChannelMetaInfo(channelId, driver.driverId)))
 		}
 
-		await outputListing(this, config, args.idOrIndex,
+		await outputListing(this, config, this.args.idOrIndex,
 			listDriversMetaInfo,
 			driverId => this.client.channels.getDriverChannelMetaInfo(channelId, driverId))
 	}
