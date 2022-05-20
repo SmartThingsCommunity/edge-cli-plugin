@@ -69,8 +69,8 @@ describe('PackageCommand', () => {
 
 	const driver = { driverId: 'driver id', version: 'driver version' } as EdgeDriver
 	const outputItemMock = jest.mocked(outputItem)
-		.mockImplementation((_command, _config, actionFunction): Promise<EdgeDriver> => {
-			actionFunction()
+		.mockImplementation(async (_command, _config, actionFunction): Promise<EdgeDriver> => {
+			await actionFunction()
 			return Promise.resolve(driver)
 		})
 	const uploadSpy = jest.spyOn(DriversEndpoint.prototype, 'upload').mockResolvedValue(driver)
