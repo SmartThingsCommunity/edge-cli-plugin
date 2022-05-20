@@ -589,7 +589,7 @@ describe('drivers-util', () => {
 			listAssignedDriversMock.mockReturnValueOnce(driverChannelDetailsList)
 			getDriverChannelMetaInfoMock.mockRejectedValueOnce(Error('random error'))
 
-			expect(listAssignedDriversWithNames(client, 'channel-id')).rejects.toThrow(Error('random error'))
+			await expect(listAssignedDriversWithNames(client, 'channel-id')).rejects.toThrow(Error('random error'))
 
 			expect(listAssignedDriversMock).toHaveBeenCalledTimes(1)
 			expect(listAssignedDriversMock).toHaveBeenCalledWith('channel-id')

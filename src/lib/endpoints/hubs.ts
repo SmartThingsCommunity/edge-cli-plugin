@@ -52,7 +52,7 @@ export class HubsEndpoint extends Endpoint {
 	 * @param deviceId When included, limit the drivers to those marked as matching the specified device.
 	 */
 	public async listInstalled(hubId: string, deviceId?: string): Promise<InstalledDriver[]> {
-		const params = deviceId? { deviceId } : undefined
+		const params = deviceId ? { deviceId } : undefined
 		return this.client.get(`${hubId}/drivers`, params)
 	}
 
