@@ -90,12 +90,12 @@ describe('PackageCommand', () => {
 	})
 
 	const mockProjectDirectoryProcessing = (): void => {
-		resolveProjectDirNameMock.mockReturnValueOnce('project dir')
+		resolveProjectDirNameMock.mockResolvedValueOnce('project dir')
 		jsZipMock.mockReturnValueOnce(mockJSZip)
-		processConfigFileMock.mockImplementationOnce(() => ({}))
+		processConfigFileMock.mockResolvedValueOnce({})
 		processFingerprintsFileMock.mockImplementation()
 		buildTestFileMatchersMock.mockReturnValueOnce([])
-		processSrcDirMock.mockImplementation()
+		processSrcDirMock.mockResolvedValue(true)
 		processProfilesMock.mockImplementation()
 	}
 	const expectProjectDirectoryProcessing = (): void => {

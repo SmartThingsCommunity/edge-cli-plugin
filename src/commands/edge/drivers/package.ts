@@ -112,17 +112,19 @@ $ smartthings edge:drivers:package -u driver.zip`]
 				}
 			}
 		} else {
-			const projectDirectory = resolveProjectDirName(this.args.projectDirectory)
+			const projectDirectory = await resolveProjectDirName(this.args.projectDirectory)
 
 			const zip = new JSZip()
-			processConfigFile(projectDirectory, zip)
+			await processConfigFile(projectDirectory, zip)
 
-			processFingerprintsFile(projectDirectory, zip)
+			await processFingerprintsFile(projectDirectory, zip)
 			const edgeDriverTestDirs = this.stringArrayConfigValue('edgeDriverTestDirs', ['test/**', 'tests/**'])
 			const testFileMatchers = buildTestFileMatchers(edgeDriverTestDirs)
-			processSrcDir(projectDirectory, zip, testFileMatchers)
+			if (!await processSrcDir(projectDirectory, zip, testFileMatchers)) {
+				this.exit(1)
+			}
 
-			processProfiles(projectDirectory, zip)
+			await processProfiles(projectDirectory, zip)
 			if (this.flags['build-only']) {
 				zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true, compression: 'DEFLATE' })
 					.pipe(fs.createWriteStream(this.flags['build-only']))
