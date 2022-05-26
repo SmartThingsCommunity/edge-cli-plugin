@@ -1,28 +1,29 @@
 import fs from 'fs'
 
-import { Errors } from '@oclif/core'
+import { CliUx, Errors } from '@oclif/core'
 import JSZip from 'jszip'
 import picomatch from 'picomatch'
 
-import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, YAMLFileData } from '../../file-util'
+import { fileExists, findYAMLFilename, isDir, isFile, isSymbolicLink, readYAMLFile,
+	realPathForSymbolicLink, requireDir, YAMLFileData } from '../../file-util'
 
 
 // Utility methods specific to the `edge:drivers:package` command. Split out here to make
 // unit testing easier.
 
-export const resolveProjectDirName = (projectDirNameFromArgs: string): string => {
+export const resolveProjectDirName = async (projectDirNameFromArgs: string): Promise<string> => {
 	let calculatedProjectDirName = projectDirNameFromArgs
 	if (calculatedProjectDirName.endsWith('/')) {
 		calculatedProjectDirName = calculatedProjectDirName.slice(0, -1)
 	}
-	if (!isDir(calculatedProjectDirName)) {
+	if (!await isDir(calculatedProjectDirName)) {
 		throw new Errors.CLIError(`${calculatedProjectDirName} must exist and be a directory`)
 	}
 	return calculatedProjectDirName
 }
 
-export const processConfigFile = (projectDirectory: string, zip: JSZip): YAMLFileData => {
-	const configFile = findYAMLFilename(`${projectDirectory}/config`)
+export const processConfigFile = async (projectDirectory: string, zip: JSZip): Promise<YAMLFileData> => {
+	const configFile = await findYAMLFilename(`${projectDirectory}/config`)
 	if (configFile === false) {
 		throw new Errors.CLIError('missing main config.yaml (or config.yml) file')
 	}
@@ -34,8 +35,8 @@ export const processConfigFile = (projectDirectory: string, zip: JSZip): YAMLFil
 	return parsedConfig
 }
 
-export const processFingerprintsFile = (projectDirectory: string, zip: JSZip): void => {
-	const fingerprintsFile = findYAMLFilename(`${projectDirectory}/fingerprints`)
+export const processFingerprintsFile = async (projectDirectory: string, zip: JSZip): Promise<void> => {
+	const fingerprintsFile = await findYAMLFilename(`${projectDirectory}/fingerprints`)
 	if (fingerprintsFile !== false) {
 		// validate file is at least parsable as a YAML file
 		readYAMLFile(fingerprintsFile)
@@ -46,39 +47,56 @@ export const processFingerprintsFile = (projectDirectory: string, zip: JSZip): v
 export const buildTestFileMatchers = (matchersFromConfig: string[]): picomatch.Matcher[] =>
 	matchersFromConfig.map(glob => picomatch(glob))
 
-export const processSrcDir = (projectDirectory: string, zip: JSZip, testFileMatchers: picomatch.Matcher[]): void => {
-	const srcDir = requireDir(`${projectDirectory}/src`)
-	if (!isFile(`${srcDir}/init.lua`)) {
+export const processSrcDir = async (projectDirectory: string, zip: JSZip, testFileMatchers: picomatch.Matcher[]): Promise<boolean> => {
+	const srcDir = await requireDir(`${projectDirectory}/src`)
+	if (!await isFile(`${srcDir}/init.lua`)) {
 		throw new Errors.CLIError(`missing required ${srcDir}/init.lua file`)
+	}
+
+	let successful = true
+	const fatalIssue = (message: string): void => {
+		successful = false
+		CliUx.ux.error(message, { exit: false })
 	}
 
 	// The max depth is 10 but the main project directory and the src directory itself count,
 	// so we start at 2.
-	const walkDir = (fromDir: string, nested = 2): void => {
-		for (const filename of fs.readdirSync(fromDir)) {
+	const walkDir = async (fromDir: string, nested = 2): Promise<void> => {
+		await Promise.all(fs.readdirSync(fromDir).map(async filename => {
 			const fullFilename = `${fromDir}/${filename}`
-			if (isDir(fullFilename)) {
-				// maximum depth is defined by server
-				if (nested < 10) {
-					walkDir(fullFilename, nested + 1)
+			if (await fileExists(fullFilename)) {
+				const isLink = await isSymbolicLink(fullFilename)
+				const resolvedFilename = isLink ? await realPathForSymbolicLink(fullFilename) : fullFilename
+				if (await isDir(resolvedFilename)) {
+					if (isLink) {
+						fatalIssue(`sym links to directories are not allowed (${fullFilename})`)
+					} else {
+						// maximum depth is defined by server
+						if (nested < 10) {
+							await walkDir(fullFilename, nested + 1)
+						} else {
+							fatalIssue(`drivers directory nested too deeply (at ${fullFilename}); max depth is 10`)
+						}
+					}
 				} else {
-					throw new Errors.CLIError(`drivers directory nested too deeply (at ${fullFilename}); max depth is 10`)
+					const filenameForTestMatch = fullFilename.substring(srcDir.length + 1)
+					if (!testFileMatchers.some(matcher => matcher(filenameForTestMatch))) {
+						const archiveName = `src${fullFilename.substring(srcDir.length)}`
+						zip.file(archiveName, fs.createReadStream(fullFilename))
+					}
 				}
 			} else {
-				const filenameForTestMatch = fullFilename.substr(srcDir.length + 1)
-				if (!testFileMatchers.some(matcher => matcher(filenameForTestMatch))) {
-					const archiveName = `src${fullFilename.substring(srcDir.length)}`
-					zip.file(archiveName, fs.createReadStream(fullFilename))
-				}
+				fatalIssue(`sym link ${fullFilename} points to non-existent file`)
 			}
-		}
+		}))
 	}
 
-	walkDir(srcDir)
+	await walkDir(srcDir)
+	return successful
 }
 
-export const processProfiles = (projectDirectory: string, zip: JSZip): void => {
-	const profilesDir = requireDir(`${projectDirectory}/profiles`)
+export const processProfiles = async (projectDirectory: string, zip: JSZip): Promise<void> => {
+	const profilesDir = await requireDir(`${projectDirectory}/profiles`)
 
 	for (const filename of fs.readdirSync(profilesDir)) {
 		const fullFilename = `${profilesDir}/${filename}`

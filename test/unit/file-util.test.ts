@@ -3,151 +3,193 @@ import fs from 'fs'
 import { Errors } from '@oclif/core'
 import yaml from 'js-yaml'
 
-import { findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, requireFile, YAMLFileData } from '../../src/lib/file-util'
+import { fileExists, findYAMLFilename, isDir, isFile, readYAMLFile, requireDir, YAMLFileData }
+	from '../../src/lib/file-util'
+import * as fileUtil from '../../src/lib/file-util'
 
 
-jest.mock('fs')
+jest.mock('fs', () => {
+	// if this isn't done, something breaks with sub-dependency 'fs-extra'
+	const originalLib = jest.requireActual('fs')
+
+	return {
+		...originalLib,
+		readFileSync: jest.fn(),
+		promises: {
+			stat: jest.fn(),
+		},
+	}
+})
 jest.mock('js-yaml')
 
 describe('file-util', () => {
-	const existsSyncMock = jest.mocked(fs.existsSync)
-	const lstatSyncMock = jest.mocked(fs.lstatSync)
+	const statMock = jest.mocked(fs.promises.stat)
 
 	afterEach(() => {
 		jest.clearAllMocks()
 	})
 
-	const mockExistsAndIsFile = (): void => {
-		existsSyncMock.mockReturnValueOnce(true)
-		const statsIsFileMock = jest.fn().mockReturnValueOnce(true)
-		lstatSyncMock.mockReturnValueOnce({ isFile: statsIsFileMock } as unknown as fs.Stats)
-	}
+	describe('fileExists', () => {
+		it('returns true when file exists', async () => {
+			statMock.mockResolvedValue({} as fs.Stats)
 
-	const mockExistsAndIsDirectory = (): void => {
-		existsSyncMock.mockReturnValueOnce(true)
-		const statsIsDirectoryMock = jest.fn().mockReturnValueOnce(true)
-		lstatSyncMock.mockReturnValueOnce({ isDirectory: statsIsDirectoryMock } as unknown as fs.Stats)
-	}
+			expect(await fileExists('file-path')).toBe(true)
+
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('file-path')
+		})
+
+		it('returns false when file does not exist', async () => {
+			statMock.mockRejectedValueOnce({ code: 'ENOENT' })
+
+			expect(await fileExists('file-path')).toBe(false)
+
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('file-path')
+		})
+
+		it('passes on unexpected exceptions', async () => {
+			statMock.mockRejectedValueOnce(Error('unexpected-error'))
+
+			await expect(fileExists('file-path')).rejects.toThrow('unexpected-error')
+
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('file-path')
+		})
+	})
+
+	const fileExistsSpy = jest.spyOn(fileUtil, 'fileExists')
 
 	describe('isFile', () => {
-		it('returns false if does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
+		it('returns false if does not exist', async () => {
+			fileExistsSpy.mockResolvedValue(false)
 
-			expect(isFile('non-existent.stl')).toBe(false)
+			expect(await isFile('non-existent.stl')).toBe(false)
 
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('non-existent.stl')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(0)
+			expect(fileExistsSpy).toHaveBeenCalledTimes(1)
+			expect(fileExistsSpy).toHaveBeenCalledWith('non-existent.stl')
+			expect(statMock).toHaveBeenCalledTimes(0)
 		})
 
-		it('returns false if exists but is not a file', () => {
-			existsSyncMock.mockReturnValue(true)
+		it('returns false if exists but is not a file', async () => {
+			fileExistsSpy.mockResolvedValue(true)
 			const statsIsFileMock = jest.fn().mockReturnValue(false)
-			lstatSyncMock.mockReturnValue({ isFile: statsIsFileMock } as unknown as fs.Stats)
+			statMock.mockResolvedValue({ isFile: statsIsFileMock } as unknown as fs.Stats)
 
-			expect(isFile('directory')).toBe(false)
+			expect(await isFile('directory')).toBe(false)
 
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('directory')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('directory')
+			expect(fileExistsSpy).toHaveBeenCalledTimes(1)
+			expect(fileExistsSpy).toHaveBeenCalledWith('directory')
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('directory')
+			expect(statsIsFileMock).toHaveBeenCalledTimes(1)
+			expect(statsIsFileMock).toHaveBeenCalledWith()
 		})
 
-		it('returns true if exists and is a file', () => {
-			mockExistsAndIsFile()
+		it('returns true if exists and is a file', async () => {
+			fileExistsSpy.mockResolvedValue(true)
+			const statsIsFileMock = jest.fn().mockReturnValue(true)
+			statMock.mockResolvedValue({ isFile: statsIsFileMock } as unknown as fs.Stats)
 
-			expect(isFile('file')).toBe(true)
+			expect(await isFile('file')).toBe(true)
 
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('file')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('file')
+			expect(fileExistsSpy).toHaveBeenCalledTimes(1)
+			expect(fileExistsSpy).toHaveBeenCalledWith('file')
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('file')
+			expect(statsIsFileMock).toHaveBeenCalledTimes(1)
+			expect(statsIsFileMock).toHaveBeenCalledWith()
 		})
 	})
 
 	describe('isDir', () => {
-		const existsSyncMock = jest.mocked(fs.existsSync)
-		const lstatSyncMock = jest.mocked(fs.lstatSync)
+		it('returns false if does not exist', async () => {
+			fileExistsSpy.mockResolvedValue(false)
 
-		it('returns false if does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
+			expect(await isDir('non-existent')).toBe(false)
 
-			expect(isDir('non-existent')).toBe(false)
-
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('non-existent')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(0)
+			expect(fileExistsSpy).toHaveBeenCalledTimes(1)
+			expect(fileExistsSpy).toHaveBeenCalledWith('non-existent')
+			expect(statMock).toHaveBeenCalledTimes(0)
 		})
 
-		it('returns false if exists but is not a directory', () => {
-			existsSyncMock.mockReturnValue(true)
+		it('returns false if exists but is not a directory', async () => {
+			fileExistsSpy.mockResolvedValue(true)
 			const statsIsDirectoryMock = jest.fn().mockReturnValue(false)
-			lstatSyncMock.mockReturnValue({ isDirectory: statsIsDirectoryMock } as unknown as fs.Stats)
+			statMock.mockResolvedValue({ isDirectory: statsIsDirectoryMock } as unknown as fs.Stats)
 
-			expect(isDir('file')).toBe(false)
+			expect(await isDir('file')).toBe(false)
 
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('file')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('file')
+			expect(fileExistsSpy).toHaveBeenCalledTimes(1)
+			expect(fileExistsSpy).toHaveBeenCalledWith('file')
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('file')
 		})
 
-		it('returns true if exists and is a directory', () => {
-			mockExistsAndIsDirectory()
+		it('returns true if exists and is a directory', async () => {
+			fileExistsSpy.mockResolvedValue(true)
+			const statsIsDirectoryMock = jest.fn().mockReturnValue(true)
+			statMock.mockResolvedValue({ isDirectory: statsIsDirectoryMock } as unknown as fs.Stats)
 
-			expect(isDir('directory')).toBe(true)
+			expect(await isDir('directory')).toBe(true)
 
-			expect(existsSyncMock).toHaveBeenCalledTimes(1)
-			expect(existsSyncMock).toHaveBeenCalledWith('directory')
-			expect(lstatSyncMock).toHaveBeenCalledTimes(1)
-			expect(lstatSyncMock).toHaveBeenCalledWith('directory')
+			expect(fileExistsSpy).toHaveBeenCalledTimes(1)
+			expect(fileExistsSpy).toHaveBeenCalledWith('directory')
+			expect(statMock).toHaveBeenCalledTimes(1)
+			expect(statMock).toHaveBeenCalledWith('directory')
 		})
 	})
+
+	const isFileSpy = jest.spyOn(fileUtil, 'isFile')
 
 	describe('findYAMLFilename', () => {
-		it('returns filename with yaml extension if that is found', () => {
-			mockExistsAndIsFile()
+		it('returns filename with yaml extension if that is found', async () => {
+			isFileSpy.mockResolvedValueOnce(true)
 
-			expect(findYAMLFilename('filename')).toBe('filename.yaml')
+			expect(await findYAMLFilename('filename')).toBe('filename.yaml')
+
+			expect(isFileSpy).toBeCalledTimes(1)
+			expect(isFileSpy).toBeCalledWith('filename.yaml')
 		})
 
-		it('returns filename with yml extension if that is found', () => {
-			existsSyncMock.mockReturnValueOnce(false)
-			mockExistsAndIsFile()
+		it('returns filename with yml extension if that is found', async () => {
+			isFileSpy.mockResolvedValueOnce(false)
+			isFileSpy.mockResolvedValueOnce(true)
 
-			expect(findYAMLFilename('filename')).toBe('filename.yml')
+			expect(await findYAMLFilename('filename')).toBe('filename.yml')
+
+			expect(isFileSpy).toBeCalledTimes(2)
+			expect(isFileSpy).toBeCalledWith('filename.yaml')
+			expect(isFileSpy).toBeCalledWith('filename.yml')
 		})
 
-		it('returns false when no matching file found', () => {
-			existsSyncMock.mockReturnValue(false)
+		it('returns false when no matching file found', async () => {
+			isFileSpy.mockResolvedValue(false)
 
-			expect(findYAMLFilename('filename')).toBe(false)
-		})
-	})
+			expect(await findYAMLFilename('filename')).toBe(false)
 
-	describe('requireFile', () => {
-		it('returns filename when it exists and is a file', () => {
-			mockExistsAndIsFile()
-
-			expect(requireFile('my-file')).toBe('my-file')
-		})
-
-		it('throws exception when file does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
-			expect(() => requireFile('not-a-file')).toThrow()
+			expect(isFileSpy).toBeCalledTimes(2)
+			expect(isFileSpy).toBeCalledWith('filename.yaml')
+			expect(isFileSpy).toBeCalledWith('filename.yml')
 		})
 	})
+
+	const isDirSpy = jest.spyOn(fileUtil, 'isDir')
 
 	describe('requireDir', () => {
-		it('returns directory when it exists and is a directory', () => {
-			mockExistsAndIsDirectory()
+		it('returns directory when it exists and is a directory', async () => {
+			isDirSpy.mockResolvedValue(true)
 
-			expect(requireDir('my-dir')).toBe('my-dir')
+			expect(await requireDir('my-dir')).toBe('my-dir')
+
+			expect(isDirSpy).toBeCalledTimes(1)
+			expect(isDirSpy).toBeCalledWith('my-dir')
 		})
 
-		it('throws exception when directory does not exist', () => {
-			existsSyncMock.mockReturnValue(false)
-			expect(() => requireDir('not-a-dir')).toThrow()
+		it('throws exception when directory does not exist', async () => {
+			isDirSpy.mockResolvedValue(false)
+
+			await expect(requireDir('not-a-dir')).rejects.toThrow('missing required directory: not-a-dir')
 		})
 	})
 
@@ -179,11 +221,11 @@ describe('file-util', () => {
 		})
 
 		it.each`
-			invalidYaml	| errorMessage
-			${{}}	| ${'error "invalid file" reading filename'}
-			${null}	| ${'error "empty file" reading filename'}
-			${''}	| ${'error "invalid file" reading filename'}
-			${0}	| ${'error "invalid file" reading filename'}
+			invalidYaml | errorMessage
+			${{}}       | ${'error "invalid file" reading filename'}
+			${null}     | ${'error "empty file" reading filename'}
+			${''}       | ${'error "invalid file" reading filename'}
+			${0}        | ${'error "invalid file" reading filename'}
 		`('throws $errorMessage when reading $invalidYaml', ({ invalidYaml, errorMessage }) => {
 			readFileSyncMock.mockReturnValueOnce('file contents')
 			yamlLoadMock.mockReturnValueOnce(invalidYaml)

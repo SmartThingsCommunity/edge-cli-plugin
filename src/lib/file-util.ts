@@ -4,35 +4,46 @@ import { Errors } from '@oclif/core'
 import yaml from 'js-yaml'
 
 
-export const isFile = (filename: string): boolean =>
-	fs.existsSync(filename) && fs.lstatSync(filename).isFile()
+export const fileExists = async (path: string): Promise<boolean> => {
+	try {
+		await fs.promises.stat(path)
+		return true
+	} catch (error) {
+		if (error.code === 'ENOENT') {
+			return false
+		}
+		throw error
+	}
+}
 
-export const isDir = (filename: string): boolean =>
-	fs.existsSync(filename) && fs.lstatSync(filename).isDirectory()
+export const isFile = async (path: string): Promise<boolean> =>
+	await fileExists(path) && (await fs.promises.stat(path)).isFile()
 
-export const findYAMLFilename = (baseName: string): string | false => {
+export const isDir = async (path: string): Promise<boolean> =>
+	await fileExists(path) && (await fs.promises.stat(path)).isDirectory()
+
+export const isSymbolicLink = async (path: string): Promise<boolean> =>
+	(await fs.promises.lstat(path)).isSymbolicLink()
+
+export const realPathForSymbolicLink = async (path: string): Promise<string> =>
+	await fs.promises.realpath(path)
+
+export const findYAMLFilename = async (baseName: string): Promise<string | false> => {
 	let retVal = `${baseName}.yaml`
-	if (isFile(retVal)) {
+	if (await isFile(retVal)) {
 		return retVal
 	}
 
 	retVal = `${baseName}.yml`
-	if (isFile(retVal)) {
+	if (await isFile(retVal)) {
 		return retVal
 	}
 
 	return false
 }
 
-export const requireFile = (filename: string): string => {
-	if (isFile(filename)) {
-		return filename
-	}
-	throw new Errors.CLIError(`missing required file: ${filename}`)
-}
-
-export const requireDir = (dirName: string): string => {
-	if (isDir(dirName)) {
+export const requireDir = async (dirName: string): Promise<string> => {
+	if (await isDir(dirName)) {
 		return dirName
 	}
 	throw new Errors.CLIError(`missing required directory: ${dirName}`)
@@ -42,7 +53,7 @@ export interface YAMLFileData {
 	[key: string]: string | object | number | undefined
 }
 
-function isYAMLFileData(data: unknown): data is YAMLFileData {
+const isYAMLFileData = (data: unknown): data is YAMLFileData => {
 	return data !== null &&
 		typeof data === 'object' &&
 		Object.keys(data).length > 0 &&
