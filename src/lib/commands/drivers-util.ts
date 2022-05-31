@@ -1,9 +1,8 @@
 import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDriver, EdgeDriverSummary,
-	SmartThingsClient } from '@smartthings/core-sdk'
+	InstalledDriver, SmartThingsClient } from '@smartthings/core-sdk'
 
 import { APICommand, ChooseOptions, chooseOptionsDefaults, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
 	stringTranslateToId, summarizedText, TableGenerator } from '@smartthings/cli-lib'
-import { EdgeClient } from '../edge-client'
 
 
 export const listTableFieldDefinitions = ['driverId', 'name', 'version', 'packageKey']
@@ -48,15 +47,15 @@ export const withoutCurrentDriver = async (client: SmartThingsClient, deviceId: 
 	return drivers.filter(driver => driver.driverId !== currentDriverId)
 }
 
-export const listAllAvailableDrivers = async (client: SmartThingsClient, edgeClient: EdgeClient, deviceId: string, hubId: string): Promise<DriverChoice[]> => {
-	const installedDrivers = await edgeClient.hubs.listInstalled(hubId)
+export const listAllAvailableDrivers = async (client: SmartThingsClient, deviceId: string, hubId: string): Promise<DriverChoice[]> => {
+	const installedDrivers = await client.hubdevices.listInstalled(hubId)
 	const defaultDrivers = (await client.drivers.listDefault())
 		.filter(driver => !installedDrivers.find(installed => installed.driverId === driver.driverId))
 	return withoutCurrentDriver(client, deviceId, [...installedDrivers, ...defaultDrivers ])
 }
 
-export const listMatchingDrivers = async (client: SmartThingsClient, edgeClient: EdgeClient, deviceId: string, hubId: string): Promise<DriverChoice[]> =>
-	withoutCurrentDriver(client, deviceId, await edgeClient.hubs.listInstalled(hubId, deviceId))
+export const listMatchingDrivers = async (client: SmartThingsClient, deviceId: string, hubId: string): Promise<DriverChoice[]> =>
+	withoutCurrentDriver(client, deviceId, await client.hubdevices.listInstalled(hubId, deviceId))
 
 /**
  * When presenting a list of drivers to choose from, we only use the `driverId` and `name` fields.
@@ -176,4 +175,16 @@ export const chooseDriverFromChannel = async (command: APICommand<typeof APIComm
 	const listItems = (): Promise<DriverChannelDetailsWithName[]> => listAssignedDriversWithNames(command.client, channelId)
 	return selectFromList(command, config,
 		{ preselectedId, listItems, promptMessage: 'Select a driver to install.' })
+}
+
+export const chooseInstalledDriver = async (command: APICommand<typeof APICommand.flags>, hubId: string, promptMessage: string, commandLineDriverId?: string): Promise<string> => {
+	const config = {
+		itemName: 'driver',
+		primaryKeyName: 'driverId',
+		sortKeyName: 'name',
+	}
+
+	const listItems = (): Promise<InstalledDriver[]> => command.client.hubdevices.listInstalled(hubId)
+	const preselectedId = await stringTranslateToId(config, commandLineDriverId, listItems)
+	return selectFromList(command, config, { preselectedId, listItems, promptMessage })
 }

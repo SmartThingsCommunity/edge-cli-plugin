@@ -27,6 +27,6 @@ export default class ChannelsEnrollmentsCommand extends EdgeCommand<typeof Chann
 		const hubId = await chooseHub(this, 'Select a hub.', this.args.idOrIndex,
 			{ allowIndex: true, useConfigDefault: true })
 
-		await outputList(this, config, () => this.edgeClient.hubs.enrolledChannels(hubId))
+		await outputList(this, config, () => this.client.hubdevices.enrolledChannels(hubId))
 	}
 }

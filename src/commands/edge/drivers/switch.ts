@@ -64,12 +64,12 @@ $ smartthings edge:drivers:switch --include-non-matching`,
 		const deviceId = await chooseDevice(this, this.args.deviceId, { deviceListOptions, deviceListFilter })
 
 		const listItems = this.flags['include-non-matching']
-			? () => listAllAvailableDrivers(this.client, this.edgeClient, deviceId, hubId)
-			: () => listMatchingDrivers(this.client, this.edgeClient, deviceId, hubId)
+			? () => listAllAvailableDrivers(this.client, deviceId, hubId)
+			: () => listMatchingDrivers(this.client, deviceId, hubId)
 		const driverId = await chooseDriver(this, 'Choose a driver to use.', this.flags.driver,
 			{ listItems })
 
-		await this.edgeClient.hubs.switchDriver(driverId, hubId, deviceId)
+		await this.client.hubdevices.switchDriver(driverId, hubId, deviceId)
 		this.log(`updated driver for device ${deviceId} to ${driverId}`)
 	}
 }

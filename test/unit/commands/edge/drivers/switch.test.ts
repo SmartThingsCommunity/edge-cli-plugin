@@ -1,12 +1,10 @@
-import { Device, DeviceIntegrationType, SmartThingsClient } from '@smartthings/core-sdk'
+import { Device, DeviceIntegrationType, HubdevicesEndpoint, SmartThingsClient } from '@smartthings/core-sdk'
 
 import { chooseDevice } from '@smartthings/cli-lib'
 
 import DriversSwitchCommand from '../../../../../src/commands/edge/drivers/switch'
 import { chooseDriver, chooseHub, listAllAvailableDrivers, listMatchingDrivers }
 	from '../../../../../src/lib/commands/drivers-util'
-import { HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
-import { EdgeClient } from '../../../../../src/lib/edge-client'
 
 
 const edgeDeviceIntegrationTypes = [
@@ -31,7 +29,7 @@ describe('DriversSwitchCommand', () => {
 		jest.clearAllMocks()
 	})
 
-	const changeDriverSpy = jest.spyOn(HubsEndpoint.prototype, 'switchDriver').mockImplementation()
+	const changeDriverSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'switchDriver').mockImplementation()
 	const chooseHubMock = jest.mocked(chooseHub).mockResolvedValue('chosen-hub-id')
 	const chooseDeviceMock = jest.mocked(chooseDevice).mockResolvedValue('chosen-device-id')
 	const chooseDriverMock = jest.mocked(chooseDriver).mockResolvedValue('chosen-driver-id')
@@ -131,7 +129,6 @@ describe('DriversSwitchCommand', () => {
 			expect(listMatchingDriversMock).toHaveBeenCalledTimes(1)
 			expect(listMatchingDriversMock).toHaveBeenCalledWith(
 				expect.any(SmartThingsClient),
-				expect.any(EdgeClient),
 				'chosen-device-id', 'chosen-hub-id')
 			expect(listAllAvailableDriversMock).toHaveBeenCalledTimes(0)
 		})
@@ -147,7 +144,6 @@ describe('DriversSwitchCommand', () => {
 			expect(listAllAvailableDriversMock).toHaveBeenCalledTimes(1)
 			expect(listAllAvailableDriversMock).toHaveBeenCalledWith(
 				expect.any(SmartThingsClient),
-				expect.any(EdgeClient),
 				'chosen-device-id', 'chosen-hub-id')
 		})
 	})

@@ -1,6 +1,6 @@
 import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDeviceIntegrationProfileKey,
-	EdgeDriver, EdgeDriverPermissions, EdgeDriverSummary, Location, OrganizationResponse, SmartThingsClient }
-	from '@smartthings/core-sdk'
+	EdgeDriver, EdgeDriverPermissions, EdgeDriverSummary, InstalledDriver, Location,
+	OrganizationResponse, SmartThingsClient } from '@smartthings/core-sdk'
 
 import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
 	stringTranslateToId, TableGenerator, WithOrganization } from '@smartthings/cli-lib'
@@ -10,8 +10,6 @@ import { buildTableOutput, chooseDriver, chooseDriverFromChannel, chooseHub,
 	listDrivers, listMatchingDrivers, permissionsValue, withoutCurrentDriver }
 	from '../../../../src/lib/commands/drivers-util'
 import * as driversUtil from '../../../../src/lib/commands/drivers-util'
-import { EdgeClient } from '../../../../src/lib/edge-client'
-import { EdgeCommand } from '../../../../src/lib/edge-command'
 
 
 jest.mock('@smartthings/cli-lib', () => ({
@@ -24,6 +22,7 @@ jest.mock('@smartthings/cli-lib', () => ({
 
 describe('drivers-util', () => {
 	const selectFromListMock = jest.mocked(selectFromList)
+	const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
 
 	afterEach(() => {
 		jest.clearAllMocks()
@@ -100,17 +99,16 @@ describe('drivers-util', () => {
 		})
 	})
 
-	const apiDriversListMock = jest.fn()
-	const apiDriversListDefaultMock = jest.fn()
-	const apiDevicesGetMock = jest.fn()
 	const client = {
-		drivers: { list: apiDriversListMock, listDefault: apiDriversListDefaultMock },
-		devices: { get: apiDevicesGetMock },
+		drivers: { list: jest.fn(), listDefault: jest.fn() },
+		devices: { get: jest.fn() },
+		hubdevices: { listInstalled: jest.fn() },
 	} as unknown as SmartThingsClient
-	const apiHubsListInstalledMock = jest.fn()
-	const edgeClient = {
-		hubs: { listInstalled: apiHubsListInstalledMock},
-	} as unknown as EdgeClient
+	const apiDriversListMock = jest.mocked(client.drivers.list)
+	const apiDriversListDefaultMock = jest.mocked(client.drivers.listDefault)
+	const apiDevicesGetMock = jest.mocked(client.devices.get)
+	const apiHubdevicesListInstalledMock = jest.mocked(client.hubdevices.listInstalled)
+
 	const driverList = [{ name: 'Driver' }] as EdgeDriverSummary[]
 
 	describe('listDrivers', () => {
@@ -161,7 +159,7 @@ describe('drivers-util', () => {
 		]
 
 		const driverId = `${deviceType}-driver-id`
-		const device = { [deviceType]: { driverId } }
+		const device = { [deviceType]: { driverId } } as unknown as Device
 		apiDevicesGetMock.mockResolvedValueOnce(device)
 
 		const result = await withoutCurrentDriver(client, 'device-id', drivers)
@@ -172,24 +170,24 @@ describe('drivers-util', () => {
 		expect(apiDevicesGetMock).toHaveBeenCalledWith('device-id')
 	})
 
-	const installedDriver = { driverId: 'installed-driver-id', name: 'Installed Driver' }
-	const defaultDriver = { driverId: 'default-driver-id', name: 'Default Driver' }
-	const currentDriver = { driverId: 'current-driver-id', name: 'Current Driver' }
-	const device = { zigbee: { driverId: 'current-driver-id' } }
+	const installedDriver = { driverId: 'installed-driver-id', name: 'Installed Driver' } as InstalledDriver
+	const defaultDriver = { driverId: 'default-driver-id', name: 'Default Driver' } as EdgeDriverSummary
+	const currentDriver = { driverId: 'current-driver-id', name: 'Current Driver' } as InstalledDriver
+	const device = { zigbee: { driverId: 'current-driver-id' } } as Device
 
 	describe('listAllAvailableDrivers', () => {
 		it('combines default and installed drivers lists', async () => {
 			apiDevicesGetMock.mockResolvedValueOnce(device)
 
-			apiHubsListInstalledMock.mockResolvedValueOnce([installedDriver])
+			apiHubdevicesListInstalledMock.mockResolvedValueOnce([installedDriver])
 			apiDriversListDefaultMock.mockResolvedValueOnce([defaultDriver])
 
-			const result = await listAllAvailableDrivers(client, edgeClient, 'device-id', 'hub-id')
+			const result = await listAllAvailableDrivers(client, 'device-id', 'hub-id')
 			expect(result.length).toBe(2)
 			expect(result).toEqual(expect.arrayContaining([defaultDriver, installedDriver]))
 
-			expect(apiHubsListInstalledMock).toHaveBeenCalledTimes(1)
-			expect(apiHubsListInstalledMock).toHaveBeenCalledWith('hub-id')
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(1)
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledWith('hub-id')
 			expect(apiDriversListDefaultMock).toHaveBeenCalledTimes(1)
 			expect(apiDriversListDefaultMock).toHaveBeenCalledWith()
 			expect(apiDevicesGetMock).toHaveBeenCalledTimes(1)
@@ -199,15 +197,15 @@ describe('drivers-util', () => {
 		it('filters out current driver', async () => {
 			apiDevicesGetMock.mockResolvedValueOnce(device)
 
-			apiHubsListInstalledMock.mockResolvedValueOnce([installedDriver, currentDriver])
+			apiHubdevicesListInstalledMock.mockResolvedValueOnce([installedDriver, currentDriver])
 			apiDriversListDefaultMock.mockResolvedValueOnce([defaultDriver])
 
-			const result = await listAllAvailableDrivers(client, edgeClient, 'device-id', 'hub-id')
+			const result = await listAllAvailableDrivers(client, 'device-id', 'hub-id')
 			expect(result.length).toBe(2)
 			expect(result).toEqual(expect.arrayContaining([defaultDriver, installedDriver]))
 
-			expect(apiHubsListInstalledMock).toHaveBeenCalledTimes(1)
-			expect(apiHubsListInstalledMock).toHaveBeenCalledWith('hub-id')
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(1)
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledWith('hub-id')
 			expect(apiDriversListDefaultMock).toHaveBeenCalledTimes(1)
 			expect(apiDriversListDefaultMock).toHaveBeenCalledWith()
 			expect(apiDevicesGetMock).toHaveBeenCalledTimes(1)
@@ -217,15 +215,15 @@ describe('drivers-util', () => {
 		it('filters out duplicates', async () => {
 			apiDevicesGetMock.mockResolvedValueOnce(device)
 
-			apiHubsListInstalledMock.mockResolvedValueOnce([installedDriver, defaultDriver])
+			apiHubdevicesListInstalledMock.mockResolvedValueOnce([installedDriver, defaultDriver as unknown as InstalledDriver])
 			apiDriversListDefaultMock.mockResolvedValueOnce([defaultDriver])
 
-			const result = await listAllAvailableDrivers(client, edgeClient, 'device-id', 'hub-id')
+			const result = await listAllAvailableDrivers(client, 'device-id', 'hub-id')
 			expect(result.length).toBe(2)
 			expect(result).toEqual(expect.arrayContaining([defaultDriver, installedDriver]))
 
-			expect(apiHubsListInstalledMock).toHaveBeenCalledTimes(1)
-			expect(apiHubsListInstalledMock).toHaveBeenCalledWith('hub-id')
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(1)
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledWith('hub-id')
 			expect(apiDriversListDefaultMock).toHaveBeenCalledTimes(1)
 			expect(apiDriversListDefaultMock).toHaveBeenCalledWith()
 			expect(apiDevicesGetMock).toHaveBeenCalledTimes(1)
@@ -235,36 +233,34 @@ describe('drivers-util', () => {
 
 	describe('listMatchingDrivers', () => {
 		it('lists matching drivers', async () => {
-			apiHubsListInstalledMock.mockResolvedValueOnce([installedDriver])
+			apiHubdevicesListInstalledMock.mockResolvedValueOnce([installedDriver])
 			apiDevicesGetMock.mockResolvedValueOnce(device)
 
-			expect(await listMatchingDrivers(client, edgeClient, 'device-id', 'hub-id'))
+			expect(await listMatchingDrivers(client, 'device-id', 'hub-id'))
 				.toStrictEqual([installedDriver])
 
-			expect(apiHubsListInstalledMock).toHaveBeenCalledTimes(1)
-			expect(apiHubsListInstalledMock).toHaveBeenCalledWith('hub-id', 'device-id')
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(1)
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledWith('hub-id', 'device-id')
 			expect(apiDevicesGetMock).toHaveBeenCalledTimes(1)
 			expect(apiDevicesGetMock).toHaveBeenCalledWith('device-id')
 		})
 
 		it('filters out current driver', async () => {
-			apiHubsListInstalledMock.mockResolvedValueOnce([installedDriver, currentDriver])
+			apiHubdevicesListInstalledMock.mockResolvedValueOnce([installedDriver, currentDriver])
 			apiDevicesGetMock.mockResolvedValueOnce(device)
 
-			expect(await listMatchingDrivers(client, edgeClient, 'device-id', 'hub-id'))
+			expect(await listMatchingDrivers(client, 'device-id', 'hub-id'))
 				.toStrictEqual([installedDriver])
 
-			expect(apiHubsListInstalledMock).toHaveBeenCalledTimes(1)
-			expect(apiHubsListInstalledMock).toHaveBeenCalledWith('hub-id', 'device-id')
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(1)
+			expect(apiHubdevicesListInstalledMock).toHaveBeenCalledWith('hub-id', 'device-id')
 			expect(apiDevicesGetMock).toHaveBeenCalledTimes(1)
 			expect(apiDevicesGetMock).toHaveBeenCalledWith('device-id')
 		})
 	})
 
 	describe('chooseDriver', () => {
-		const command = { client } as unknown as EdgeCommand<typeof EdgeCommand.flags>
-
-		const stringTranslateToIdMock = jest.mocked(stringTranslateToId)
+		const command = { client } as APICommand<typeof APICommand.flags>
 
 		it('presents user with list of drivers', async () => {
 			selectFromListMock.mockImplementation(async () => 'chosen-driver-id')
@@ -596,33 +592,59 @@ describe('drivers-util', () => {
 		})
 	})
 
-	describe('chooseDriverFromChannel', () => {
-		it('presents user with list of drivers with names', async () => {
-			const client = {} as EdgeClient
-			const command = { client } as unknown as EdgeCommand<typeof EdgeCommand.flags>
-			selectFromListMock.mockResolvedValueOnce('chosen-driver-id')
+	test('chooseDriverFromChannel presents user with list of drivers with names', async () => {
+		const command = { client } as APICommand<typeof APICommand.flags>
+		selectFromListMock.mockResolvedValueOnce('chosen-driver-id')
 
-			const result = await chooseDriverFromChannel(command, 'channel-id', 'preselected-driver-id')
+		expect(await chooseDriverFromChannel(command, 'channel-id', 'preselected-driver-id')).toBe('chosen-driver-id')
 
-			expect(result).toBe('chosen-driver-id')
-			expect(selectFromListMock).toHaveBeenCalledTimes(1)
-			expect(selectFromListMock).toHaveBeenCalledWith(command,
-				expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
-				expect.objectContaining({
-					preselectedId: 'preselected-driver-id',
-					promptMessage: 'Select a driver to install.',
-				}))
+		expect(selectFromListMock).toHaveBeenCalledTimes(1)
+		expect(selectFromListMock).toHaveBeenCalledWith(command,
+			expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
+			expect.objectContaining({
+				preselectedId: 'preselected-driver-id',
+				promptMessage: 'Select a driver to install.',
+			}))
 
-			const drivers = [{ name: 'driver' }] as DriverChannelDetailsWithName[]
-			const listAssignedDriversWithNamesSpy = jest.spyOn(driversUtil, 'listAssignedDriversWithNames')
-				.mockResolvedValueOnce(drivers)
+		const drivers = [{ name: 'driver' }] as DriverChannelDetailsWithName[]
+		const listAssignedDriversWithNamesSpy = jest.spyOn(driversUtil, 'listAssignedDriversWithNames')
+			.mockResolvedValueOnce(drivers)
 
-			const listItems = selectFromListMock.mock.calls[0][2].listItems
+		const listItems = selectFromListMock.mock.calls[0][2].listItems
 
-			expect(await listItems()).toBe(drivers)
+		expect(await listItems()).toBe(drivers)
 
-			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledTimes(1)
-			expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(client, 'channel-id')
-		})
+		expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledTimes(1)
+		expect(listAssignedDriversWithNamesSpy).toHaveBeenCalledWith(client, 'channel-id')
+	})
+
+	test('chooseInstalledDriver presents user with list of drivers with names', async () => {
+		const command = { client } as APICommand<typeof APICommand.flags>
+		selectFromListMock.mockResolvedValueOnce('chosen-driver-id')
+		stringTranslateToIdMock.mockResolvedValueOnce('preselected-driver-id')
+
+		expect(await driversUtil.chooseInstalledDriver(command, 'hub-id', 'prompt message', 'command-line-driver-id'))
+			.toBe('chosen-driver-id')
+
+		expect(stringTranslateToIdMock).toHaveBeenCalledTimes(1)
+		expect(stringTranslateToIdMock).toHaveBeenCalledWith(
+			expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
+			'command-line-driver-id', expect.any(Function))
+		expect(selectFromListMock).toHaveBeenCalledTimes(1)
+		expect(selectFromListMock).toHaveBeenCalledWith(command,
+			expect.objectContaining({ primaryKeyName: 'driverId', sortKeyName: 'name' }),
+			expect.objectContaining({
+				preselectedId: 'preselected-driver-id',
+				promptMessage: 'prompt message',
+			}))
+		expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(0)
+
+		const listItems = stringTranslateToIdMock.mock.calls[0][2]
+		apiHubdevicesListInstalledMock.mockResolvedValueOnce([installedDriver])
+
+		expect(await listItems()).toStrictEqual([installedDriver])
+
+		expect(apiHubdevicesListInstalledMock).toHaveBeenCalledTimes(1)
+		expect(apiHubdevicesListInstalledMock).toHaveBeenCalledWith('hub-id')
 	})
 })
