@@ -40,7 +40,7 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 			{ allowIndex: true, useConfigDefault: true })
 
 		await outputListing(this, config, this.args.idOrIndex,
-			() => this.edgeClient.hubs.listInstalled(hubId, this.flags.device),
-			id => this.edgeClient.hubs.getInstalled(hubId, id))
+			() => this.client.hubdevices.listInstalled(hubId, this.flags.device),
+			id => this.client.hubdevices.getInstalled(hubId, id))
 	}
 }

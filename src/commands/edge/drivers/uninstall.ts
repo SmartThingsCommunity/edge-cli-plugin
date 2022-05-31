@@ -1,9 +1,7 @@
 import { Flags } from '@oclif/core'
 
 import { EdgeCommand } from '../../../lib/edge-command'
-import { selectFromList, stringTranslateToId } from '@smartthings/cli-lib'
-import { chooseHub } from '../../../lib/commands/drivers-util'
-import { InstalledDriver } from '../../../lib/endpoints/hubs'
+import { chooseHub, chooseInstalledDriver } from '../../../lib/commands/drivers-util'
 
 
 export default class DriversUninstallCommand extends EdgeCommand<typeof DriversUninstallCommand.flags> {
@@ -22,25 +20,12 @@ export default class DriversUninstallCommand extends EdgeCommand<typeof DriversU
 		description: 'id of driver to uninstall',
 	}]
 
-	private async chooseInstalledDriver(hubId: string, promptMessage: string,
-			commandLineDriverId?: string): Promise<string> {
-		const config = {
-			itemName: 'driver',
-			primaryKeyName: 'driverId',
-			sortKeyName: 'name',
-		}
-
-		const listItems = (): Promise<InstalledDriver[]> => this.edgeClient.hubs.listInstalled(hubId)
-		const preselectedId = await stringTranslateToId(config, commandLineDriverId, listItems)
-		return selectFromList(this, config, { preselectedId, listItems, promptMessage })
-	}
-
 	async run(): Promise<void> {
 		const hubId = await chooseHub(this, 'Select a hub to uninstall from.', this.flags.hub,
 			{ useConfigDefault: true })
-		const driverId = await this.chooseInstalledDriver(hubId, 'Select a driver to uninstall.',
+		const driverId = await chooseInstalledDriver(this, hubId, 'Select a driver to uninstall.',
 			this.args.driverId)
-		await this.edgeClient.hubs.uninstallDriver(driverId, hubId)
+		await this.client.hubdevices.uninstallDriver(driverId, hubId)
 		this.log(`driver ${driverId} uninstalled from hub ${hubId}`)
 	}
 }

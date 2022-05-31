@@ -1,63 +1,33 @@
+import { HubdevicesEndpoint } from '@smartthings/core-sdk'
+
 import DriversUninstallCommand from '../../../../../src/commands/edge/drivers/uninstall'
-import { InstalledDriver } from '../../../../../src/lib/endpoints/hubs'
-import { selectFromList } from '@smartthings/cli-lib'
+import { chooseHub, chooseInstalledDriver } from '../../../../../src/lib/commands/drivers-util'
 
 
-const MOCK_INSTALLED_DRIVER: InstalledDriver = {
-	driverId: 'driverId',
-	name: 'driver',
-	version: '1',
-	channelId: 'channelId',
-	developer: '',
-	vendorSupportInformation: '',
-	permissions: {},
-}
-
-jest.mock('@smartthings/cli-lib', () => {
-	const originalLib = jest.requireActual('@smartthings/cli-lib')
-
-	return {
-		...originalLib,
-		stringTranslateToId: jest.fn().mockResolvedValue(undefined),
-		selectFromList: jest.fn(),
-	}
-})
-
-jest.mock('../../../../../src/lib/commands/drivers-util', () => ({
-	chooseHub: jest.fn().mockResolvedValue('hubId'),
-}))
-
-const mockListInstalled = jest.fn().mockResolvedValue([MOCK_INSTALLED_DRIVER])
-
-jest.mock('../../../../../src/lib/edge-client', () => ({
-	EdgeClient: jest.fn(() => ({
-		hubs: {
-			uninstallDriver: jest.fn(),
-			listInstalled: mockListInstalled,
-		},
-	})),
-}))
+jest.mock('../../../../../src/lib/commands/drivers-util')
 
 // ignore console output
 jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
 describe('DriversUninstallCommand', () => {
-	const mockSelectFromList = jest.mocked(selectFromList)
+	const chooseHubMock = jest.mocked(chooseHub)
+	const chooseInstalledDriverMock = jest.mocked(chooseInstalledDriver)
+	const apiUninstallDriverSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'uninstallDriver')
 
 	it('prompts user with list of installed drivers', async () => {
-		mockSelectFromList.mockResolvedValueOnce(MOCK_INSTALLED_DRIVER.driverId)
+		chooseHubMock.mockResolvedValue('chosen-hub-id')
+		chooseInstalledDriverMock.mockResolvedValueOnce('chosen-driver-id')
+		apiUninstallDriverSpy.mockImplementationOnce(() => Promise.resolve())
 
 		await expect(DriversUninstallCommand.run([])).resolves.not.toThrow()
 
-		expect(mockSelectFromList).toBeCalledWith(
-			expect.any(DriversUninstallCommand),
-			expect.objectContaining({}),
-			expect.objectContaining({}),
-		)
-
-		const listItems = mockSelectFromList.mock.calls[0][2].listItems
-
-		expect(await listItems()).toContain(MOCK_INSTALLED_DRIVER)
-		expect(mockListInstalled).toBeCalled()
+		expect(chooseHubMock).toHaveBeenCalledTimes(1)
+		expect(chooseHubMock).toHaveBeenCalledWith(expect.any(DriversUninstallCommand),
+			'Select a hub to uninstall from.', undefined, { useConfigDefault: true })
+		expect(chooseInstalledDriver).toHaveBeenCalledTimes(1)
+		expect(chooseInstalledDriver).toHaveBeenCalledWith( expect.any(DriversUninstallCommand),
+			'chosen-hub-id', 'Select a driver to uninstall.', undefined)
+		expect(apiUninstallDriverSpy).toHaveBeenCalledTimes(1)
+		expect(apiUninstallDriverSpy).toHaveBeenCalledWith('chosen-driver-id', 'chosen-hub-id')
 	})
 })

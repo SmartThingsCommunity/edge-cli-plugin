@@ -94,7 +94,7 @@ $ smartthings edge:drivers:package -u driver.zip`]
 				if (doInstall) {
 					const hubId = await chooseHub(this, 'Select a hub to install to.', this.flags.hub,
 						{ useConfigDefault: true })
-					await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
+					await this.client.hubdevices.installDriver(driverId, hubId, channelId)
 					this.log(`installed driver ${driverId} ${version} to hub ${hubId}`)
 				}
 			}

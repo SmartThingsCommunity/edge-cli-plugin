@@ -1,8 +1,9 @@
+import { EnrolledChannel, HubdevicesEndpoint } from '@smartthings/core-sdk'
+
 import { selectFromList } from '@smartthings/cli-lib'
 
 import { chooseDriverFromChannel, chooseHub } from '../../../../../src/lib/commands/drivers-util'
 import DriversInstallCommand from '../../../../../src/commands/edge/drivers/install'
-import { EnrolledChannel, HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
 
 
 jest.mock('@smartthings/cli-lib', () => {
@@ -19,8 +20,8 @@ describe('DriversInstallCommand', () => {
 	const chooseHubMock = jest.mocked(chooseHub)
 	const chooseDriverFromChannelMock = jest.mocked(chooseDriverFromChannel)
 	const selectFromListMock = jest.mocked(selectFromList)
-	const enrolledChannelsSpy = jest.spyOn(HubsEndpoint.prototype, 'enrolledChannels')
-	const installDriverSpy = jest.spyOn(HubsEndpoint.prototype, 'installDriver')
+	const enrolledChannelsSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'enrolledChannels')
+	const installDriverSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'installDriver')
 	const logSpy = jest.spyOn(DriversInstallCommand.prototype, 'log').mockImplementation()
 
 	chooseHubMock.mockResolvedValue('chosen-hub-id')

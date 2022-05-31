@@ -2,7 +2,8 @@ import fs from 'fs'
 
 import JSZip from 'jszip'
 
-import { ChannelsEndpoint, DriverChannelDetails, DriversEndpoint, EdgeDriver } from '@smartthings/core-sdk'
+import { ChannelsEndpoint, DriverChannelDetails, DriversEndpoint, EdgeDriver, HubdevicesEndpoint }
+	from '@smartthings/core-sdk'
 
 import { outputItem, readFile } from '@smartthings/cli-lib'
 
@@ -11,7 +12,6 @@ import { chooseChannel } from '../../../../../src/lib/commands/channels-util'
 import { chooseHub } from '../../../../../src/lib/commands/drivers-util'
 import { buildTestFileMatchers, processConfigFile, processFingerprintsFile, processProfiles,
 	processSrcDir, resolveProjectDirName } from '../../../../../src/lib/commands/drivers/package-util'
-import { HubsEndpoint } from '../../../../../src/lib/endpoints/hubs'
 
 
 jest.mock('fs', () => {
@@ -81,7 +81,7 @@ describe('PackageCommand', () => {
 		.mockResolvedValue({} as DriverChannelDetails)
 
 	const chooseHubSpy = jest.mocked(chooseHub).mockResolvedValue('hub id')
-	const installDriverSpy = jest.spyOn(HubsEndpoint.prototype, 'installDriver').mockResolvedValue()
+	const installDriverSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'installDriver').mockResolvedValue()
 
 	const logSpy = jest.spyOn(PackageCommand.prototype, 'log').mockImplementation()
 

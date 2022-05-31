@@ -1,8 +1,9 @@
+import { HubdevicesEndpoint, InstalledDriver } from '@smartthings/core-sdk'
+
 import { outputListing } from '@smartthings/cli-lib'
 
 import DriversInstalledCommand from '../../../../../src/commands/edge/drivers/installed'
 import { chooseHub } from '../../../../../src/lib/commands/drivers-util'
-import { HubsEndpoint, InstalledDriver } from '../../../../../src/lib/endpoints/hubs'
 
 
 jest.mock('@smartthings/cli-lib', () => {
@@ -18,8 +19,8 @@ jest.mock('../../../../../src/lib/commands/drivers-util')
 describe('DriversInstalledCommand', () => {
 	const hub = { name: 'Hub' } as InstalledDriver
 	const chooseHubMock = jest.mocked(chooseHub).mockResolvedValue('chosen-hub-id')
-	const apiHubsListInstalledSpy = jest.spyOn(HubsEndpoint.prototype, 'listInstalled').mockResolvedValue([hub])
-	const apiHubsGetInstalledSpy = jest.spyOn(HubsEndpoint.prototype, 'getInstalled').mockResolvedValue(hub)
+	const apiHubsListInstalledSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'listInstalled').mockResolvedValue([hub])
+	const apiHubsGetInstalledSpy = jest.spyOn(HubdevicesEndpoint.prototype, 'getInstalled').mockResolvedValue(hub)
 	const outputListingMock = jest.mocked(outputListing)
 
 	afterEach(() => {

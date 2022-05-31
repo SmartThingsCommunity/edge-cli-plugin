@@ -1,10 +1,11 @@
 import { Flags } from '@oclif/core'
 
-import { selectFromList } from '@smartthings/cli-lib'
-import { chooseDriverFromChannel, chooseHub } from '../../../lib/commands/drivers-util'
+import { EnrolledChannel } from '@smartthings/core-sdk'
 
+import { selectFromList } from '@smartthings/cli-lib'
+
+import { chooseDriverFromChannel, chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
-import { EnrolledChannel } from '../../../lib/endpoints/hubs'
 
 
 export default class DriversInstallCommand extends EdgeCommand<typeof DriversInstallCommand.flags> {
@@ -40,7 +41,7 @@ export default class DriversInstallCommand extends EdgeCommand<typeof DriversIns
 			sortKeyName: 'name',
 		}
 		const listItems = (): Promise<EnrolledChannel[]> =>
-			this.edgeClient.hubs.enrolledChannels(hubId)
+			this.client.hubdevices.enrolledChannels(hubId)
 		return selectFromList(this, config, {
 			listItems,
 			promptMessage: 'Select a channel to install the driver from.',
@@ -53,7 +54,7 @@ export default class DriversInstallCommand extends EdgeCommand<typeof DriversIns
 			{ useConfigDefault: true })
 		const channelId = this.flags.channel ?? await this.chooseChannelFromEnrollments(hubId)
 		const driverId = await chooseDriverFromChannel(this, channelId, this.args.driverId)
-		await this.edgeClient.hubs.installDriver(driverId, hubId, channelId)
+		await this.client.hubdevices.installDriver(driverId, hubId, channelId)
 		this.log(`driver ${driverId} installed to hub ${hubId}`)
 	}
 }
