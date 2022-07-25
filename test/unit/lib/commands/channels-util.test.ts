@@ -51,6 +51,7 @@ describe('channels-util', () => {
 
 		const listChannelsMock = jest.fn()
 		const client = { channels: { list: listChannelsMock } }
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		const flags = { 'all-organizations': false, 'include-read-only': false }
 		const command = { client, flags } as unknown as APICommand<typeof APICommand.flags>
 
