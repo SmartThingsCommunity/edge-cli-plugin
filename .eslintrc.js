@@ -23,7 +23,7 @@ module.exports = {
 		'SharedArrayBuffer': 'readonly',
 	},
 	parserOptions: {
-		ecmaVersion: 2018,
+		ecmaVersion: 2019,
 		tsconfigRootDir: __dirname,
 		project: ['./tsconfig.json', './test/tsconfig-eslint.json'],
 	},
@@ -73,7 +73,7 @@ module.exports = {
 		'@typescript-eslint/explicit-function-return-type': ['error', {
 			allowExpressions: true,
 		}],
-		'@typescript-eslint/explicit-module-boundary-types': 'off',
+		'@typescript-eslint/explicit-module-boundary-types': 'error',
 		'@typescript-eslint/no-explicit-any': 'error',
 		'@typescript-eslint/no-non-null-assertion': 'error',
 		'no-use-before-define': 'off',
@@ -82,8 +82,15 @@ module.exports = {
 			{ functions: false, classes: false, enums: false, variables: true },
 		],
 		'@typescript-eslint/no-var-requires': 'error',
+		'@typescript-eslint/ban-ts-comment': 'error',
 		'@typescript-eslint/no-floating-promises': 'error',
+		'space-infix-ops': 'off',
 		'@typescript-eslint/space-infix-ops': 'error',
+		'object-curly-spacing': 'off',
+		'@typescript-eslint/object-curly-spacing': ['error', 'always'],
+		'comma-spacing': 'off',
+		'@typescript-eslint/comma-spacing': ['error'],
+		'@typescript-eslint/type-annotation-spacing': 'error',
 
 		// disallow non-import statements appearing before import statements
 		'import/first': 'error',
@@ -132,13 +139,13 @@ module.exports = {
 			},
 			{
 				selector: 'enumMember',
-				format: ['PascalCase'],
+				format: ['PascalCase', 'UPPER_CASE'],
 			},
 		],
 	},
 	overrides: [
 		{
-			files: ['.eslintrc.js', 'test/**'],
+			files: ['.eslintrc.js'],
 			rules: {
 				'@typescript-eslint/naming-convention': 'off',
 			},

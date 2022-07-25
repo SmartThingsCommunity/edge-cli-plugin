@@ -18,9 +18,11 @@ describe('live-logging', () => {
 	describe('liveLogMessageFormatter', () => {
 		const errorEvent: LiveLogMessage = {
 			timestamp: new Date().toISOString(),
+			/* eslint-disable @typescript-eslint/naming-convention */
 			driver_id: driverId,
 			driver_name: 'Driver',
 			log_level: LogLevel.ERROR,
+			/* eslint-enable @typescript-eslint/naming-convention */
 			message: 'Something bad happened.',
 		}
 
@@ -156,6 +158,7 @@ describe('live-logging', () => {
 				headers: {},
 				config: {},
 				data: [
+					/* eslint-disable @typescript-eslint/naming-convention */
 					{
 						driver_id: driverId,
 						driver_name: 'Driver 0',
@@ -168,6 +171,7 @@ describe('live-logging', () => {
 						archive_hash: null,
 						status: DriverInfoStatus.Installed,
 					},
+					/* eslint-enable @typescript-eslint/naming-convention */
 				],
 			}
 
@@ -205,6 +209,7 @@ describe('live-logging', () => {
 			expect(axiosRequestSpy).toBeCalledWith(
 				expect.objectContaining({
 					headers: expect.objectContaining({
+						// eslint-disable-next-line @typescript-eslint/naming-convention
 						'User-Agent': userAgent,
 					}),
 				}),
@@ -225,6 +230,7 @@ describe('live-logging', () => {
 					headers: {
 						Accept: 'application/json, text/plain, */*',
 						Authorization: `Bearer ${token}`,
+						// eslint-disable-next-line @typescript-eslint/naming-convention
 						'User-Agent': 'axios/0.21.1',
 					},
 					timeout: 5000,

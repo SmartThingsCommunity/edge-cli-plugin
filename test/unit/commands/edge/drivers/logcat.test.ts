@@ -200,6 +200,7 @@ describe('LogCatCommand', () => {
 
 		it('does not modify other host details when writing to cache', async () => {
 			const knownHubsRead = JSON.stringify({
+				/* eslint-disable @typescript-eslint/naming-convention */
 				'192.168.0.0:9495': {
 					hostname: '192.168.0.0:9495',
 					fingerprint: 'A0:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',
@@ -208,6 +209,7 @@ describe('LogCatCommand', () => {
 					hostname: '192.168.0.2:9495',
 					fingerprint: 'B0:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00',
 				},
+				/* eslint-enable @typescript-eslint/naming-convention */
 			})
 
 			const knownHubsWrite = {
@@ -380,7 +382,7 @@ describe('LogCatCommand', () => {
 	})
 
 	describe('eventsource onerror handler', () => {
-		type eventSourceError = MessageEvent & Partial<{ status: number; message: string }>
+		type EventSourceError = MessageEvent & Partial<{ status: number; message: string }>
 
 		it('calls teardown on sse command', async () => {
 			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`, '--all'])).resolves.not.toThrow()
@@ -395,12 +397,12 @@ describe('LogCatCommand', () => {
 			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`, '--all'])).resolves.not.toThrow()
 			const onerror = sourceSpy.mock.results[0].value.onerror
 
-			onerror({ status: 401 } as eventSourceError)
+			onerror({ status: 401 } as EventSourceError)
 
 			expect(errorSpy).toBeCalledWith(expect.stringContaining('Unauthorized'))
 
 			errorSpy.mockClear()
-			onerror({ status: 403 } as eventSourceError)
+			onerror({ status: 403 } as EventSourceError)
 
 			expect(errorSpy).toBeCalledWith(expect.stringContaining('Unauthorized'))
 		})
@@ -409,7 +411,7 @@ describe('LogCatCommand', () => {
 			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`, '--all'])).resolves.not.toThrow()
 			const onerror = sourceSpy.mock.results[0].value.onerror
 
-			onerror({ message: 'something failed' } as eventSourceError)
+			onerror({ message: 'something failed' } as EventSourceError)
 
 			expect(handleConnectionErrors).toBeCalledWith(MOCK_HOSTNAME, 'something failed')
 		})
@@ -418,7 +420,7 @@ describe('LogCatCommand', () => {
 			await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`, '--all'])).resolves.not.toThrow()
 			const onerror = sourceSpy.mock.results[0].value.onerror
 
-			onerror({} as eventSourceError)
+			onerror({} as EventSourceError)
 
 			expect(errorSpy).toBeCalledWith(expect.stringContaining('Unexpected error'))
 		})
