@@ -69,7 +69,7 @@ ARGUMENTS
 FLAGS
   -A, --all-organizations     include entities from all organizations the user belongs to
   -I, --include-read-only     include subscribed-to channels as well as owned channels
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -113,7 +113,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -141,7 +141,7 @@ ARGUMENTS
   IDORINDEX  the channel id or number in list
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -167,7 +167,7 @@ USAGE
     <value>] [-o <value>] [-d]
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -d, --dry-run               produce JSON but don't actually submit
   -h, --help                  Show CLI help.
   -i, --input=<value>         specify input file
@@ -196,7 +196,7 @@ ARGUMENTS
   ID  channel id
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -221,7 +221,7 @@ ARGUMENTS
   IDORINDEX  the channel id or number in list
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -253,7 +253,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -278,7 +278,7 @@ ARGUMENTS
   IDORINDEX  the hub id or number in list
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -307,7 +307,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -344,7 +344,7 @@ ARGUMENTS
   ID  invite UUID
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -368,7 +368,7 @@ USAGE
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -d, --dry-run               produce JSON but don't actually submit
   -h, --help                  Show CLI help.
   -i, --input=<value>         specify input file
@@ -400,7 +400,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -429,7 +429,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -458,7 +458,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -497,7 +497,7 @@ ARGUMENTS
   ID  invite UUID
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -523,7 +523,7 @@ USAGE
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -d, --dry-run               produce JSON but don't actually submit
   -h, --help                  Show CLI help.
   -i, --input=<value>         specify input file
@@ -557,7 +557,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -588,7 +588,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -617,7 +617,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -659,7 +659,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -688,7 +688,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -713,7 +713,7 @@ ARGUMENTS
   ID  the channel id
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -d, --dry-run               produce JSON but don't actually submit
   -h, --help                  Show CLI help.
   -i, --input=<value>         specify input file
@@ -744,7 +744,7 @@ ARGUMENTS
 
 FLAGS
   -A, --all-organizations     include entities from all organizations the user belongs to
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -V, --version=<value>       driver version
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
@@ -789,7 +789,7 @@ USAGE
     <value>]
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -821,7 +821,7 @@ ARGUMENTS
   ID  driver UUID
 
 FLAGS
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -848,7 +848,7 @@ ARGUMENTS
 FLAGS
   -C, --channel=<value>       channel id
   -H, --hub=<value>           hub id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -881,7 +881,7 @@ ARGUMENTS
 
 FLAGS
   -H, --hub=<value>           hub id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
   -o, --output=<value>        specify output file
@@ -940,7 +940,7 @@ ARGUMENTS
 FLAGS
   -I, --install               prompt for hub to install to after assigning it to the channel, implies --assign if
                               --assign or --channel not included
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -a, --assign                prompt for a channel to assign the driver to after upload
   -b, --build-only=<value>    save package to specified zip file but skip upload
   -h, --help                  Show CLI help.
@@ -994,7 +994,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -1023,7 +1023,7 @@ FLAGS
   -H, --hub=<value>           hub id
   -I, --include-non-matching  when presenting a list of drivers to switch to, include drivers that do not match the
                               device
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -d, --driver=<value>        id of new driver to use
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -1060,7 +1060,7 @@ ARGUMENTS
 
 FLAGS
   -H, --hub=<value>           hub id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -1086,7 +1086,7 @@ ARGUMENTS
 
 FLAGS
   -C, --channel=<value>       channel id
-  -O, --organization=<value>  The organization ID to use for this command
+  -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
