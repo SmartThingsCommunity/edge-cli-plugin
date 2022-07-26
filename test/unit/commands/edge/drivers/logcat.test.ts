@@ -66,6 +66,15 @@ jest.mock('../../../../../src/lib/live-logging', () => ({
 	LiveLogClient: jest.fn(() => (mockLiveLogClient)),
 	parseIpAndPort: jest.fn(() => [MOCK_IPV4, undefined]),
 	handleConnectionErrors: jest.fn(),
+	LogLevel: {
+		TRACE: 100,
+		DEBUG: 200,
+		INFO: 300,
+		WARN: 400,
+		ERROR: 500,
+		FATAL: 600,
+		PRINT: 1000,
+	},
 }))
 
 
@@ -374,11 +383,50 @@ describe('LogCatCommand', () => {
 		await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`, '--all'])).resolves.not.toThrow()
 
 		const onmessage = sourceSpy.mock.results[0].value.onmessage
-		const liveLogMessage = {} as MessageEvent<LiveLogMessage>
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		const liveLogMessage = { data: { log_level: 100 } } as MessageEvent<LiveLogMessage>
 		onmessage(liveLogMessage)
 
 		expect(logEvent).toBeCalledTimes(1)
 		expect(logEvent).toBeCalledWith(liveLogMessage, liveLogMessageFormatter)
+	})
+
+	it('accepts log-level flag to only log important events', async () => {
+		const MED_LEVEL = 'info' // LogLevel.INFO == 300
+
+		/* eslint-disable @typescript-eslint/naming-convention */
+		const lowLiveLogMessage = { data: { log_level: 200 } } as MessageEvent<LiveLogMessage>
+		const highLiveLogMessage = { data: { log_level: 400 } } as MessageEvent<LiveLogMessage>
+		/* eslint-enable @typescript-eslint/naming-convention */
+
+		await expect(LogCatCommand.run([`--log-level=${MED_LEVEL}`, '--all'])).resolves.not.toThrow()
+
+		const onmessage = sourceSpy.mock.results[0].value.onmessage
+		onmessage(lowLiveLogMessage)
+		onmessage(highLiveLogMessage)
+
+		expect(logEvent).toBeCalledTimes(1)
+		expect(logEvent).toBeCalledWith(highLiveLogMessage, liveLogMessageFormatter)
+	})
+
+	it('defaults to logging all events if log-level flag not valid value', async () => {
+		const BAD_LOG_LEVEL = 'invalid'
+
+		/* eslint-disable @typescript-eslint/naming-convention */
+		const lowLiveLogMessage = { data: { log_level: 200 } } as MessageEvent<LiveLogMessage>
+		const highLiveLogMessage = { data: { log_level: 400 } } as MessageEvent<LiveLogMessage>
+		/* eslint-enable @typescript-eslint/naming-convention */
+
+		await expect(LogCatCommand.run([`--log-level=${BAD_LOG_LEVEL}`, '--all'])).resolves.not.toThrow()
+
+		const onmessage = sourceSpy.mock.results[0].value.onmessage
+		onmessage(lowLiveLogMessage)
+		onmessage(highLiveLogMessage)
+
+		expect(logEvent).toBeCalledTimes(2)
+		expect(logEvent).toBeCalledWith(lowLiveLogMessage, liveLogMessageFormatter)
+		expect(logEvent).toBeCalledWith(highLiveLogMessage, liveLogMessageFormatter)
+		expect(warnSpy).toBeCalledWith(`${BAD_LOG_LEVEL} is not a valid log-level. Logging all events.`)
 	})
 
 	describe('eventsource onerror handler', () => {
