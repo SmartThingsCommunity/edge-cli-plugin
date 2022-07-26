@@ -5,7 +5,6 @@ import { EdgeClient } from './edge-client'
 
 
 export abstract class EdgeCommand<T extends typeof EdgeCommand.flags> extends APIOrganizationCommand<T> {
-
 	static flags = APIOrganizationCommand.flags
 
 	private _edgeClient!: EdgeClient
@@ -19,6 +18,6 @@ export abstract class EdgeCommand<T extends typeof EdgeCommand.flags> extends AP
 
 		const logger = log4js.getLogger('rest-client')
 		this._edgeClient = new EdgeClient(this.authenticator,
-			{ urlProvider: this.clientIdProvider, logger, headers: this.headers })
+			{ urlProvider: this.clientIdProvider, logger, headers: this.client.config.headers })
 	}
 }
