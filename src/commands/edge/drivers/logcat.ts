@@ -9,6 +9,7 @@ import {
 	LiveLogClientConfig,
 	LiveLogMessage,
 	liveLogMessageFormatter,
+	LogLevel,
 	parseIpAndPort,
 } from '../../../lib/live-logging'
 import {
@@ -95,6 +96,11 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 			helpValue: '<milliseconds>',
 			default: DEFAULT_LIVE_LOG_TIMEOUT,
 		}),
+		'log-level': Flags.string({
+			description: 'minimum level of event to log',
+			helpValue: '<string>',
+			default: 'TRACE',
+		}),
 	}
 	/* eslint-enable @typescript-eslint/naming-convention */
 
@@ -104,6 +110,17 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 			description: 'a specific driver to stream logs from',
 		},
 	]
+
+	private getMinLogLevel(): number {
+		const minLogLevel = this.flags['log-level'].toUpperCase() as keyof typeof LogLevel
+
+		if (Object.keys(LogLevel).includes(minLogLevel)) {
+			return LogLevel[minLogLevel]
+		}
+
+		this.warn(`${this.flags['log-level']} is not a valid log-level. Logging all events.`)
+		return 0
+	}
 
 	private async checkServerIdentity(cert: PeerCertificate): Promise<void | never> {
 		const knownHubsPath = `${this.config.cacheDir}/known_hubs.json`
@@ -229,8 +246,12 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 			}
 		}
 
+		const minLogLevel = await this.getMinLogLevel()
+
 		this.source.onmessage = (event: MessageEvent<LiveLogMessage>) => {
-			logEvent(event, liveLogMessageFormatter)
+			if (event.data.log_level >= minLogLevel) {
+				logEvent(event, liveLogMessageFormatter)
+			}
 		}
 	}
 

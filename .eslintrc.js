@@ -91,6 +91,7 @@ module.exports = {
 		'comma-spacing': 'off',
 		'@typescript-eslint/comma-spacing': ['error'],
 		'@typescript-eslint/type-annotation-spacing': 'error',
+		'keyword-spacing': 'error',
 
 		// disallow non-import statements appearing before import statements
 		'import/first': 'error',
