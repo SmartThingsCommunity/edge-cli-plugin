@@ -26,6 +26,7 @@ import {
 	TableFieldDefinition,
 } from '@smartthings/cli-lib'
 import { inspect } from 'util'
+import { runForever } from '../../../lib/commands/drivers/logcat-util'
 
 
 const DEFAULT_ALL_TEXT = 'all'
@@ -180,7 +181,7 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 			authority: this.authority,
 			authenticator: this.authenticator,
 			verifier: this.checkServerIdentity.bind(this),
-			timeout: this.flags['connect-timeout'],
+			timeout: this.flags['connect-timeout'] ?? DEFAULT_LIVE_LOG_TIMEOUT,
 			userAgent: this.userAgent,
 		}
 
@@ -253,6 +254,8 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 				logEvent(event, liveLogMessageFormatter)
 			}
 		}
+
+		await runForever()
 	}
 
 	async catch(error: unknown): Promise<void> {
