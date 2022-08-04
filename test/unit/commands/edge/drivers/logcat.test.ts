@@ -6,6 +6,8 @@ import { PeerCertificate } from 'tls'
 import { askForRequiredString, convertToId, logEvent, selectFromList, Sorting, SseCommand, stringTranslateToId } from '@smartthings/cli-lib'
 import EventSource from 'eventsource'
 import { CliUx, Errors } from '@oclif/core'
+import { runForever } from '../../../../../src/lib/commands/drivers/logcat-util'
+
 
 
 const MOCK_IPV4 = '192.168.0.1'
@@ -77,6 +79,7 @@ jest.mock('../../../../../src/lib/live-logging', () => ({
 	},
 }))
 
+jest.mock('../../../../../src/lib/commands/drivers/logcat-util')
 
 describe('LogCatCommand', () => {
 	const mockStringTranslateToId = jest.mocked(stringTranslateToId).mockResolvedValue('all')
@@ -87,6 +90,7 @@ describe('LogCatCommand', () => {
 	const mockGetLogSource = jest.mocked(mockLiveLogClient.getLogSource)
 	const mockGetDrivers = jest.mocked(mockLiveLogClient.getDrivers)
 	const mockParseIpAndPort = jest.mocked(parseIpAndPort)
+	const mockRunForever = jest.mocked(runForever).mockImplementation()
 	const setTimeoutSpy = jest.spyOn(global, 'setTimeout')
 	const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout')
 	const initSourceSpy = jest.spyOn(LogCatCommand.prototype, 'initSource').mockImplementation()
@@ -265,12 +269,19 @@ describe('LogCatCommand', () => {
 		})
 	})
 
+	it('awaits forever Promise to prevent run from resolving', async () => {
+		await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`, '--all'])).resolves.not.toThrow()
+
+		expect(mockRunForever).toBeCalled()
+	})
+
 	it('should exit gracefully when no drivers found to list', async () => {
 		const catchSpy = jest.spyOn(LogCatCommand.prototype, 'catch')
 
 		await expect(LogCatCommand.run([`--hub-address=${MOCK_IPV4}`])).resolves.not.toThrow()
 
 		expect(catchSpy).toBeCalledWith(new Errors.ExitError(0))
+		expect(mockRunForever).not.toBeCalled()
 	})
 
 	it('should warn after connection when --all specified and no drivers installed', async () => {
