@@ -44,8 +44,7 @@ export interface LiveLogMessage {
 	message: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isLiveLogMessage(event: any): event is LiveLogMessage {
+export function isLiveLogMessage(event: unknown): event is LiveLogMessage {
 	const liveLogEvent = event as LiveLogMessage
 	return liveLogEvent.timestamp !== undefined &&
 		liveLogEvent.driver_id !== undefined &&
