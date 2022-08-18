@@ -1,7 +1,7 @@
 import LogCatCommand from '../../../../../src/commands/edge/drivers/logcat'
 import { promises as fs } from 'fs'
 import inquirer from 'inquirer'
-import { DriverInfo, handleConnectionErrors, LiveLogClient, LiveLogMessage, liveLogMessageFormatter, parseIpAndPort } from '../../../../../src/lib/live-logging'
+import { DriverInfo, handleConnectionErrors, LiveLogClient, liveLogMessageFormatter, parseIpAndPort } from '../../../../../src/lib/live-logging'
 import { PeerCertificate } from 'tls'
 import { askForRequiredString, convertToId, logEvent, selectFromList, Sorting, SseCommand, stringTranslateToId } from '@smartthings/cli-lib'
 import EventSource from 'eventsource'
@@ -98,6 +98,7 @@ describe('LogCatCommand', () => {
 	const teardownSpy = jest.spyOn(LogCatCommand.prototype, 'teardown').mockImplementation()
 	const errorSpy = jest.spyOn(LogCatCommand.prototype, 'error').mockImplementation()
 	const warnSpy = jest.spyOn(LogCatCommand.prototype, 'warn').mockImplementation()
+	const parseEventSpy = jest.spyOn(LogCatCommand.prototype, 'parseEvent').mockImplementation()
 
 	jest.spyOn(CliUx.ux.action, 'start').mockImplementation()
 	jest.spyOn(CliUx.ux.action, 'stop').mockImplementation()
@@ -395,48 +396,65 @@ describe('LogCatCommand', () => {
 
 		const onmessage = sourceSpy.mock.results[0].value.onmessage
 		// eslint-disable-next-line @typescript-eslint/naming-convention
-		const liveLogMessage = { data: { log_level: 100 } } as MessageEvent<LiveLogMessage>
-		onmessage(liveLogMessage)
+		const liveLogMessage = JSON.stringify({ log_level: 100 })
+		const messageEvent = { data: liveLogMessage }
+		parseEventSpy.mockReturnValueOnce(JSON.parse(liveLogMessage))
+
+		onmessage(messageEvent)
 
 		expect(logEvent).toBeCalledTimes(1)
-		expect(logEvent).toBeCalledWith(liveLogMessage, liveLogMessageFormatter)
+		expect(logEvent).toBeCalledWith(messageEvent, liveLogMessageFormatter)
 	})
 
 	it('accepts log-level flag to only log important events', async () => {
 		const MED_LEVEL = 'info' // LogLevel.INFO == 300
 
 		/* eslint-disable @typescript-eslint/naming-convention */
-		const lowLiveLogMessage = { data: { log_level: 200 } } as MessageEvent<LiveLogMessage>
-		const highLiveLogMessage = { data: { log_level: 400 } } as MessageEvent<LiveLogMessage>
+		const lowLiveLogMessage = JSON.stringify({ log_level: 200 })
+		const highLiveLogMessage = JSON.stringify({ log_level: 400 })
 		/* eslint-enable @typescript-eslint/naming-convention */
+
+		const lowMessageEvent = { data: lowLiveLogMessage }
+		const highMessageEvent = { data: highLiveLogMessage }
 
 		await expect(LogCatCommand.run([`--log-level=${MED_LEVEL}`, '--all'])).resolves.not.toThrow()
 
 		const onmessage = sourceSpy.mock.results[0].value.onmessage
-		onmessage(lowLiveLogMessage)
-		onmessage(highLiveLogMessage)
+		parseEventSpy
+			.mockReturnValueOnce(JSON.parse(lowLiveLogMessage))
+			.mockReturnValueOnce(JSON.parse(highLiveLogMessage))
+
+		onmessage(lowMessageEvent)
+		onmessage(highMessageEvent)
 
 		expect(logEvent).toBeCalledTimes(1)
-		expect(logEvent).toBeCalledWith(highLiveLogMessage, liveLogMessageFormatter)
+		expect(logEvent).toBeCalledWith(highMessageEvent, liveLogMessageFormatter)
 	})
 
 	it('defaults to logging all events if log-level flag not valid value', async () => {
 		const BAD_LOG_LEVEL = 'invalid'
 
 		/* eslint-disable @typescript-eslint/naming-convention */
-		const lowLiveLogMessage = { data: { log_level: 200 } } as MessageEvent<LiveLogMessage>
-		const highLiveLogMessage = { data: { log_level: 400 } } as MessageEvent<LiveLogMessage>
+		const lowLiveLogMessage = JSON.stringify({ log_level: 200 })
+		const highLiveLogMessage = JSON.stringify({ log_level: 400 })
 		/* eslint-enable @typescript-eslint/naming-convention */
+
+		const lowMessageEvent = { data: lowLiveLogMessage }
+		const highMessageEvent = { data: highLiveLogMessage }
 
 		await expect(LogCatCommand.run([`--log-level=${BAD_LOG_LEVEL}`, '--all'])).resolves.not.toThrow()
 
 		const onmessage = sourceSpy.mock.results[0].value.onmessage
-		onmessage(lowLiveLogMessage)
-		onmessage(highLiveLogMessage)
+		parseEventSpy
+			.mockReturnValueOnce(JSON.parse(lowLiveLogMessage))
+			.mockReturnValueOnce(JSON.parse(highLiveLogMessage))
+
+		onmessage(lowMessageEvent)
+		onmessage(highMessageEvent)
 
 		expect(logEvent).toBeCalledTimes(2)
-		expect(logEvent).toBeCalledWith(lowLiveLogMessage, liveLogMessageFormatter)
-		expect(logEvent).toBeCalledWith(highLiveLogMessage, liveLogMessageFormatter)
+		expect(logEvent).toBeCalledWith(lowMessageEvent, liveLogMessageFormatter)
+		expect(logEvent).toBeCalledWith(highMessageEvent, liveLogMessageFormatter)
 		expect(warnSpy).toBeCalledWith(`${BAD_LOG_LEVEL} is not a valid log-level. Logging all events.`)
 	})
 

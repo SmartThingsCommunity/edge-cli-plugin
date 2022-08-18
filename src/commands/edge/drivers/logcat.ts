@@ -5,6 +5,7 @@ import { PeerCertificate } from 'tls'
 import {
 	DriverInfo,
 	handleConnectionErrors,
+	isLiveLogMessage,
 	LiveLogClient,
 	LiveLogClientConfig,
 	LiveLogMessage,
@@ -247,10 +248,13 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 			}
 		}
 
-		const minLogLevel = await this.getMinLogLevel()
+		const minLogLevel = this.getMinLogLevel()
 
-		this.source.onmessage = (event: MessageEvent<LiveLogMessage>) => {
-			if (event.data.log_level >= minLogLevel) {
+		this.source.onmessage = (event: MessageEvent<string>) => {
+			// TODO refactor cli-libs sse-io module to export parse utils
+			const message = this.parseEvent(event)
+			if (message.log_level >= minLogLevel) {
+				// TODO separate parsing and logging in sse-io so that logEvent can accept a parsed message
 				logEvent(event, liveLogMessageFormatter)
 			}
 		}
@@ -267,5 +271,20 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 
 		CliUx.ux.action.stop(red('failed'))
 		await super.catch(error)
+	}
+
+	parseEvent(event: MessageEvent): LiveLogMessage {
+		let message: unknown
+		try {
+			message = JSON.parse(event.data)
+		} catch (error) {
+			this.error(`Unable to parse received event. ${error.message ?? error}`)
+		}
+
+		if (isLiveLogMessage(message)) {
+			return message
+		} else {
+			throw Error('Unexpected log message type.')
+		}
 	}
 }
