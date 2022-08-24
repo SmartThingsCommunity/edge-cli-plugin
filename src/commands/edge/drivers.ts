@@ -1,7 +1,8 @@
 import { Flags } from '@oclif/core'
 
-import { outputListing, allOrganizationsFlags } from '@smartthings/cli-lib'
 import { EdgeDriver } from '@smartthings/core-sdk'
+
+import { allOrganizationsFlags, outputItemOrList, OutputItemOrListConfig } from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../lib/edge-command'
 import { buildTableOutput, listDrivers, listTableFieldDefinitions } from '../../lib/commands/drivers-util'
@@ -18,7 +19,7 @@ See also:
 
 	static flags = {
 		...EdgeCommand.flags,
-		...outputListing.flags,
+		...outputItemOrList.flags,
 		...allOrganizationsFlags,
 		version: Flags.string({
 			char: 'V',
@@ -44,7 +45,7 @@ $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725
 $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725 --version 2021-10-25T00:48:23.295969`]
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputItemOrListConfig<EdgeDriver> = {
 			primaryKeyName: 'driverId',
 			sortKeyName: 'name',
 			buildTableOutput: (driver: EdgeDriver) => buildTableOutput(this.tableGenerator, driver),
@@ -58,7 +59,7 @@ $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725 --version 2021-1
 		const getDriver = (id: string): Promise<EdgeDriver> =>
 			this.flags.version ? this.client.drivers.getRevision(id, this.flags.version) : this.client.drivers.get(id)
 
-		await outputListing(this, config, this.args.idOrIndex,
+		await outputItemOrList(this, config, this.args.idOrIndex,
 			() => listDrivers(this.client, this.flags['all-organizations']),
 			getDriver)
 	}

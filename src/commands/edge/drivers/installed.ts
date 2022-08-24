@@ -1,6 +1,8 @@
 import { Flags } from '@oclif/core'
 
-import { outputListing } from '@smartthings/cli-lib'
+import { InstalledDriver } from '@smartthings/core-sdk'
+
+import { outputItemOrList, OutputItemOrListConfig } from '@smartthings/cli-lib'
 
 import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
@@ -11,7 +13,7 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 
 	static flags = {
 		...EdgeCommand.flags,
-		...outputListing.flags,
+		...outputItemOrList.flags,
 		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
@@ -27,7 +29,7 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 	}]
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputItemOrListConfig<InstalledDriver> = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 			tableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId',
@@ -39,7 +41,7 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 		const hubId = await chooseHub(this, 'Select a hub.', this.flags.hub,
 			{ allowIndex: true, useConfigDefault: true })
 
-		await outputListing(this, config, this.args.idOrIndex,
+		await outputItemOrList(this, config, this.args.idOrIndex,
 			() => this.client.hubdevices.listInstalled(hubId, this.flags.device),
 			id => this.client.hubdevices.getInstalled(hubId, id))
 	}

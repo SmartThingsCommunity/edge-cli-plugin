@@ -1,6 +1,6 @@
 import { ChannelsEndpoint, DriverChannelDetails, EdgeDriver } from '@smartthings/core-sdk'
 
-import { CustomCommonOutputProducer, DefaultTableGenerator, outputListing } from '@smartthings/cli-lib'
+import { CustomCommonOutputProducer, DefaultTableGenerator, outputItemOrList } from '@smartthings/cli-lib'
 
 import ChannelsMetaInfoCommand from '../../../../../src/commands/edge/channels/metainfo'
 import { buildTableOutput } from '../../../../../src/lib/commands/drivers-util'
@@ -12,14 +12,14 @@ jest.mock('@smartthings/cli-lib', () => {
 
 	return {
 		...originalLib,
-		outputListing: jest.fn(),
+		outputItemOrList: jest.fn(),
 	}
 })
 jest.mock('../../../../../src/lib/commands/channels-util')
 jest.mock('../../../../../src/lib/commands/drivers-util')
 
 describe('ChannelsMetaInfoCommand', () => {
-	const outputListingMock = jest.mocked(outputListing)
+	const outputItemOrListMock = jest.mocked(outputItemOrList)
 
 	const chooseChannelMock = jest.mocked(chooseChannel).mockResolvedValue('resolved-channel-id')
 
@@ -30,14 +30,14 @@ describe('ChannelsMetaInfoCommand', () => {
 		jest.clearAllMocks()
 	})
 
-	it('uses outputListing', async () => {
+	it('uses outputItemOrList', async () => {
 		await expect(ChannelsMetaInfoCommand.run([])).resolves.not.toThrow()
 
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsMetaInfoCommand),
 			'Choose a channel to get meta info for.', undefined, { useConfigDefault: true })
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(ChannelsMetaInfoCommand),
 			expect.objectContaining({ primaryKeyName: 'driverId' }),
 			undefined,
@@ -53,16 +53,16 @@ describe('ChannelsMetaInfoCommand', () => {
 		expect(chooseChannelMock).toHaveBeenCalledTimes(1)
 		expect(chooseChannelMock).toHaveBeenCalledWith(expect.any(ChannelsMetaInfoCommand),
 			'Choose a channel to get meta info for.', 'channel-id-from-cmd-line', { useConfigDefault: true })
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
 	})
 
 	describe('listDriversMetaInfo', () => {
 		it('returns empty list when no drivers assigned to channel', async () => {
 			await expect(ChannelsMetaInfoCommand.run([])).resolves.not.toThrow()
 
-			expect(outputListingMock).toHaveBeenCalledTimes(1)
+			expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
 
-			const listDriversMetaInfo = outputListingMock.mock.calls[0][3] as () => Promise<EdgeDriver[]>
+			const listDriversMetaInfo = outputItemOrListMock.mock.calls[0][3] as () => Promise<EdgeDriver[]>
 			listAssignedDriversSpy.mockResolvedValueOnce([])
 
 			expect(await listDriversMetaInfo()).toEqual([])
@@ -75,9 +75,9 @@ describe('ChannelsMetaInfoCommand', () => {
 		it('combines meta info for all drivers in a channel', async () => {
 			await expect(ChannelsMetaInfoCommand.run([])).resolves.not.toThrow()
 
-			expect(outputListingMock).toHaveBeenCalledTimes(1)
+			expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
 
-			const listDriversMetaInfo = outputListingMock.mock.calls[0][3] as () => Promise<EdgeDriver[]>
+			const listDriversMetaInfo = outputItemOrListMock.mock.calls[0][3] as () => Promise<EdgeDriver[]>
 			const assignedDrivers = [
 				{ driverId: 'assigned-driver-1' },
 				{ driverId: 'assigned-driver-2' },
@@ -101,9 +101,9 @@ describe('ChannelsMetaInfoCommand', () => {
 	test('get item function uses channels.getDriverChannelMetaInfo', async () => {
 		await expect(ChannelsMetaInfoCommand.run(['id-from-command-line'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
 
-		const getFunction = outputListingMock.mock.calls[0][4]
+		const getFunction = outputItemOrListMock.mock.calls[0][4]
 
 		const driver = { driverId: 'driver-id' } as EdgeDriver
 		getDriverChannelMetaInfoSpy.mockResolvedValueOnce(driver)
@@ -117,9 +117,9 @@ describe('ChannelsMetaInfoCommand', () => {
 	it('uses buildTableOutput from drivers-util', async () => {
 		await expect(ChannelsMetaInfoCommand.run(['id-from-command-line'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
 
-		const config = outputListingMock.mock.calls[0][1] as CustomCommonOutputProducer<EdgeDriver>
+		const config = outputItemOrListMock.mock.calls[0][1] as CustomCommonOutputProducer<EdgeDriver>
 		const driver = { driverId: 'driver-id' } as EdgeDriver
 
 		const buildTableOutputMock = jest.mocked(buildTableOutput).mockReturnValueOnce('table output')

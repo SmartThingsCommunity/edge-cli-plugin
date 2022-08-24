@@ -1,6 +1,6 @@
-import { outputList } from '@smartthings/cli-lib'
-import { listAssignedDriversWithNames } from '../../../lib/commands/drivers-util'
+import { outputList, OutputListConfig } from '@smartthings/cli-lib'
 
+import { DriverChannelDetailsWithName, listAssignedDriversWithNames } from '../../../lib/commands/drivers-util'
 import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
 
@@ -21,7 +21,7 @@ export default class ChannelsDriversCommand extends EdgeCommand<typeof ChannelsD
 	static aliases = ['edge:channels:assignments']
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputListConfig<DriverChannelDetailsWithName> = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'version',
 			listTableFieldDefinitions: ['name', 'driverId', 'version', 'createdDate', 'lastModifiedDate'],

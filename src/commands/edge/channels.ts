@@ -1,8 +1,9 @@
 import { Flags } from '@oclif/core'
 
-import { SubscriberType } from '@smartthings/core-sdk'
+import { Channel, SubscriberType } from '@smartthings/core-sdk'
 
-import { outputListing, allOrganizationsFlags } from '@smartthings/cli-lib'
+import { allOrganizationsFlags, outputItemOrList, OutputItemOrListConfig } from '@smartthings/cli-lib'
+
 import { EdgeCommand } from '../../lib/edge-command'
 import { listChannels, listTableFieldDefinitions, tableFieldDefinitions } from '../../lib/commands/channels-util'
 
@@ -13,7 +14,7 @@ export default class ChannelsCommand extends EdgeCommand<typeof ChannelsCommand.
 	/* eslint-disable @typescript-eslint/naming-convention */
 	static flags = {
 		...EdgeCommand.flags,
-		...outputListing.flags,
+		...outputItemOrList.flags,
 		...allOrganizationsFlags,
 		'include-read-only': Flags.boolean({
 			char: 'I',
@@ -49,7 +50,7 @@ $ smartthings edge:channels 2
 $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>`]
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputItemOrListConfig<Channel> = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 			listTableFieldDefinitions,
@@ -59,7 +60,7 @@ $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>`]
 			config.listTableFieldDefinitions.push('organization')
 		}
 
-		await outputListing(this, config, this.args.idOrIndex,
+		await outputItemOrList(this, config, this.args.idOrIndex,
 			async () => listChannels(this.client, {
 				subscriberType: this.flags['subscriber-type'] as SubscriberType | undefined,
 				subscriberId: this.flags['subscriber-id'],

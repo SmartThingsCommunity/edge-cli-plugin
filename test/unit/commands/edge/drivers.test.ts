@@ -1,6 +1,6 @@
 import { DriversEndpoint, EdgeDriver, SmartThingsClient } from '@smartthings/core-sdk'
 
-import { CustomCommonOutputProducer, DefaultTableGenerator, outputListing } from '@smartthings/cli-lib'
+import { CustomCommonOutputProducer, DefaultTableGenerator, outputItemOrList } from '@smartthings/cli-lib'
 
 import DriversCommand from '../../../../src/commands/edge/drivers'
 import { buildTableOutput, listDrivers } from '../../../../src/lib/commands/drivers-util'
@@ -11,23 +11,23 @@ jest.mock('@smartthings/cli-lib', () => {
 
 	return {
 		...originalLib,
-		outputListing: jest.fn(),
+		outputItemOrList: jest.fn(),
 	}
 })
 jest.mock('../../../../src/lib/commands/drivers-util')
 
 describe('DriversCommand', () => {
-	const outputListingMock = jest.mocked(outputListing)
+	const outputItemOrListMock = jest.mocked(outputItemOrList)
 
 	afterEach(() => {
 		jest.clearAllMocks()
 	})
 
-	it('uses outputListing', async () => {
+	it('uses outputItemOrList', async () => {
 		await expect(DriversCommand.run([])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversCommand),
 			expect.objectContaining({
 				primaryKeyName: 'driverId',
@@ -42,8 +42,8 @@ describe('DriversCommand', () => {
 	it('includes organization in listing output', async () => {
 		await expect(DriversCommand.run(['--all-organizations'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversCommand),
 			expect.objectContaining({
 				primaryKeyName: 'driverId',
@@ -58,8 +58,8 @@ describe('DriversCommand', () => {
 	it('uses listDrivers to list drivers', async () => {
 		await expect(DriversCommand.run(['--all-organizations'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversCommand),
 			expect.objectContaining({ primaryKeyName: 'driverId' }),
 			undefined,
@@ -67,7 +67,7 @@ describe('DriversCommand', () => {
 			expect.any(Function),
 		)
 
-		const listFunction = outputListingMock.mock.calls[0][3]
+		const listFunction = outputItemOrListMock.mock.calls[0][3]
 
 		const driverList = [{ driverId: 'driver-in-list-id' }] as EdgeDriver[]
 		const listDriversMock = jest.mocked(listDrivers).mockResolvedValueOnce(driverList)
@@ -81,8 +81,8 @@ describe('DriversCommand', () => {
 	test('get item function uses drivers.get with id', async () => {
 		await expect(DriversCommand.run(['id-from-command-line'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversCommand),
 			expect.objectContaining({ primaryKeyName: 'driverId' }),
 			'id-from-command-line',
@@ -90,7 +90,7 @@ describe('DriversCommand', () => {
 			expect.any(Function),
 		)
 
-		const getFunction = outputListingMock.mock.calls[0][4]
+		const getFunction = outputItemOrListMock.mock.calls[0][4]
 
 		const driver = { driverId: 'driver-id' } as EdgeDriver
 		const getSpy = jest.spyOn(DriversEndpoint.prototype, 'get').mockResolvedValueOnce(driver)
@@ -107,8 +107,8 @@ describe('DriversCommand', () => {
 			'--version=version-from-command-line',
 		])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversCommand),
 			expect.objectContaining({ primaryKeyName: 'driverId' }),
 			'id-from-command-line',
@@ -116,7 +116,7 @@ describe('DriversCommand', () => {
 			expect.any(Function),
 		)
 
-		const getFunction = outputListingMock.mock.calls[0][4]
+		const getFunction = outputItemOrListMock.mock.calls[0][4]
 
 		const driver = { driverId: 'driver-id' } as EdgeDriver
 		const getRevision = jest.spyOn(DriversEndpoint.prototype, 'getRevision').mockResolvedValueOnce(driver)
@@ -130,8 +130,8 @@ describe('DriversCommand', () => {
 	it('uses buildTableOutput from drivers-util', async () => {
 		await expect(DriversCommand.run(['id-from-command-line'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversCommand),
 			expect.objectContaining({ primaryKeyName: 'driverId' }),
 			'id-from-command-line',
@@ -139,7 +139,7 @@ describe('DriversCommand', () => {
 			expect.any(Function),
 		)
 
-		const config = outputListingMock.mock.calls[0][1] as CustomCommonOutputProducer<EdgeDriver>
+		const config = outputItemOrListMock.mock.calls[0][1] as CustomCommonOutputProducer<EdgeDriver>
 		const driver = { driverId: 'driver-id' } as EdgeDriver
 
 		const buildTableOutputMock = jest.mocked(buildTableOutput).mockReturnValueOnce('table output')
