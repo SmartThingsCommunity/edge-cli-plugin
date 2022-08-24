@@ -1,8 +1,25 @@
-import { Device, DeviceIntegrationType, DriverChannelDetails, EdgeDriver, EdgeDriverSummary,
-	InstalledDriver, SmartThingsClient } from '@smartthings/core-sdk'
+import {
+	Device,
+	DeviceIntegrationType,
+	DriverChannelDetails,
+	EdgeDriver,
+	EdgeDriverSummary,
+	InstalledDriver,
+	SmartThingsClient,
+} from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsDefaults, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
-	stringTranslateToId, summarizedText, TableGenerator } from '@smartthings/cli-lib'
+import {
+	APICommand,
+	ChooseOptions,
+	chooseOptionsDefaults,
+	chooseOptionsWithDefaults,
+	forAllOrganizations,
+	selectFromList,
+	SelectFromListConfig,
+	stringTranslateToId,
+	summarizedText,
+	TableGenerator,
+} from '@smartthings/cli-lib'
 
 
 export const listTableFieldDefinitions = ['driverId', 'name', 'version', 'packageKey']
@@ -79,7 +96,7 @@ export async function chooseDriver(command: APICommand<typeof APICommand.flags>,
 		listItems: (): Promise<DriverChoice[]> => command.client.drivers.list(),
 		...options,
 	}
-	const config = {
+	const config: SelectFromListConfig<DriverChoice> = {
 		itemName: 'driver',
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',
@@ -94,7 +111,7 @@ export const chooseHub = async (command: APICommand<typeof APICommand.flags>, pr
 		commandLineHubId: string | undefined,
 		options?: Partial<ChooseOptions>): Promise<string> => {
 	const opts = chooseOptionsWithDefaults(options)
-	const config = {
+	const config: SelectFromListConfig<Device> = {
 		itemName: 'hub',
 		primaryKeyName: 'deviceId',
 		sortKeyName: 'name',
@@ -167,7 +184,7 @@ export const listAssignedDriversWithNames = async (client: SmartThingsClient, ch
 
 export const chooseDriverFromChannel = async (command: APICommand<typeof APICommand.flags>, channelId: string,
 		preselectedId?: string): Promise<string> => {
-	const config = {
+	const config: SelectFromListConfig<DriverChannelDetailsWithName> = {
 		itemName: 'driver',
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',
@@ -178,7 +195,7 @@ export const chooseDriverFromChannel = async (command: APICommand<typeof APIComm
 }
 
 export const chooseInstalledDriver = async (command: APICommand<typeof APICommand.flags>, hubId: string, promptMessage: string, commandLineDriverId?: string): Promise<string> => {
-	const config = {
+	const config: SelectFromListConfig<InstalledDriver> = {
 		itemName: 'driver',
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',

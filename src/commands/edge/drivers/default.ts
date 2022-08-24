@@ -1,4 +1,6 @@
-import { outputList } from '@smartthings/cli-lib'
+import { EdgeDriverSummary } from '@smartthings/core-sdk'
+
+import { outputList, OutputListConfig } from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../../lib/edge-command'
 import { listTableFieldDefinitions } from '../../../lib/commands/drivers-util'
@@ -16,7 +18,7 @@ export default class DriversDefaultCommand extends EdgeCommand<typeof DriversDef
 $ smartthings edge:drivers:default`]
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputListConfig<EdgeDriverSummary> = {
 			primaryKeyName: 'driverId',
 			sortKeyName: 'name',
 			listTableFieldDefinitions,

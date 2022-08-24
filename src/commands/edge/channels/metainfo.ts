@@ -2,7 +2,7 @@ import { Flags } from '@oclif/core'
 
 import { EdgeDriver } from '@smartthings/core-sdk'
 
-import { outputListing } from '@smartthings/cli-lib'
+import { outputItemOrList, OutputItemOrListConfig } from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../../lib/edge-command'
 import { chooseChannel } from '../../../lib/commands/channels-util'
@@ -14,7 +14,7 @@ export default class ChannelsMetaInfoCommand extends EdgeCommand<typeof Channels
 
 	static flags = {
 		...EdgeCommand.flags,
-		...outputListing.flags,
+		...outputItemOrList.flags,
 		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
@@ -43,7 +43,7 @@ $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 699
 		const channelId = await chooseChannel(this, 'Choose a channel to get meta info for.',
 			this.flags.channel, { useConfigDefault: true })
 
-		const config = {
+		const config: OutputItemOrListConfig<EdgeDriver> = {
 			primaryKeyName: 'driverId',
 			sortKeyName: 'name',
 			buildTableOutput: (driver: EdgeDriver) => buildTableOutput(this.tableGenerator, driver),
@@ -56,7 +56,7 @@ $ smartthings edge:channels:metainfo -C b50c0aa1-d9ea-4005-8db8-0cf9c2d9d7b2 699
 				await this.client.channels.getDriverChannelMetaInfo(channelId, driver.driverId)))
 		}
 
-		await outputListing(this, config, this.args.idOrIndex,
+		await outputItemOrList(this, config, this.args.idOrIndex,
 			listDriversMetaInfo,
 			driverId => this.client.channels.getDriverChannelMetaInfo(channelId, driverId))
 	}

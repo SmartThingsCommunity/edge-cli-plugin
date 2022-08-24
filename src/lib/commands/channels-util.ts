@@ -1,7 +1,14 @@
 import { Channel, SmartThingsClient, SubscriberType } from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsWithDefaults, forAllOrganizations, selectFromList,
-	stringTranslateToId } from '@smartthings/cli-lib'
+import {
+	APICommand,
+	ChooseOptions,
+	chooseOptionsWithDefaults,
+	forAllOrganizations,
+	selectFromList,
+	SelectFromListConfig,
+	stringTranslateToId,
+} from '@smartthings/cli-lib'
 
 
 export const listTableFieldDefinitions = ['channelId', 'name', 'description', 'termsOfServiceUrl',
@@ -22,7 +29,7 @@ export async function chooseChannel(command: APICommand<typeof APICommand.flags>
 		channelFromArg?: string,
 		options?: Partial<ChooseChannelOptions>): Promise<string> {
 	const opts = chooseChannelOptionsWithDefaults(options)
-	const config = {
+	const config: SelectFromListConfig<Channel> = {
 		itemName: 'channel',
 		primaryKeyName: 'channelId',
 		sortKeyName: 'name',

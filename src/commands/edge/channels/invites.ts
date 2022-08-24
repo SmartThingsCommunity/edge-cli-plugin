@@ -1,6 +1,15 @@
 import { Flags } from '@oclif/core'
 
-import { ChooseOptions, chooseOptionsWithDefaults, outputListing, selectFromList, stringTranslateToId, TableFieldDefinition } from '@smartthings/cli-lib'
+import {
+	ChooseOptions,
+	chooseOptionsWithDefaults,
+	outputItemOrList,
+	OutputItemOrListConfig,
+	selectFromList,
+	SelectFromListConfig,
+	stringTranslateToId,
+	TableFieldDefinition,
+} from '@smartthings/cli-lib'
 
 import { EdgeCommand } from '../../../lib/edge-command'
 import { Invitation } from '../../../lib/endpoints/invites'
@@ -30,7 +39,7 @@ const buildListFunction = (command: EdgeCommand<typeof EdgeCommand.flags>, chann
 
 export async function chooseInvite(command: EdgeCommand<typeof EdgeCommand.flags>, promptMessage: string, channelId?: string, inviteFromArg?: string, options?: Partial<ChooseOptions>): Promise<string> {
 	const opts = chooseOptionsWithDefaults(options)
-	const config = {
+	const config: SelectFromListConfig<Invitation> = {
 		itemName: 'invitation',
 		primaryKeyName: 'id',
 		sortKeyName: 'id', // only supports simple properties so we can't sort by metadata.name even though we can use that in the table
@@ -49,7 +58,7 @@ export default class ChannelsInvitesCommand extends EdgeCommand<typeof ChannelsI
 
 	static flags = {
 		...EdgeCommand.flags,
-		...outputListing.flags,
+		...outputItemOrList.flags,
 		'channel': Flags.string({
 			char: 'C',
 			description: 'channel id',
@@ -71,14 +80,14 @@ export default class ChannelsInvitesCommand extends EdgeCommand<typeof ChannelsI
 	]
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputItemOrListConfig<Invitation> = {
 			primaryKeyName: 'id',
 			sortKeyName: 'id',
 			listTableFieldDefinitions,
 			tableFieldDefinitions,
 		}
 
-		await outputListing<Invitation, Invitation>(this, config, this.args.idOrIndex,
+		await outputItemOrList<Invitation, Invitation>(this, config, this.args.idOrIndex,
 			buildListFunction(this, this.flags.channel),
 			id => this.edgeClient.invites.get(id))
 	}

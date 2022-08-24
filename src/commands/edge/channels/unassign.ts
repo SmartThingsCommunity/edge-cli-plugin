@@ -2,7 +2,7 @@ import { Flags } from '@oclif/core'
 
 import { DriverChannelDetails } from '@smartthings/core-sdk'
 
-import { APICommand, ChooseOptions, chooseOptionsWithDefaults, selectFromList, stringTranslateToId } from '@smartthings/cli-lib'
+import { APICommand, ChooseOptions, chooseOptionsWithDefaults, selectFromList, SelectFromListConfig, stringTranslateToId } from '@smartthings/cli-lib'
 
 import { chooseChannel } from '../../../lib/commands/channels-util'
 import { EdgeCommand } from '../../../lib/edge-command'
@@ -15,7 +15,7 @@ export interface NamedDriverChannelDetails extends DriverChannelDetails {
 export async function chooseAssignedDriver(command: APICommand<typeof APICommand.flags>, promptMessage: string,
 		channelId: string, commandLineDriverId?: string, options?: Partial<ChooseOptions>): Promise<string> {
 	const opts = chooseOptionsWithDefaults(options)
-	const config = {
+	const config: SelectFromListConfig<NamedDriverChannelDetails> = {
 		itemName: 'driver',
 		primaryKeyName: 'driverId',
 		sortKeyName: 'name',

@@ -2,7 +2,7 @@ import { Flags } from '@oclif/core'
 
 import { EnrolledChannel } from '@smartthings/core-sdk'
 
-import { selectFromList } from '@smartthings/cli-lib'
+import { selectFromList, SelectFromListConfig } from '@smartthings/cli-lib'
 
 import { chooseDriverFromChannel, chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
@@ -35,7 +35,7 @@ export default class DriversInstallCommand extends EdgeCommand<typeof DriversIns
 	}]
 
 	async chooseChannelFromEnrollments(hubId: string): Promise<string> {
-		const config = {
+		const config: SelectFromListConfig<EnrolledChannel> = {
 			itemName: 'hub-enrolled channel',
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',

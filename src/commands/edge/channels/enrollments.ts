@@ -1,4 +1,6 @@
-import { outputList } from '@smartthings/cli-lib'
+import { EnrolledChannel } from '@smartthings/core-sdk'
+
+import { outputList, OutputListConfig } from '@smartthings/cli-lib'
 
 import { chooseHub } from '../../../lib/commands/drivers-util'
 import { EdgeCommand } from '../../../lib/edge-command'
@@ -18,7 +20,7 @@ export default class ChannelsEnrollmentsCommand extends EdgeCommand<typeof Chann
 	}]
 
 	async run(): Promise<void> {
-		const config = {
+		const config: OutputListConfig<EnrolledChannel> = {
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 			listTableFieldDefinitions: ['channelId', 'name', 'description', 'createdDate', 'lastModifiedDate', 'subscriptionUrl'],

@@ -21,6 +21,7 @@ import {
 	logEvent,
 	red,
 	selectFromList,
+	SelectFromListConfig,
 	Sorting,
 	SseCommand,
 	stringTranslateToId,
@@ -48,7 +49,7 @@ const driverFieldDefinitions: TableFieldDefinition<DriverInfo>[] = [
 	},
 ]
 
-async function promptForDrivers(fieldInfo: Sorting, list: DriverInfo[], prompt?: string): Promise<string> {
+async function promptForDrivers(fieldInfo: Sorting<DriverInfo>, list: DriverInfo[], prompt?: string): Promise<string> {
 	const primaryKeyName = fieldInfo.primaryKeyName
 
 	const itemIdOrIndex: string = (await inquirer.prompt({
@@ -157,7 +158,7 @@ export default class LogCatCommand extends SseCommand<typeof LogCatCommand.flags
 	}
 
 	private async chooseHubDrivers(commandLineDriverId?: string, driversList?: DriverInfo[]): Promise<string> {
-		const config = {
+		const config: SelectFromListConfig<DriverInfo> = {
 			itemName: 'driver',
 			primaryKeyName: 'driver_id',
 			sortKeyName: 'driver_name',

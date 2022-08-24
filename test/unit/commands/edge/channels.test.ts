@@ -1,6 +1,6 @@
 import { Channel, ChannelsEndpoint, SmartThingsClient } from '@smartthings/core-sdk'
 
-import { outputListing } from '@smartthings/cli-lib'
+import { outputItemOrList } from '@smartthings/cli-lib'
 
 import ChannelsCommand from '../../../../src/commands/edge/channels'
 import { listChannels } from '../../../../src/lib/commands/channels-util'
@@ -11,23 +11,23 @@ jest.mock('@smartthings/cli-lib', () => {
 
 	return {
 		...originalLib,
-		outputListing: jest.fn(),
+		outputItemOrList: jest.fn(),
 	}
 })
 jest.mock('../../../../src/lib/commands/channels-util')
 
 describe('ChannelsCommand', () => {
-	const outputListingMock = jest.mocked(outputListing)
+	const outputItemOrListMock = jest.mocked(outputItemOrList)
 
 	afterEach(() => {
 		jest.clearAllMocks()
 	})
 
-	it('uses outputListing', async () => {
+	it('uses outputItemOrList', async () => {
 		await expect(ChannelsCommand.run([])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(ChannelsCommand),
 			expect.objectContaining({
 				primaryKeyName: 'channelId',
@@ -42,8 +42,8 @@ describe('ChannelsCommand', () => {
 	it('includes organization in listing output', async () => {
 		await expect(ChannelsCommand.run(['--all-organizations'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(ChannelsCommand),
 			expect.objectContaining({
 				primaryKeyName: 'channelId',
@@ -61,8 +61,8 @@ describe('ChannelsCommand', () => {
 			'--subscriber-id=subscriber-id',
 		])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(ChannelsCommand),
 			expect.objectContaining({ primaryKeyName: 'channelId' }),
 			undefined,
@@ -70,7 +70,7 @@ describe('ChannelsCommand', () => {
 			expect.any(Function),
 		)
 
-		const listFunction = outputListingMock.mock.calls[0][3]
+		const listFunction = outputItemOrListMock.mock.calls[0][3]
 
 		const channelList = [{ channelId: 'channel-in-list-id' }] as Channel[]
 		const listChannelsMock = jest.mocked(listChannels).mockResolvedValueOnce(channelList)
@@ -85,8 +85,8 @@ describe('ChannelsCommand', () => {
 	test('get item function uses channels.get with id', async () => {
 		await expect(ChannelsCommand.run(['id-from-command-line'])).resolves.not.toThrow()
 
-		expect(outputListingMock).toHaveBeenCalledTimes(1)
-		expect(outputListingMock).toHaveBeenCalledWith(
+		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
+		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(ChannelsCommand),
 			expect.objectContaining({ primaryKeyName: 'channelId' }),
 			'id-from-command-line',
@@ -94,7 +94,7 @@ describe('ChannelsCommand', () => {
 			expect.any(Function),
 		)
 
-		const getFunction = outputListingMock.mock.calls[0][4]
+		const getFunction = outputItemOrListMock.mock.calls[0][4]
 
 		const channel = { channelId: 'channel-in-list-id' } as Channel
 		const getSpy = jest.spyOn(ChannelsEndpoint.prototype, 'get').mockResolvedValueOnce(channel)
