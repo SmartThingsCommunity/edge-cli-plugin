@@ -33,9 +33,9 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 			primaryKeyName: 'channelId',
 			sortKeyName: 'name',
 			tableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId',
-				'developer', 'vendorSummaryInformation'],
+				'developer', 'vendorSupportInformation'],
 			listTableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId',
-				'developer', 'vendorSummaryInformation'],
+				'developer', 'vendorSupportInformation'],
 		}
 
 		const hubId = await chooseHub(this, 'Select a hub.', this.flags.hub,
