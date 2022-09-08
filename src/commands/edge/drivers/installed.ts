@@ -30,7 +30,7 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 
 	async run(): Promise<void> {
 		const config: OutputItemOrListConfig<InstalledDriver> = {
-			primaryKeyName: 'channelId',
+			primaryKeyName: 'driverId',
 			sortKeyName: 'name',
 			tableFieldDefinitions: ['driverId', 'name', 'description', 'version', 'channelId',
 				'developer', 'vendorSupportInformation'],
