@@ -1,6 +1,6 @@
 {
 	"name": "@smartthings/plugin-cli-edge",
-	"version": "1.15.4",
+	"version": "1.15.5",
 	"description": "Edge-related SmartThings CLI commands",
 	"author": "SmartThings, Inc.",
 	"homepage": "https://github.com/SmartThingsCommunity/smartthings-cli",
