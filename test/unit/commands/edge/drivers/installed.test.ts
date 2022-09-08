@@ -37,7 +37,7 @@ describe('DriversInstalledCommand', () => {
 		expect(outputItemOrListMock).toHaveBeenCalledTimes(1)
 		expect(outputItemOrListMock).toHaveBeenCalledWith(
 			expect.any(DriversInstalledCommand),
-			expect.objectContaining({ primaryKeyName: 'channelId' }),
+			expect.objectContaining({ primaryKeyName: 'driverId' }),
 			undefined,
 			expect.any(Function),
 			expect.any(Function),
