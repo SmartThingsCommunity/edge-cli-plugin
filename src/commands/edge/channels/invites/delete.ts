@@ -10,9 +10,10 @@ export default class ChannelsInvitesDeleteCommand extends EdgeCommand<typeof Cha
 
 	static flags = {
 		...EdgeCommand.flags,
-		'channel': Flags.string({
+		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
+			helpValue: '<UUID>',
 		}),
 	}
 

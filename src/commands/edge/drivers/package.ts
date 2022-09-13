@@ -43,6 +43,7 @@ export default class PackageCommand extends EdgeCommand<typeof PackageCommand.fl
 		channel: Flags.string({
 			description: 'automatically assign driver to specified channel after upload',
 			exclusive: ['assign', 'build-only'],
+			helpValue: '<UUID>',
 		}),
 		install: Flags.boolean({
 			char: 'I',
@@ -52,6 +53,7 @@ export default class PackageCommand extends EdgeCommand<typeof PackageCommand.fl
 		hub: Flags.string({
 			description: 'automatically install driver to specified hub, implies --assign if --assign or --channel not included',
 			exclusive: ['install', 'build-only'],
+			helpValue: '<UUID>',
 		}),
 	}
 

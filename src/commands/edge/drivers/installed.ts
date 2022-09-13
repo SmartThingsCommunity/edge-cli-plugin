@@ -17,9 +17,11 @@ export default class DriversInstalledCommand extends EdgeCommand<typeof DriversI
 		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
+			helpValue: '<UUID>',
 		}),
 		device: Flags.string({
 			description: 'return drivers matching the specified device',
+			helpValue: '<UUID>',
 		}),
 	}
 

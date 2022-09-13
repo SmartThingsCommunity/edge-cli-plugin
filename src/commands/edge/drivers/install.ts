@@ -22,10 +22,12 @@ export default class DriversInstallCommand extends EdgeCommand<typeof DriversIns
 		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
+			helpValue: '<UUID>',
 		}),
 		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
+			helpValue: '<UUID>',
 		}),
 	}
 

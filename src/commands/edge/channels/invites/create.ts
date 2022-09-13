@@ -20,6 +20,7 @@ export default class ChannelsInvitesCreateCommand extends EdgeCommand<typeof Cha
 			char: 'C',
 			description: 'channel id',
 			exclusive: ['input'],
+			helpValue: '<UUID>',
 		}),
 		...EdgeCommand.flags,
 		...inputAndOutputItem.flags,

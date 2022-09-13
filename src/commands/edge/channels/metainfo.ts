@@ -19,6 +19,7 @@ export default class ChannelsMetaInfoCommand extends EdgeCommand<typeof Channels
 			char: 'C',
 			description: 'channel id',
 			exclusive: ['input'],
+			helpValue: '<UUID>',
 		}),
 	}
 

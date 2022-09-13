@@ -59,9 +59,10 @@ export default class ChannelsInvitesCommand extends EdgeCommand<typeof ChannelsI
 	static flags = {
 		...EdgeCommand.flags,
 		...outputItemOrList.flags,
-		'channel': Flags.string({
+		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
+			helpValue: '<UUID>',
 		}),
 	}
 
