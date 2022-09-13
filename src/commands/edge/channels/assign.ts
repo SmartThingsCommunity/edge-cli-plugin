@@ -13,6 +13,7 @@ export class ChannelsAssignCommand extends EdgeCommand<typeof ChannelsAssignComm
 		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
+			helpValue: '<UUID>',
 		}),
 	}
 

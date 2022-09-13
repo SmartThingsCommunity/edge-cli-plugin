@@ -77,7 +77,7 @@ FLAGS
   -t, --token=<value>         the auth token to use
   -y, --yaml                  use YAML format of input and/or output
   --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
-  --subscriber-id=<value>     filter results based on subscriber id (e.g. hub id)
+  --subscriber-id=<UUID>      filter results based on subscriber id (e.g. hub id)
   --subscriber-type=<option>  filter results based on subscriber type
                               <options: HUB>
 
@@ -96,7 +96,7 @@ EXAMPLES
   $ smartthings edge:channels --subscriber-type HUB --subscriber-id <hub-id>
 ```
 
-_See code: [src/commands/edge/channels.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels.ts)_
+_See code: [src/commands/edge/channels.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels.ts)_
 
 ## `smartthings edge:channels:assign [DRIVERID] [VERSION]`
 
@@ -112,7 +112,7 @@ ARGUMENTS
   VERSION   driver version
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -126,7 +126,7 @@ ALIASES
   $ smartthings edge:drivers:publish
 ```
 
-_See code: [src/commands/edge/channels/assign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/assign.ts)_
+_See code: [src/commands/edge/channels/assign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/assign.ts)_
 
 ## `smartthings edge:channels:assignments [IDORINDEX]`
 
@@ -182,7 +182,7 @@ DESCRIPTION
   create a channel
 ```
 
-_See code: [src/commands/edge/channels/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/create.ts)_
+_See code: [src/commands/edge/channels/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/create.ts)_
 
 ## `smartthings edge:channels:delete [ID]`
 
@@ -206,7 +206,7 @@ DESCRIPTION
   delete a channel
 ```
 
-_See code: [src/commands/edge/channels/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/delete.ts)_
+_See code: [src/commands/edge/channels/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/delete.ts)_
 
 ## `smartthings edge:channels:drivers [IDORINDEX]`
 
@@ -237,7 +237,7 @@ ALIASES
   $ smartthings edge:channels:assignments
 ```
 
-_See code: [src/commands/edge/channels/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/drivers.ts)_
+_See code: [src/commands/edge/channels/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/drivers.ts)_
 
 ## `smartthings edge:channels:enroll [HUBID]`
 
@@ -252,7 +252,7 @@ ARGUMENTS
   HUBID  hub id
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -263,7 +263,7 @@ DESCRIPTION
   enroll a hub in a channel
 ```
 
-_See code: [src/commands/edge/channels/enroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/enroll.ts)_
+_See code: [src/commands/edge/channels/enroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/enroll.ts)_
 
 ## `smartthings edge:channels:enrollments [IDORINDEX]`
 
@@ -291,7 +291,7 @@ DESCRIPTION
   list all channels a given hub is enrolled in
 ```
 
-_See code: [src/commands/edge/channels/enrollments.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/enrollments.ts)_
+_See code: [src/commands/edge/channels/enrollments.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/enrollments.ts)_
 
 ## `smartthings edge:channels:invitations [IDORINDEX]`
 
@@ -306,7 +306,7 @@ ARGUMENTS
   IDORINDEX  the invitation id or number in list
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
@@ -367,7 +367,7 @@ USAGE
     <value>] [-j] [-y] [-o <value>] [-d]
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -d, --dry-run               produce JSON but don't actually submit
   -h, --help                  Show CLI help.
@@ -399,7 +399,7 @@ ARGUMENTS
   ID  invitation UUID
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -428,7 +428,7 @@ ARGUMENTS
   ID  invitation UUID
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -457,7 +457,7 @@ ARGUMENTS
   IDORINDEX  the invitation id or number in list
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
@@ -483,7 +483,7 @@ EXAMPLES
   $ smartthings edge:channels:invites <invite id>      # list details about the invite with id <invite id>
 ```
 
-_See code: [src/commands/edge/channels/invites.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/invites.ts)_
+_See code: [src/commands/edge/channels/invites.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/invites.ts)_
 
 ## `smartthings edge:channels:invites:accept ID`
 
@@ -510,7 +510,7 @@ ALIASES
   $ smartthings edge:channels:invitations:accept
 ```
 
-_See code: [src/commands/edge/channels/invites/accept.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/invites/accept.ts)_
+_See code: [src/commands/edge/channels/invites/accept.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/invites/accept.ts)_
 
 ## `smartthings edge:channels:invites:create`
 
@@ -522,7 +522,7 @@ USAGE
     <value>] [-j] [-y] [-o <value>] [-d]
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -d, --dry-run               produce JSON but don't actually submit
   -h, --help                  Show CLI help.
@@ -541,7 +541,7 @@ ALIASES
   $ smartthings edge:channels:invitations:create
 ```
 
-_See code: [src/commands/edge/channels/invites/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/invites/create.ts)_
+_See code: [src/commands/edge/channels/invites/create.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/invites/create.ts)_
 
 ## `smartthings edge:channels:invites:delete [ID]`
 
@@ -556,7 +556,7 @@ ARGUMENTS
   ID  invitation UUID
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -572,7 +572,7 @@ ALIASES
   $ smartthings edge:channels:invites:revoke
 ```
 
-_See code: [src/commands/edge/channels/invites/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/invites/delete.ts)_
+_See code: [src/commands/edge/channels/invites/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/invites/delete.ts)_
 
 ## `smartthings edge:channels:invites:revoke [ID]`
 
@@ -587,7 +587,7 @@ ARGUMENTS
   ID  invitation UUID
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -616,7 +616,7 @@ ARGUMENTS
   IDORINDEX  the channel id or number in list
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
@@ -643,7 +643,7 @@ EXAMPLES
       699c7308-8c72-4363-9571-880d0f5cc725
 ```
 
-_See code: [src/commands/edge/channels/metainfo.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/metainfo.ts)_
+_See code: [src/commands/edge/channels/metainfo.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/metainfo.ts)_
 
 ## `smartthings edge:channels:unassign [DRIVERID]`
 
@@ -658,7 +658,7 @@ ARGUMENTS
   DRIVERID  driver id
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -672,7 +672,7 @@ ALIASES
   $ smartthings edge:drivers:unpublish
 ```
 
-_See code: [src/commands/edge/channels/unassign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/unassign.ts)_
+_See code: [src/commands/edge/channels/unassign.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/unassign.ts)_
 
 ## `smartthings edge:channels:unenroll [HUBID]`
 
@@ -687,7 +687,7 @@ ARGUMENTS
   HUBID  hub id
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -698,7 +698,7 @@ DESCRIPTION
   unenroll a hub from a channel
 ```
 
-_See code: [src/commands/edge/channels/unenroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/unenroll.ts)_
+_See code: [src/commands/edge/channels/unenroll.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/unenroll.ts)_
 
 ## `smartthings edge:channels:update [ID]`
 
@@ -728,7 +728,7 @@ DESCRIPTION
   update a channel
 ```
 
-_See code: [src/commands/edge/channels/update.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/channels/update.ts)_
+_See code: [src/commands/edge/channels/update.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/channels/update.ts)_
 
 ## `smartthings edge:drivers [IDORINDEX]`
 
@@ -777,7 +777,7 @@ EXAMPLES
   $ smartthings edge:drivers 699c7308-8c72-4363-9571-880d0f5cc725 --version 2021-10-25T00:48:23.295969
 ```
 
-_See code: [src/commands/edge/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers.ts)_
+_See code: [src/commands/edge/drivers.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers.ts)_
 
 ## `smartthings edge:drivers:default`
 
@@ -807,7 +807,7 @@ EXAMPLES
     $ smartthings edge:drivers:default
 ```
 
-_See code: [src/commands/edge/drivers/default.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/default.ts)_
+_See code: [src/commands/edge/drivers/default.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/default.ts)_
 
 ## `smartthings edge:drivers:delete [ID]`
 
@@ -831,7 +831,7 @@ DESCRIPTION
   delete an edge driver
 ```
 
-_See code: [src/commands/edge/drivers/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/delete.ts)_
+_See code: [src/commands/edge/drivers/delete.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/delete.ts)_
 
 ## `smartthings edge:drivers:install [DRIVERID]`
 
@@ -846,8 +846,8 @@ ARGUMENTS
   DRIVERID  id of driver to install
 
 FLAGS
-  -C, --channel=<value>       channel id
-  -H, --hub=<value>           hub id
+  -C, --channel=<UUID>        channel id
+  -H, --hub=<UUID>            hub id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -865,7 +865,7 @@ EXAMPLES
   $ smartthings edge:drivers:install -H <hub-id> -C <channel-id> <driver-id> # install a driver from a channel on an enrolled hub
 ```
 
-_See code: [src/commands/edge/drivers/install.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/install.ts)_
+_See code: [src/commands/edge/drivers/install.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/install.ts)_
 
 ## `smartthings edge:drivers:installed [IDORINDEX]`
 
@@ -880,7 +880,7 @@ ARGUMENTS
   IDORINDEX  the driver id or number in list
 
 FLAGS
-  -H, --hub=<value>           hub id
+  -H, --hub=<UUID>            hub id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -j, --json                  use JSON format of input and/or output
@@ -888,14 +888,14 @@ FLAGS
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
   -y, --yaml                  use YAML format of input and/or output
-  --device=<value>            return drivers matching the specified device
+  --device=<UUID>             return drivers matching the specified device
   --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
 DESCRIPTION
   list all drivers installed on a given hub
 ```
 
-_See code: [src/commands/edge/drivers/installed.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/installed.ts)_
+_See code: [src/commands/edge/drivers/installed.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/installed.ts)_
 
 ## `smartthings edge:drivers:logcat [DRIVERID]`
 
@@ -923,7 +923,7 @@ DESCRIPTION
   stream logs from installed drivers
 ```
 
-_See code: [src/commands/edge/drivers/logcat.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/logcat.ts)_
+_See code: [src/commands/edge/drivers/logcat.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/logcat.ts)_
 
 ## `smartthings edge:drivers:package [PROJECTDIRECTORY]`
 
@@ -950,8 +950,8 @@ FLAGS
   -t, --token=<value>         the auth token to use
   -u, --upload=<value>        upload zip file previously built with --build flag
   -y, --yaml                  use YAML format of input and/or output
-  --channel=<value>           automatically assign driver to specified channel after upload
-  --hub=<value>               automatically install driver to specified hub, implies --assign if --assign or --channel
+  --channel=<UUID>            automatically assign driver to specified channel after upload
+  --hub=<UUID>                automatically install driver to specified hub, implies --assign if --assign or --channel
                               not included
   --language=<value>          ISO language code or "NONE" to not specify a language. Defaults to the OS locale
 
@@ -977,7 +977,7 @@ EXAMPLES
     $ smartthings edge:drivers:package -u driver.zip
 ```
 
-_See code: [src/commands/edge/drivers/package.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/package.ts)_
+_See code: [src/commands/edge/drivers/package.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/package.ts)_
 
 ## `smartthings edge:drivers:publish [DRIVERID] [VERSION]`
 
@@ -993,7 +993,7 @@ ARGUMENTS
   VERSION   driver version
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -1020,11 +1020,11 @@ ARGUMENTS
   DEVICEID  id of device to update
 
 FLAGS
-  -H, --hub=<value>           hub id
+  -H, --hub=<UUID>            hub id
   -I, --include-non-matching  when presenting a list of drivers to switch to, include drivers that do not match the
                               device
   -O, --organization=<value>  the organization ID to use for this command
-  -d, --driver=<value>        id of new driver to use
+  -d, --driver=<UUID>         id of new driver to use
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
   -t, --token=<value>         the auth token to use
@@ -1044,7 +1044,7 @@ EXAMPLES
     $ smartthings edge:drivers:switch --include-non-matching
 ```
 
-_See code: [src/commands/edge/drivers/switch.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/switch.ts)_
+_See code: [src/commands/edge/drivers/switch.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/switch.ts)_
 
 ## `smartthings edge:drivers:uninstall [DRIVERID]`
 
@@ -1059,7 +1059,7 @@ ARGUMENTS
   DRIVERID  id of driver to uninstall
 
 FLAGS
-  -H, --hub=<value>           hub id
+  -H, --hub=<UUID>            hub id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile
@@ -1070,7 +1070,7 @@ DESCRIPTION
   uninstall an edge driver from a hub
 ```
 
-_See code: [src/commands/edge/drivers/uninstall.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.2/src/commands/edge/drivers/uninstall.ts)_
+_See code: [src/commands/edge/drivers/uninstall.ts](https://github.com/SmartThingsCommunity/edge-cli-plugin/blob/v1.15.5/src/commands/edge/drivers/uninstall.ts)_
 
 ## `smartthings edge:drivers:unpublish [DRIVERID]`
 
@@ -1085,7 +1085,7 @@ ARGUMENTS
   DRIVERID  driver id
 
 FLAGS
-  -C, --channel=<value>       channel id
+  -C, --channel=<UUID>        channel id
   -O, --organization=<value>  the organization ID to use for this command
   -h, --help                  Show CLI help.
   -p, --profile=<value>       [default: default] configuration profile

@@ -12,6 +12,7 @@ export default class DriversUninstallCommand extends EdgeCommand<typeof DriversU
 		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
+			helpValue: '<UUID>',
 		}),
 	}
 

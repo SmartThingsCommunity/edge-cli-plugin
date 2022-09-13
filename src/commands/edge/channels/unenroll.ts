@@ -10,9 +10,10 @@ export class ChannelsUnenrollCommand extends EdgeCommand<typeof ChannelsUnenroll
 
 	static flags = {
 		...EdgeCommand.flags,
-		'channel': Flags.string({
+		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
+			helpValue: '<UUID>',
 		}),
 	}
 

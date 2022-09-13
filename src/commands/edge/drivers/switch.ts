@@ -27,10 +27,12 @@ $ smartthings edge:drivers:switch --include-non-matching`,
 		hub: Flags.string({
 			char: 'H',
 			description: 'hub id',
+			helpValue: '<UUID>',
 		}),
 		driver: Flags.string({
 			char: 'd',
 			description: 'id of new driver to use',
+			helpValue: '<UUID>',
 		}),
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		'include-non-matching': Flags.boolean({

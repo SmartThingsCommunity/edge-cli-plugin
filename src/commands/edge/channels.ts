@@ -28,6 +28,7 @@ export default class ChannelsCommand extends EdgeCommand<typeof ChannelsCommand.
 		'subscriber-id': Flags.string({
 			description: 'filter results based on subscriber id (e.g. hub id)',
 			dependsOn: ['subscriber-type'],
+			helpValue: '<UUID>',
 		}),
 	}
 	/* eslint-enable @typescript-eslint/naming-convention */

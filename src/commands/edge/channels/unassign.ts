@@ -45,9 +45,10 @@ export class ChannelsUnassignCommand extends EdgeCommand<typeof ChannelsUnassign
 
 	static flags = {
 		...EdgeCommand.flags,
-		'channel': Flags.string({
+		channel: Flags.string({
 			char: 'C',
 			description: 'channel id',
+			helpValue: '<UUID>',
 		}),
 	}
 
